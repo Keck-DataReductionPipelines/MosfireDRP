@@ -74,7 +74,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
         II = IO.read_drpfits(maskname, file, options)
 
         off = np.array((II[0]["decoff"], II[0]["raoff"]),dtype=np.float64)
-        if II[0].has_key("yoffset"):
+        if "offset" in II[0]:
             off = -II[0]["yoffset"]
         else:
             # Deal with data taken during commissioning
