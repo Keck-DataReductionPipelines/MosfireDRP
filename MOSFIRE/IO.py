@@ -166,7 +166,7 @@ def writefits(img, maskname, fname, options, header=None, bs=None,
     warnings.filterwarnings('ignore')
     if header is not None:
         for k,value, comment in header.cards:
-            if hdu.header.has_key(k): continue
+            if k in hdu.header: continue
 
             if k == 'COMMENT': continue
             if k == '': continue

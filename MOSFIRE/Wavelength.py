@@ -186,8 +186,8 @@ def imcombine(files, maskname, bandname, options, extension=None):
             try: val = header[key]
             except KeyError: 
                 print("Header should have key '%s' but does not" % key)
-            help (thishdr)
-            if thishdr.has_key(key):
+            
+            if key in thishdr:
                 if val != thishdr[key]:
                     newkey = "hierarch " + key + ("_img%2.2i" % i)
                     try: header.update(newkey.rstrip(), thishdr[key])
@@ -203,7 +203,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
         for key in header.keys():
             val = header[key]
 
-            if thishdr.has_key(key):
+            if key in thishdr:
                 if val != thishdr[key]:
                     newkey = "hierarch " + key + ("_img%2.2i" % i)
                     try: header.update(newkey.rstrip(), thishdr[key])
@@ -1926,13 +1926,13 @@ class InteractiveSolution:
             for key, value in actions_mouseless.items():
                 print "%8s %s" % (key, value.__doc__)
 
-        if actions_mouseless.has_key(kp):
+        if kp in actions_mouseless:
             actions_mouseless[kp](x, y)
 
         if x is None: return
         if y is None: return
 
-        if actions.has_key(kp):
+        if kp in actions:
             actions[kp](x, y)
 
 def fit_wavelength_solution(data, parguess, lines, options, 
