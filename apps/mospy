@@ -1,0 +1,60 @@
+#!/bin/csh -f
+
+# INSTRCUCTIONS. Edit the 
+
+# 1. Update the full path to the Ureka install for the two aliases
+# below
+alias ur_setup 'eval `/Users/lrizzi/.ureka/ur_setup -csh \!*`'
+alias ur_forget 'eval `/Users/lrizzi/.ureka/ur_forget -csh \!*`'
+
+
+
+# If pythonpath is not previously defined, define it so that 
+#   the setenv works below..
+if (! $?PYTHONPATH ) setenv PYTHONPATH 
+
+
+# 2. Set MOSPATH to the full path to the MOSFIRE DRP code repository
+# example:
+# Change /scr2/mosfire/DRP/mosfire to /Users/myname/MOSFIRE/DRP
+setenv MOSPATH /Volumes/PromiseRAID/MOSFIRE/DRP_CODE/
+setenv PYTHONPATH ${PYTHONPATH}:${MOSPATH}
+
+if (! -d $MOSPATH) then
+    echo "Path '$MOSPATH' does not exist. Modify $0"
+    echo "and change MOSPATH to the DRP directory."
+    exit 1
+endif
+
+ur_setup
+
+if ($#argv == 0) then
+        echo "Starting MOSFIRE Python"
+        ipython --pylab --colors Linux
+else
+    switch ( $argv[1] )
+        case "libs":
+            python -c "import sys; print sys.path"
+            breaksw
+
+        case "db":
+            python ${MOSPATH}/apps/db.py $*
+            breaksw
+
+        case "handle":
+            python ${MOSPATH}/apps/handle.py $*
+            breaksw
+
+        case "what":
+            python ${MOSPATH}/apps/what.py $*
+            breaksw
+
+        default
+            python $*
+            breaksw
+    endsw
+endif
+
+onintr -
+
+    
