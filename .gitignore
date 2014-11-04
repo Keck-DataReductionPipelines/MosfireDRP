@@ -2,3 +2,4 @@ bin/pyraf/clcache.v2/*
 *~
 REDUX
 DATA
+*.pyc
