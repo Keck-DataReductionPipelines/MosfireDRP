@@ -18,7 +18,7 @@ from MOSFIRE import Background, CSU, Fit, IO, Options, Filters, Detector, Wavele
 
 
 
-def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, options,
+def handle_rectification(maskname, in_files, wavename, band_pass, files, options,
         commissioning_shift=3.0):
     '''Handle slit rectification and coaddition.
 
@@ -157,7 +157,9 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
 
 
     # the barset [bs] is used for determining object position
-    x, x, bs = IO.readmosfits(barset_file, options)
+    files = IO.list_file_to_strings(files)
+    print "Using "+str(files[0])+" for slit configuration."
+    x, x, bs = IO.readmosfits(files[0], options)
     
 
     for i_slit in xrange(len(solutions)):

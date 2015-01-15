@@ -32,7 +32,7 @@ longslit = {'yrange': [700, 1250], 'row_position': 910}
 
 obsfiles = ['Offset_-10.txt', 'Offset_10.txt']
 
-Flats.handle_flats('Flat.txt', maskname, band, flatops, extension='/Volumes/PromiseRAID/MOSFIRE/DRP_CODE/DATA/2015jan12/m150112_0199.fits', longslit = longslit)
+#Flats.handle_flats('Flat.txt', maskname, band, flatops, extension='/Volumes/PromiseRAID/MOSFIRE/DRP_CODE/DATA/2015jan12/m150112_0199.fits', longslit = longslit)
 
 # SKY LINES
 # Use sky lines for wavelength calibration
@@ -47,19 +47,20 @@ Flats.handle_flats('Flat.txt', maskname, band, flatops, extension='/Volumes/Prom
 #    'lambda_solution_wave_stack_....fits',
 #    waveops, longslit)
 
-Background.handle_background(obsfiles,
-    'lambda_solution_wave_stack_H_m150112_0199-0201.fits',
-    maskname, band, waveops)
+#Background.handle_background(obsfiles,
+#    'lambda_solution_wave_stack_H_m150112_0199-0201.fits',
+#    maskname, band, waveops)
 
 redfiles = ["eps_" + file + ".fits" for file in obsfiles]
 #update the "lambda_solution_wave_stack_K*.fits" file name
 #  to the output file name from the apply_lambda process above.
 # Update the name of the first file in the offset file (use the full path name.
 #   e.g.    "/Users/user1/MOSFIRE/DRP_CODE/DATA/2014may08/m130114_0451.fits",
+
 Rectify.handle_rectification(maskname, redfiles,
     "lambda_solution_wave_stack_H_m150112_0199-0201.fits",
     band, 
-    "/Volumes/PromiseRAID/MOSFIRE/DRP_CODE/DATA/2015jan12/m150112_0199.fits",
+    obsfiles,
     waveops)
 
 
