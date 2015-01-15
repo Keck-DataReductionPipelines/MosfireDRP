@@ -51,7 +51,7 @@ __version__ = 0.1
 #from IPython.Shell import IPShellEmbed
 #start_shell = IPShellEmbed()
 
-def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold=450,lampOffList=None):
+def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold=450,lampOffList=None,longslit=None):
     '''
     handle_flats is the primary entry point to the Flats module.
 
