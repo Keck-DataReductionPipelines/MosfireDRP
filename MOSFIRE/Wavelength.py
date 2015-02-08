@@ -352,8 +352,6 @@ def fit_lambda(maskname,
         edgedata[0]["yposs_top"] = [top]
         edgedata[0]["top"] = np.poly1d([top])
 
-        
-    
     solutions = []
     lamout = np.zeros(shape=(2048, 2048), dtype=np.float32)
 
@@ -965,7 +963,17 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
             options, overwrite=True, header=header, lossy_compress=True)
 
     print("{0}: rectifying".format(maskname))
-    dlam = np.ma.median(np.diff(lams[1024,:]))
+    dlam = 0
+    central_line = 1024
+    step = 0
+    while dlam==0:
+        line = central_line+(50*step)
+        dlam = np.ma.median(np.diff(lams[line,:]))
+        if dlam==0:
+            line = central_line-(50*step)
+            dlam = np.ma.median(np.diff(lams[line,:]))
+        step=step+1
+    print "Non-empty line found at pixel "+str(line)
     hpp = Filters.hpp[bandname] 
     ll_fid = np.arange(hpp[0], hpp[1], dlam)
     nspec = len(ll_fid)
