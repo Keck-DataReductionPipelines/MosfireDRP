@@ -65,6 +65,7 @@ for fname in files:
 
     datafile = header['datafile'] + '.fits'
     maskname = header['maskname']
+    target = header['targname']
     filter = header['filter']
     yr,mn,dy = IO.fname_to_date_tuple(datafile)
     date = str(yr)+mn+str(dy)
@@ -103,7 +104,8 @@ for fname in files:
 
 
     offset = 'Offset_' + str(header['YOFFSET'])
-
+    if (maskname.find('long2pos') != -1 and align is False) or maskname.find('LONGSLIT') != -1:
+        offset = offset+'_'+str(target)
     
 
     if mira:
