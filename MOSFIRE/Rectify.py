@@ -141,7 +141,6 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         cntr += 1
         p = Pool()
         solutions = p.map(handle_rectification_helper, sols)
-        #solutions = map(handle_rectification_helper, [15])
         p.close()
 
         all_solutions.append(solutions)
@@ -354,8 +353,8 @@ def handle_rectification_helper(edgeno):
     mxshift = np.abs(np.int(np.ceil(np.max(all_shifts)/0.18)))
     mnshift = np.abs(np.int(np.floor(np.min(all_shifts)/0.18)))
     
-    top = min(np.floor(np.min(tops)), 2048)
-    bot = max(np.ceil(np.max(bots)), 0)
+    top = int(min(np.floor(np.min(tops)), 2048))
+    bot = int(max(np.ceil(np.max(bots)), 0))
 
     ll = lambdas[1].data[bot:top, :]
     eps = dats[1][bot:top, :].filled(0.0)
@@ -371,8 +370,7 @@ def handle_rectification_helper(edgeno):
     epss = []
     ivss = []
     itss = []
-    sign = -1
-    
+    sign = 1
     for shift in shifts:
         output = r_interpol(ll, eps, fidl, tops, top, shift_pix=shift/0.18,
             pad=[mnshift, mxshift], fill_value = np.nan)
@@ -392,7 +390,7 @@ def handle_rectification_helper(edgeno):
         sign *= -1
 
     it_img = np.nansum(np.array(itss), axis=0)
-    eps_img = np.nanmean(epss, axis=0)
+    eps_img = np.nansum(epss, axis=0)
 
     # Remove any NaNs or infs from the variance array
     ivar_img = []
