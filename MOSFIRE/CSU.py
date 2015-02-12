@@ -223,7 +223,6 @@ class Barset:
             start = np.int(msl[0]["Slit_Number"])
             stop = np.int(msl[-1]["Slit_Number"])
 
-            #print "Long slit has %i elements" % (stop-start)
 
             for mech_slit in msl:
                 mech_slit["Target_in_Slit"] = "long"
@@ -248,7 +247,6 @@ class Barset:
             for science_slit in ssl:
                 targ = science_slit["Target_Name"]
                 v.append([int(x) for x in self.msl.field("Slit_Number")[np.where(self.msl.Target_in_Slit == targ)[0]]])
-                print np.where(self.msl.Target_in_Slit == targ)[0]+1
             self.scislit_to_slit = v
 
             if (len(self.scislit_to_slit) != len(ssl)) and not (self.long_slit
