@@ -161,6 +161,8 @@ def imcombine(files, maskname, bandname, options, extension=None):
         if prevssl is not None:
             if len(prevssl) != len(bs.ssl):
                 # todo Improve these checks
+                print "Reading file "+str(fname)
+                print "This file contains "+str(len(bs.ssl))+" slits instead of "+str(len(prevssl))
                 raise Exception("The stack of input files seems to be of "
                         "different masks")
         prevssl = bs.ssl
@@ -1625,6 +1627,7 @@ class InteractiveSolution:
         else:
             self.cid = self.fig.canvas.mpl_connect('key_press_event', self)
             self.setup(bypass=bypass)
+            self.fit_event(0,0,bypass=bypass)
 
         # follow line prevents window from going full screen when the
         # 'f'it button is pressed.
@@ -1724,8 +1727,10 @@ class InteractiveSolution:
             pl.subplot(2,1,2)
             pl.xlim(self.xlim)
             pl.grid(True)
-            pl.axhline(0.1)
-            pl.axhline(-0.1)
+            #pl.axhline(0.1)
+            #pl.axhline(-0.1)
+            pl.axhline(self.STD)
+            pl.axhline(-1*self.STD)
 
             if self.STD < 0.1: fmt = 'go'
             else: fmt = 'bo'
@@ -1845,6 +1850,7 @@ class InteractiveSolution:
         np.save(self.outfilename, np.array(self.solutions))
 
         self.setup(bypass=bypass)
+        self.fit_event(0,0,bypass=bypass)
 
     def prevobject(self, x, y):
         """Go to the previous object"""
@@ -1885,7 +1891,32 @@ class InteractiveSolution:
         self.ll = CV.chebval(self.pix, self.cfit)
         self.foundlines = xs
         self.foundlinesig = sxs
-
+        # Calculate current std error
+        error = np.std(deltas[np.isfinite(deltas)])
+        # prepare a sigma tolerance (reject values of deltas > tolerance * sigma)
+        tolerance = 3
+        # if the std error is > 0.10, iteratively reject lines
+        while error>0.10:        
+            print "Current error is "+str(error)
+            print "Current tolerance is "+str(tolerance)+" sigmas"
+            print "Number of lines used for fit: "+str(len(xs))
+            print "Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)]))
+            mask = (abs(deltas)<tolerance*np.std(deltas[np.isfinite(deltas)]))
+            print "Number of rejected lines: "+str(len(xs)-len(mask))
+            self.linelist = self.linelist[mask]
+            [xs, sxs, sigmas] = find_known_lines(self.linelist, self.ll,
+                    self.spec, self.options)
+            self.foundlines = xs
+            self.foundlinesig = sxs
+            print "Fitting again..."
+            [deltas, cfit, perror] = fit_chebyshev_to_lines(xs, sxs,
+                self.linelist, self.options)
+            error = np.std(deltas[np.isfinite(deltas)])
+            print "Error is now "+str(error)
+            self.cfit = cfit
+            self.ll = CV.chebval(self.pix, self.cfit)
+            tolerance = tolerance - 0.2
+        
         ok = np.isfinite(deltas)
         self.STD = np.std(deltas[ok])
         self.MAD = np.ma.median(np.abs(deltas[ok]))
