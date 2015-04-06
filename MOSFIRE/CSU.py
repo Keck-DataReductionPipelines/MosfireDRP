@@ -96,7 +96,7 @@ def csu_mm_to_pix(x_mm, slitno, Please_Use=False):
     x_kfp = (centerx - x_mm) * tempscale
     y_kfp = 5.8*mm * (numslits/2. - slitno + 0.35) * tempscale
 
-    path = os.path.join(os.environ["MOSPATH"], "platescale", 
+    path = os.path.join(os.path.dirname(__file__), "data", 
             "linear_pix2mm_120k.db") 
     #
     return  mosfire_geoxytran(x_kfp, y_kfp,
@@ -109,7 +109,7 @@ def mosfire_geoxytran(x_kfp, y_kfp, transform="final.pix2mm.4.972.120k",
     iraf.images()
 
 
-    path = os.path.join(os.environ["MOSPATH"], "platescale", 
+    path = os.path.join(os.path.dirname(__file__), "data", 
             "10March2011.4.972.db")
     database = path
     pars = iraf.geoxytran.getParList()
@@ -128,7 +128,7 @@ def mosfire_geoxytrans(x_kfp, y_kfp, transform="final.pix2mm.4.972.120k",
         database="ale/10March2011.4.972.db", direction="forward"):
     '''Conveninece wrapper around IRAF geoxytran'''
     iraf.images()
-    path = os.path.join(os.environ["MOSPATH"], "platescale", 
+    path = os.path.join(os.path.dirname(__file__), "data", 
             "10March2011.4.972.db")
     database = path
     pars = iraf.geoxytran.getParList()
