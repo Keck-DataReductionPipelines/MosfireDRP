@@ -12,15 +12,15 @@ else
             breaksw
 
         case "db":
-            python mospy_db.py $*
+            mospy_db.py $*
             breaksw
 
         case "handle":
-            python mospy_handle.py $*
+            mospy_handle.py $*
             breaksw
 
         case "what":
-            python mospy_what.py $*
+            mospy_what.py $*
             breaksw
 
         default
