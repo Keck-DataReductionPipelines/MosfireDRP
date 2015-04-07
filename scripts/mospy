@@ -1,0 +1,34 @@
+#!/bin/csh -f
+
+# INSTRCUCTIONS. Edit the 
+
+if ($#argv == 0) then
+        echo "Starting MOSFIRE Python"
+        ipython --pylab --colors Linux
+else
+    switch ( $argv[1] )
+        case "libs":
+            python -c "import sys; print sys.path"
+            breaksw
+
+        case "db":
+            python mospy_db.py $*
+            breaksw
+
+        case "handle":
+            python mospy_handle.py $*
+            breaksw
+
+        case "what":
+            python mospy_what.py $*
+            breaksw
+
+        default
+            python $*
+            breaksw
+    endsw
+endif
+
+onintr -
+
+    
