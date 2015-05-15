@@ -18,7 +18,7 @@ from MOSFIRE import Background, CSU, Fit, IO, Options, Filters, Detector, Wavele
 
 
 
-def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, options,
+def handle_rectification(maskname, in_files, wavename, band_pass, files, options,
         commissioning_shift=3.0):
     '''Handle slit rectification and coaddition.
 
@@ -141,7 +141,6 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
         cntr += 1
         p = Pool()
         solutions = p.map(handle_rectification_helper, sols)
-        #solutions = map(handle_rectification_helper, [15])
         p.close()
 
         all_solutions.append(solutions)
@@ -157,7 +156,9 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
 
 
     # the barset [bs] is used for determining object position
-    x, x, bs = IO.readmosfits(barset_file, options)
+    files = IO.list_file_to_strings(files)
+    print "Using "+str(files[0])+" for slit configuration."
+    x, x, bs = IO.readmosfits(files[0], options)
     
 
     for i_slit in xrange(len(solutions)):
@@ -352,8 +353,8 @@ def handle_rectification_helper(edgeno):
     mxshift = np.abs(np.int(np.ceil(np.max(all_shifts)/0.18)))
     mnshift = np.abs(np.int(np.floor(np.min(all_shifts)/0.18)))
     
-    top = min(np.floor(np.min(tops)), 2048)
-    bot = max(np.ceil(np.max(bots)), 0)
+    top = int(min(np.floor(np.min(tops)), 2048))
+    bot = int(max(np.ceil(np.max(bots)), 0))
 
     ll = lambdas[1].data[bot:top, :]
     eps = dats[1][bot:top, :].filled(0.0)
@@ -370,7 +371,6 @@ def handle_rectification_helper(edgeno):
     ivss = []
     itss = []
     sign = -1
-    
     for shift in shifts:
         output = r_interpol(ll, eps, fidl, tops, top, shift_pix=shift/0.18,
             pad=[mnshift, mxshift], fill_value = np.nan)

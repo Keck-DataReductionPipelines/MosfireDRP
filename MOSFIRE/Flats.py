@@ -51,7 +51,7 @@ __version__ = 0.1
 #from IPython.Shell import IPShellEmbed
 #start_shell = IPShellEmbed()
 
-def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold=450,lampOffList=None):
+def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold=450,lampOffList=None,longslit=None):
     '''
     handle_flats is the primary entry point to the Flats module.
 
@@ -88,6 +88,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         except: bs0 = bs
 
         if np.any(bs0.pos != bs.pos):
+            print "bs0: "+str(bs0.pos)+" bs: "+str(bs.pos)
             raise Exception("Barsets do not seem to match")
 
         if hdr["filter"] != band:
@@ -123,7 +124,16 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     print "Flat written to %s" % path
 
     # Edge Trace
-    results = find_and_fit_edges(data, header, bs, options,edgeThreshold=edgeThreshold)
+    if bs.long_slit:
+        print "Long slit mode recognized"
+        print "Central row position:   "+str(longslit["row_position"])
+        print "Upper and lower limits: "+str(longslit["yrange"][0])+" "+str(longslit["yrange"][1])
+        results = find_longslit_edges(data,header, bs, options, edgeThreshold=edgeThreshold, longslit=longslit)
+    elif bs.long2pos_slit:
+        print "Long2pos mode recognized"
+        results = find_long2pos_edges(data,header, bs, options, edgeThreshold=edgeThreshold, longslit=longslit)
+    else:
+        results = find_and_fit_edges(data, header, bs, options,edgeThreshold=edgeThreshold)
     results[-1]["maskname"] = maskname
     results[-1]["band"] = band
     np.save("slit-edges_{0}".format(band), results)
@@ -504,7 +514,192 @@ def fit_edge_poly(xposs, xposs_missing, yposs, order):
 
     return (fun, res, sd, ok)
 
+def find_long2pos_edges(data, header, bs, options, edgeThreshold=450,longslit=None):
 
+
+    y = 2034
+    DY = 44.25
+
+
+    toc = 0
+    ssl = bs.ssl
+
+    slits = []
+
+    top = [0., np.float(Options.npix)]
+
+    start_slit_num = int(bs.msl[0]['Slit_Number'])-1
+    if start_slit_num > 0:
+        y -= DY * start_slit_num
+    # if the mask is a long slit, the default y value will be wrong. Set instead to be the middle
+    if bs.long_slit:
+        try:
+            y=longslit["yrange"][1]
+        except:
+            print "Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y)
+
+
+    # Count and check that the # of objects in the SSL matches that of the MSL
+    # This is purely a safety check
+    numslits = np.zeros(len(ssl))
+    for i in xrange(len(ssl)):
+        slit = ssl[i]
+        M = np.where(slit["Target_Name"] == bs.msl["Target_in_Slit"])
+
+        numslits[i] = len(M[0])
+    numslits = np.array(numslits)
+    print "Number of slits allocated for this longslit: "+str(np.sum(numslits))
+
+    # now begin steps outline above
+    results = []
+
+    for slit in [0,1]:
+        
+        result = {}
+
+        result["Target_Name"] = ssl[slit]["Target_Name"]
+        # 1 Defines a polynomial of degree 0, which is a constant, with the value of the top of the slit
+        result["top"] = np.poly1d([longslit["yrange"][slit][1]]) # 1
+        topfun = np.poly1d([longslit["yrange"][slit][1]]) # this is a constant funtion with c=top of the slit # 1
+        botfun = np.poly1d([longslit["yrange"][slit][0]]) # this is a constant funtion with c=bottom of the slit # 0
+
+        # xposs_top_this = [10 110 210 .... 1810 1910]
+        xposs_top = np.arange(10,2000,100)
+        xposs_bot = np.arange(10,2000,100)
+        # yposs_top_this = [1104 1104 ... 1104 1104], it's the constant polynomium calculated at the X positions
+        yposs_top = topfun(xposs_top)
+        yposs_bot = botfun(xposs_bot)
+
+        ''' Deal with the current slit '''
+        target=slit
+        hpps = Wavelength.estimate_half_power_points(
+                bs.scislit_to_csuslit(target+1)[0], header, bs)
+
+        ok = np.where((xposs_top > hpps[0]) & (xposs_top < hpps[1]))
+
+        xposs_bot = xposs_bot[ok]
+        yposs_bot = yposs_bot[ok]
+        xposs_top = xposs_top[ok]
+        yposs_top = yposs_top[ok]
+
+        if len(xposs_bot) == 0:
+            raise Exception("The slit edges specifications appear to be incorrect.")
+
+        # bot is the polynomium that defines the shape of the bottom of the slit. In this case, we set it to a constant.
+        bot = botfun.c.copy() 
+        top = topfun.c.copy()
+
+
+        #4
+        result = {}
+        result["Target_Name"] = ssl[target]["Target_Name"]
+        result["xposs_top"] = xposs_top
+        result["yposs_top"] = yposs_top
+        result["xposs_bot"] = xposs_bot
+        result["yposs_bot"] = yposs_bot
+        result["top"] = np.poly1d(top)
+        result["bottom"] = np.poly1d(bot)
+        result["hpps"] = hpps
+        result["ok"] = ok
+        results.append(result)
+        #print "And the top is"+str(result["top"])
+
+    results.append({"version": options["version"]})
+    return results
+
+
+def find_longslit_edges(data, header, bs, options, edgeThreshold=450,longslit=None):
+
+
+    y = 2034
+    DY = 44.25
+
+
+    toc = 0
+    ssl = bs.ssl
+
+    slits = []
+
+    top = [0., np.float(Options.npix)]
+
+    start_slit_num = int(bs.msl[0]['Slit_Number'])-1
+    if start_slit_num > 0:
+        y -= DY * start_slit_num
+    # if the mask is a long slit, the default y value will be wrong. Set instead to be the middle
+    if bs.long_slit:
+        try:
+            y=longslit["yrange"][1]
+        except:
+            print "Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y)
+
+
+    # Count and check that the # of objects in the SSL matches that of the MSL
+    # This is purely a safety check
+    numslits = np.zeros(len(ssl))
+    for i in xrange(len(ssl)):
+        slit = ssl[i]
+        M = np.where(slit["Target_Name"] == bs.msl["Target_in_Slit"])
+
+        numslits[i] = len(M[0])
+    numslits = np.array(numslits)
+    print "Number of slits allocated for this longslit: "+str(np.sum(numslits))
+
+    # now begin steps outline above
+    results = []
+    result = {}
+
+    result["Target_Name"] = ssl[0]["Target_Name"]
+
+    # 1 Defines a polynomial of degree 0, which is a constant, with the value of the top of the slit
+    result["top"] = np.poly1d([longslit["yrange"][1]])
+    
+    topfun = np.poly1d([longslit["yrange"][1]]) # this is a constant funtion with c=top of the slit
+    botfun = np.poly1d([longslit["yrange"][0]]) # this is a constant funtion with c=bottom of the slit
+
+    # xposs_top_this = [10 110 210 .... 1810 1910]
+    xposs_top = np.arange(10,2000,100)
+    xposs_bot = np.arange(10,2000,100)
+    # yposs_top_this = [1104 1104 ... 1104 1104], it's the constant polynomium calculated at the X positions
+    yposs_top = topfun(xposs_top)
+    yposs_bot = botfun(xposs_bot)
+
+    
+    ''' Deal with the current slit '''
+    target=0
+    hpps = Wavelength.estimate_half_power_points(
+                bs.scislit_to_csuslit(target+1)[0], header, bs)
+
+    ok = np.where((xposs_top > hpps[0]) & (xposs_top < hpps[1]))
+
+    xposs_bot = xposs_bot[ok]
+    yposs_bot = yposs_bot[ok]
+    xposs_top = xposs_top[ok]
+    yposs_top = yposs_top[ok]
+
+    if len(xposs_bot) == 0:
+        raise Exception("The slit edges specifications appear to be incorrect.")
+
+    # bot is the polynomium that defines the shape of the bottom of the slit. In this case, we set it to a constant.
+    bot = botfun.c.copy() 
+    top = topfun.c.copy()
+
+
+    #4
+    result = {}
+    result["Target_Name"] = ssl[target]["Target_Name"]
+    result["xposs_top"] = xposs_top
+    result["yposs_top"] = yposs_top
+    result["xposs_bot"] = xposs_bot
+    result["yposs_bot"] = yposs_bot
+    result["top"] = np.poly1d(top)
+    result["bottom"] = np.poly1d(bot)
+    result["hpps"] = hpps
+    result["ok"] = ok
+    results.append(result)
+
+    results.append({"version": options["version"]})
+
+    return results
 
 def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
     '''

@@ -276,7 +276,19 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
     header['RN'] = ("%1.3f" , "Read noise in e-")
     header['NUMFRM'] = (Nframe, 'Typical number of frames in stack')
 
+    
+    
     if outname is not None:
+        # modify the FRAMEID of the B positions for the longslit observing mode
+        if str(maskname)=="long2pos" and str(header['YOFFSET'])=='7':
+            print "Long2pos (posA) mode detected"
+            header['FRAMEID'] = 'B'
+        if str(maskname)=="long2pos" and str(header['YOFFSET'])=='-7':
+            print "Long2pos (posC) mode detected"
+            header['FRAMEID'] = 'B'
+             
+
+
         header['BUNIT'] = 'ELECTRONS/SECOND'
         IO.writefits(np.float32(electrons/itimes), maskname, "eps_%s" % (outname),
                 options, header=header, overwrite=True)
@@ -372,13 +384,11 @@ def handle_background(filelist, wavename, maskname, band_name, options, shifts=N
         bss.append(bs)
         Nframes.append(Nframe)
 
-    
     positions = {}
     i = 0
     for h in hdrs:
         positions[h['FRAMEID']] = i
         i += 1
-    
     posnames = set(positions.keys())
     if plan is None:
         plan = guess_plan_from_positions(posnames)

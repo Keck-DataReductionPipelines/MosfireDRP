@@ -377,6 +377,14 @@ def readmosfits(fname, options, extension=None):
     ssl = ssl[ssl.field("Slit_Number") != ' ']
     msl = msl[msl.field("Slit_Number") != ' ']
     asl = asl[asl.field("Slit_Number") != ' ']
+        
+
+    # ELIMINATE POSITION B of the long2pos slit
+    ssl = ssl[ssl.field("Target_Name") != 'posB']
+    msl = msl[msl.field("Target_in_Slit") != 'posB']
+    asl = asl[asl.field("Target_in_Slit") != 'posBalign']
+    targs = targs[targs.field("Target_Name") !='posB']
+    targs = targs[targs.field("Target_Name") != "posBalign"]
 
     bs = CSU.Barset()
     bs.set_header(header, ssl=ssl, msl=msl, asl=asl, targs=targs)
