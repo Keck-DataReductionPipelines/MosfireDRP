@@ -105,7 +105,9 @@ for fname in files:
 
     offset = 'Offset_' + str(header['YOFFSET'])
     if (maskname.find('long2pos') != -1 and align is False) or maskname.find('LONGSLIT') != -1:
-        offset = offset+'_'+str(target)
+        # if the target name contains a /, replace it with _
+        target_name = target.replace("/","_")
+        offset = offset+'_'+str(target_name)
     
 
     if mira:
