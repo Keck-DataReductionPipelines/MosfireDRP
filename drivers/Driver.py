@@ -39,12 +39,14 @@ obsfiles = ['Offset_1.5.txt', 'Offset_-1.5.txt']
 redfiles = ["eps_" + file + ".fits" for file in obsfiles]
 #update the "lambda_solution_wave_stack_K*.fits" file name                                                                                            
 #  to the output file name from the apply_lambda process above.                                                                                 
-# Update the name of the first file in the offset file (use the full path name.                                                                          
-#   e.g.    "/Users/user1/MOSFIRE/DRP_CODE/DATA/2014may08/m130114_0451.fits",                                                                        
+# Update the name of the first file in the offset file (use the full path name
+#   e.g.    "/Users/user1/MOSFIRE/DRP_CODE/DATA/2014may08/m130114_0451.fits", 
+# this is no longer necessary, the pipeline will use the first file in obsfiles
+                                                                       
 #Rectify.handle_rectification(maskname, redfiles,
 #    "lambda_solution_wave_stack_*.fits",
 #    band, 
-#    "/scr2/npk/mosfire/2013apr29/m130429_0224.fits",
+#     obsfiles,
 #    waveops)
 #
 
