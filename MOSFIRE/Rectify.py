@@ -370,7 +370,7 @@ def handle_rectification_helper(edgeno):
     epss = []
     ivss = []
     itss = []
-    sign = 1
+    sign = -1
     for shift in shifts:
         output = r_interpol(ll, eps, fidl, tops, top, shift_pix=shift/0.18,
             pad=[mnshift, mxshift], fill_value = np.nan)
@@ -390,7 +390,7 @@ def handle_rectification_helper(edgeno):
         sign *= -1
 
     it_img = np.nansum(np.array(itss), axis=0)
-    eps_img = np.nansum(epss, axis=0)
+    eps_img = np.nanmean(epss, axis=0)
 
     # Remove any NaNs or infs from the variance array
     ivar_img = []
