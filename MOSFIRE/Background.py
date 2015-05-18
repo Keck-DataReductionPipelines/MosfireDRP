@@ -486,12 +486,12 @@ def write_outputs(solutions, itime, header, maskname, band_name, plan, options):
         rectified_itime[i,:] = f(ll_fid)
 
     header["wat0_001"] = "system=world"
-    header["wat1_001"] = "type=linear"
-    header["wat2_001"] = "type=linear"
+    header["wat1_001"] = "wtype=linear"
+    header["wat2_001"] = "wtype=linear"
     header["dispaxis"] = 1
     header["dclog1"] = "Transform"
     header["dc-flag"] = 0
-    header["type1"] = "AWAV"
+    header["ctype1"] = "AWAV"
     header["cunit1"] = "Angstrom"
     header["crval1"] = (ll_fid[0], "Starting wavelength Angstrom")
     header["crval2"] = 0
