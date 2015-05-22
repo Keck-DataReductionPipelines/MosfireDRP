@@ -340,19 +340,10 @@ def fit_lambda(maskname,
         fnum2 = guessname2
         center_solutions2 = IO.load_lambdacenter(fnum2, maskname, options)
 
-
-    if longslit is not None and len(longslit['yrange']) is 1:
-        ''' If a longslit, fool extraction range '''
-
-        bot,top = longslit['yrange']
-        edgedata = [{}]
-        edgedata[0]["xposs_bot"] = [1024]
-        edgedata[0]["yposs_bot"] = [bot]
-        edgedata[0]["bottom"] = np.poly1d([bot])
-
-        edgedata[0]["xposs_top"] = [1024]
-        edgedata[0]["yposs_top"] = [top]
-        edgedata[0]["top"] = np.poly1d([top])
+    if longslit['mode'] is "longslit":
+        print "*** Longslit mode ***  Slitedges set to:"
+        print "Bottom: "+str(edgedata[0]["yposs_bot"][0])
+        print "Top:    "+str(edgedata[0]["yposs_top"][0])        
 
     solutions = []
     lamout = np.zeros(shape=(2048, 2048), dtype=np.float32)
@@ -597,16 +588,15 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     outfilename = fn
     fig = pl.figure(1,figsize=(16,8))
     print "Started interactive solution"
+    if longslit['mode'] is "longslit":
+        starting_pos = longslit["row_position"]
+        print "*** LONGSLIT MODE *** Extract position set to %i" % starting_pos
+    else:
+        starting_pos = None
     II = InteractiveSolution(fig, mfits, linelist, options, 1,
-        outfilename, solutions=solutions, bypass=bypass)
+        outfilename, solutions=solutions, bypass=bypass, starting_pos=starting_pos)
     print "Waiting"
-    II.starting_pos = None
-    if longslit is not None and len(longslit["yrange"])==1:
-        II.starting_pos = longslit["row_position"]
-        print "Extract position set to %i" % II.starting_pos
-        #if maskname is "long2pos":
-        #II.starting_pos = [int((longslit["yrange"][position][1]+longslit["yrange"][position][0])/2) for position in [1,0]]
-        #print "Extract positions set to %i, %i" % (II.starting_pos[0], II.starting_pos[1])
+
     if bypass is False:
         pl.ioff()
         pl.show()
@@ -875,19 +865,11 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
     slitedges, edgeinfo = IO.load_edges(maskname, bandname, options)
     Ld = IO.load_lambdadata(wavename, maskname, bandname, options)
 
-    if longslit is not None and len(longslit['yrange'])==1:
-        ''' If a longslit, fool extraction range '''
-
-        bot,top = longslit['yrange']
-        slitedges[0]["xposs_bot"] = [1024]
-        slitedges[0]["yposs_bot"] = [bot]
-        slitedges[0]["bottom"] = np.poly1d([bot])
-
-        slitedges[0]["xposs_top"] = [1024]
-        slitedges[0]["yposs_top"] = [top]
-        slitedges[0]["top"] = np.poly1d([top])
-
-
+    if longslit['mode'] is "longslit":
+        print "*** LONGSLIT MODE *** Slit edges set to:"
+        print "Bottom: "+str(slitedges[0]["yposs_bot"][0])
+        print "Top:    "+str(slitedges[0]["yposs_top"][0])
+        
     bmap = {"Y": 6, "J": 5, "H": 4, "K": 3}
     order = bmap[bandname]
 
@@ -969,10 +951,10 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
     central_line = 1024
     step = 0
     while dlam==0:
-        line = central_line+(50*step)
+        line = central_line+(10*step)
         dlam = np.ma.median(np.diff(lams[line,:]))
         if dlam==0:
-            line = central_line-(50*step)
+            line = central_line-(10*step)
             dlam = np.ma.median(np.diff(lams[line,:]))
         step=step+1
     print "Non-empty line found at pixel "+str(line)
@@ -1605,7 +1587,7 @@ class InteractiveSolution:
     bypass=False
 
     def __init__(self, fig, mfits, linelist, options, slitno, outfilename, 
-            solutions=None,bypass=False):
+            solutions=None,bypass=False, starting_pos=None):
         self.header = mfits[0]
         self.data = mfits[1]
         self.bs = mfits[2]
@@ -1614,6 +1596,7 @@ class InteractiveSolution:
         self.slitno = slitno
         self.fig = fig
         self.outfilename = outfilename
+        self.starting_pos = starting_pos
 
         self.pix = np.arange(2048)
         band = self.header["filter"].rstrip()
@@ -1663,14 +1646,10 @@ class InteractiveSolution:
         self.linelist = self.linelist0
         if self.starting_pos is None:
             self.extract_pos = self.bs.science_slit_to_pixel(self.slitno)
-        elif len(self.starting_pos) is 1:
+        else:
             print "LONGSLIT mode: forced longslit center line"
             '''This is used in longslits to handle a forced start position'''
             self.extract_pos = self.starting_pos
-            #elif len(self.starting_pos) is 2:
-            #print "LONG2POS mode: forced slit center line"
-            #self.extract_pos = self.starting_pos[self.slitno-1]
-            
 
         print "Extracting at %i " % self.extract_pos
 
