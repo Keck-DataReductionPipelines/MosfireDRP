@@ -600,8 +600,8 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     if bypass is False:
         pl.ioff()
         pl.show()
-        pl.draw()
-        pl.show(block=True)
+        #pl.draw()
+        #pl.show(block=True)
 
     print "save to: ", fn
     np.save(outfilename, np.array(II.solutions))
