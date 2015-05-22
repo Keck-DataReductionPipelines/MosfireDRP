@@ -1621,7 +1621,8 @@ class InteractiveSolution:
         self.band = band
         self.xrng[0] *= 0.99
         self.xrng[1] /= 0.99
-
+        self.sigma_clip = False
+        
         if solutions is None:
             self.solutions = range(len(self.bs.ssl))
         else:
@@ -1791,7 +1792,7 @@ class InteractiveSolution:
 
         if self.MAD is None:
             pl.title("[%i] Press 'z' to zoom, 'x' to unzoom, 'c' to shift, " 
-                    "'f' to fit. 'h' for help" % self.slitno)
+                    "'f' to fit, 'k' to toggle sigma clipping. 'h' for help" % self.slitno)
         else:
             name = self.bs.ssl[self.slitno-1]["Target_Name"]
 
@@ -1895,6 +1896,15 @@ class InteractiveSolution:
         """Save the figure to disk"""
         pass
 
+    def toggle_sigma_clip(self,x,y, bypass=bypass):
+        if self.sigma_clip is True: 
+            self.sigma_clip = False
+            print "Sigma clipping disabled"
+        else:
+            self.sigma_clip = True
+            print "Sigma clipping enabled"
+            self.fit_event(0,0,bypass=bypass)
+    
     def fit_event(self, x, y, bypass=bypass ):
         """Fit Chebyshev polynomial to predicted line locations """
 
@@ -1911,29 +1921,30 @@ class InteractiveSolution:
         self.foundlinesig = sxs
         # Calculate current std error
         error = np.std(deltas[np.isfinite(deltas)])
-        # prepare a sigma tolerance (reject values of deltas > tolerance * sigma)
-        tolerance = 3
-        # if the std error is > 0.10, iteratively reject lines
-        while error>0.10:        
-            print "Current error is "+str(error)
-            print "Current tolerance is "+str(tolerance)+" sigmas"
-            print "Number of lines used for fit: "+str(len(xs))
-            print "Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)]))
-            mask = (abs(deltas)<tolerance*np.std(deltas[np.isfinite(deltas)]))
-            print "Number of rejected lines: "+str(len(xs)-len(mask))
-            self.linelist = self.linelist[mask]
-            [xs, sxs, sigmas] = find_known_lines(self.linelist, self.ll,
+        if self.sigma_clip is True:
+            # prepare a sigma tolerance (reject values of deltas > tolerance * sigma)
+            tolerance = 3
+            # if the std error is > 0.10, iteratively reject lines
+            while error>0.10:        
+                print "Current error is "+str(error)
+                print "Current tolerance is "+str(tolerance)+" sigmas"
+                print "Number of lines used for fit: "+str(len(xs))
+                print "Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)]))
+                mask = (abs(deltas)<tolerance*np.std(deltas[np.isfinite(deltas)]))
+                print "Number of rejected lines: "+str(len(xs)-len(mask))
+                self.linelist = self.linelist[mask]
+                [xs, sxs, sigmas] = find_known_lines(self.linelist, self.ll,
                     self.spec, self.options)
-            self.foundlines = xs
-            self.foundlinesig = sxs
-            print "Fitting again..."
-            [deltas, cfit, perror] = fit_chebyshev_to_lines(xs, sxs,
-                self.linelist, self.options)
-            error = np.std(deltas[np.isfinite(deltas)])
-            print "Error is now "+str(error)
-            self.cfit = cfit
-            self.ll = CV.chebval(self.pix, self.cfit)
-            tolerance = tolerance - 0.2
+                self.foundlines = xs
+                self.foundlinesig = sxs
+                print "Fitting again..."
+                [deltas, cfit, perror] = fit_chebyshev_to_lines(xs, sxs,
+                                                                self.linelist, self.options)
+                error = np.std(deltas[np.isfinite(deltas)])
+                print "Error is now "+str(error)
+                self.cfit = cfit
+                self.ll = CV.chebval(self.pix, self.cfit)
+                tolerance = tolerance - 0.2
         
         ok = np.isfinite(deltas)
         self.STD = np.std(deltas[ok])
@@ -1963,7 +1974,7 @@ class InteractiveSolution:
 
         actions_mouseless = {".": self.fastforward, "n": self.nextobject, "p":
                 self.prevobject, "q": self.quit, "r": self.reset, "f":
-                self.fit_event, "\\": self.fit_event}
+                self.fit_event, "k": self.toggle_sigma_clip, "\\": self.fit_event}
 
         actions = { "c": self.shift, "d": self.drop_point,
                 "z": self.zoom, "x": self.unzoom, "s": self.savefig}
