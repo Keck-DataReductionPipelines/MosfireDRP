@@ -19,7 +19,7 @@ from MOSFIRE import Background, CSU, Fit, IO, Options, Filters, Detector, Wavele
 
 
 def handle_rectification(maskname, in_files, wavename, band_pass, files, options,
-        commissioning_shift=3.0):
+        commissioning_shift=3.0, target='default'):
     '''Handle slit rectification and coaddition.
 
     Args:
@@ -110,20 +110,26 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
 
     all_solutions = []
     cntr = 0
+
+    if target is 'default':
+        outname = maskname
+    else:
+        outname = target
+
     for plan in plans:
         p0 = plan[0].replace("'", "p")
         p1 = plan[1].replace("'", "p")
         suffix = "%s-%s" % (p0,p1)
         print "Handling plan %s" % suffix
-        fname = "bsub_{0}_{1}_{2}.fits".format(maskname,band,suffix)
+        fname = "bsub_{0}_{1}_{2}.fits".format(outname,band,suffix)
         EPS = IO.read_drpfits(maskname, fname, options)
         EPS[1] = np.ma.masked_array(EPS[1], theBPM, fill_value=0)
 
-        fname = "var_{0}_{1}_{2}.fits".format(maskname, band, suffix)
+        fname = "var_{0}_{1}_{2}.fits".format(outname, band, suffix)
         VAR = IO.read_drpfits(maskname, fname, options)
         VAR[1] = np.ma.masked_array(VAR[1], theBPM, fill_value=np.inf)
 
-        fname = "itime_{0}_{1}_{2}.fits".format(maskname, band, suffix)
+        fname = "itime_{0}_{1}_{2}.fits".format(outname, band, suffix)
         ITIME = IO.read_drpfits(maskname, fname, options)
         ITIME[1] = np.ma.masked_array(ITIME[1], theBPM, fill_value=0)
 
@@ -222,22 +228,22 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
 
         header['bunit'] = ('electron/second', 'electron power')
         IO.writefits(img, maskname,
-            "{0}_{1}_{2}_eps.fits".format(maskname, band, target_name), options,
+            "{0}_{1}_{2}_eps.fits".format(outname, band, target_name), options,
             overwrite=True, header=header, lossy_compress=False)
 
         header['bunit'] = ('electron/second', 'sigma/itime')
         IO.writefits(std/tms, maskname,
-            "{0}_{1}_{2}_sig.fits".format(maskname, band, target_name), options,
+            "{0}_{1}_{2}_sig.fits".format(outname, band, target_name), options,
             overwrite=True, header=header, lossy_compress=False)
 
         header['bunit'] = ('second', 'exposure time')
         IO.writefits(tms, maskname,
-            "{0}_{1}_{2}_itime.fits".format(maskname, band, target_name), options,
+            "{0}_{1}_{2}_itime.fits".format(outname, band, target_name), options,
             overwrite=True, header=header, lossy_compress=False)
 
         header['bunit'] = ('', 'SNR')
         IO.writefits(img*tms/std, maskname,
-            "{0}_{1}_{2}_snrs.fits".format(maskname, band, target_name), options,
+            "{0}_{1}_{2}_snrs.fits".format(outname, band, target_name), options,
             overwrite=True, header=header, lossy_compress=False)
 
     header = EPS[0].copy()
@@ -264,22 +270,22 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
 
 
     header["bunit"] = "ELECTRONS/SECOND"
-    IO.writefits(output, maskname, "{0}_{1}_eps.fits".format(maskname,
+    IO.writefits(output, maskname, "{0}_{1}_eps.fits".format(outname,
         band), options, overwrite=True, header=header,
         lossy_compress=False)
 
     header["bunit"] = ""
-    IO.writefits(snrs, maskname, "{0}_{1}_snrs.fits".format(maskname,
+    IO.writefits(snrs, maskname, "{0}_{1}_snrs.fits".format(outname,
         band), options, overwrite=True, header=header,
         lossy_compress=False)
 
     header["bunit"] = "ELECTRONS/SECOND"
-    IO.writefits(sdout/itout, maskname, "{0}_{1}_sig.fits".format(maskname,
+    IO.writefits(sdout/itout, maskname, "{0}_{1}_sig.fits".format(outname,
         band), options, overwrite=True, header=header,
         lossy_compress=False)
 
     header["bunit"] = "SECOND"
-    IO.writefits(itout, maskname, "{0}_{1}_itime.fits".format(maskname,
+    IO.writefits(itout, maskname, "{0}_{1}_itime.fits".format(outname,
         band), options, overwrite=True, header=header,
         lossy_compress=False)
 
