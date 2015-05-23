@@ -330,7 +330,7 @@ def merge_headers(h1, h2):
     return h
 
 
-def handle_background(filelist, wavename, maskname, band_name, options, shifts=None, plan=None, extension=None): 
+def handle_background(filelist, wavename, maskname, band_name, options, shifts=None, plan=None, extension=None, target='default'): 
     '''
     Perform difference imaging and subtract residual background.
 
@@ -413,10 +413,10 @@ def handle_background(filelist, wavename, maskname, band_name, options, shifts=N
         solutions = p.map(background_subtract_helper, xrange(len(bs.ssl)))
         p.close()
 
-        write_outputs(solutions, itime, header, maskname, band, plan[i], options)
+        write_outputs(solutions, itime, header, maskname, band, plan[i], options, target=target)
 
 
-def write_outputs(solutions, itime, header, maskname, band_name, plan, options):
+def write_outputs(solutions, itime, header, maskname, band_name, plan, options, target):
     sky_sub_out = np.zeros((2048, 2048), dtype=np.float)
     sky_model_out = np.zeros((2048, 2048), dtype=np.float)
 
@@ -432,26 +432,31 @@ def write_outputs(solutions, itime, header, maskname, band_name, plan, options):
         yroi = slice(sol["bottom"], sol["top"])
         sky_sub_out[yroi, xroi] = sol["output"]
         sky_model_out[yroi, xroi] = sol["model"]
-    
+
+    if target is 'default':
+        outname = maskname
+    else:
+        outname = target
+        
     header['BUNIT'] = 'SECOND'
-    IO.writefits(itime, maskname, "itime_%s_%s_%s.fits" % (maskname, band,
+    IO.writefits(itime, maskname, "itime_%s_%s_%s.fits" % (outname, band,
         suffix), options, header=header, overwrite=True, lossy_compress=True)
 
 
     header['BUNIT'] = 'ELECTRONS/SECOND'
-    IO.writefits(data, maskname, "sub_%s_%s_%s.fits" % (maskname, band,
+    IO.writefits(data, maskname, "sub_%s_%s_%s.fits" % (outname, band,
         suffix), options, header=header, overwrite=True, lossy_compress=True)
 
     header['BUNIT'] = 'ELECTRONS/SECOND'
-    IO.writefits(sky_sub_out, maskname, "bsub_%s_%s_%s.fits" % (maskname, band,
+    IO.writefits(sky_sub_out, maskname, "bsub_%s_%s_%s.fits" % (outname, band,
         suffix), options, header=header, overwrite=True)
 
     header['BUNIT'] = 'ELECTRONS'
-    IO.writefits(Var, maskname, "var_%s_%s_%s.fits" % (maskname, band,
+    IO.writefits(Var, maskname, "var_%s_%s_%s.fits" % (outname, band,
         suffix), options, header=header, overwrite=True, lossy_compress=True)
 
     header['BUNIT'] = 'ELECTRONS/SECOND'
-    IO.writefits(sky_model_out, maskname, "bmod_%s_%s_%s.fits" % (maskname,
+    IO.writefits(sky_model_out, maskname, "bmod_%s_%s_%s.fits" % (outname,
         band, suffix), options, header=header, overwrite=True,
         lossy_compress=True)
 
@@ -507,19 +512,19 @@ def write_outputs(solutions, itime, header, maskname, band_name, plan, options):
     header["cd2_2"] = (1, "pixel/pixel")
 
     IO.writefits(rectified_itime, maskname,
-        "%s_rectified_itime_%s_%s.fits" % (maskname, band_name,
+        "%s_rectified_itime_%s_%s.fits" % (outname, band_name,
         suffix), options, header=header, overwrite=True, lossy_compress=True)
 
-    IO.writefits(rectified, maskname, "%s_rectified_%s_%s.fits" % (maskname,
+    IO.writefits(rectified, maskname, "%s_rectified_%s_%s.fits" % (outname,
         band_name, suffix), options, header=header, overwrite=True,
         lossy_compress=True)
 
     IO.writefits(rectified_var, maskname, "%s_rectified_var_%s_%s.fits" %
-        (maskname, band_name, suffix), options, header=header, overwrite=True,
+        (outname, band_name, suffix), options, header=header, overwrite=True,
         lossy_compress=True)
 
     IO.writefits(rectified*rectified_itime/np.sqrt(rectified_var), maskname,
-        "%s_rectified_sn_%s_%s.fits" % (maskname, band_name,
+        "%s_rectified_sn_%s_%s.fits" % (outname, band_name,
         suffix), options, header=header, overwrite=True, lossy_compress=True)
 
 
