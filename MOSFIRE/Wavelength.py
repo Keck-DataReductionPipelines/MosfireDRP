@@ -340,7 +340,7 @@ def fit_lambda(maskname,
         fnum2 = guessname2
         center_solutions2 = IO.load_lambdacenter(fnum2, maskname, options)
 
-    if longslit['mode'] is "longslit":
+    if longslit is not None and longslit['mode'] is "longslit":
         print "*** Longslit mode ***  Slitedges set to:"
         print "Bottom: "+str(edgedata[0]["yposs_bot"][0])
         print "Top:    "+str(edgedata[0]["yposs_top"][0])        
@@ -588,7 +588,7 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     outfilename = fn
     fig = pl.figure(1,figsize=(16,8))
     print "Started interactive solution"
-    if longslit['mode'] is "longslit":
+    if longslit is not None and longslit['mode'] is "longslit":
         starting_pos = longslit["row_position"]
         print "*** LONGSLIT MODE *** Extract position set to %i" % starting_pos
     else:
@@ -865,7 +865,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
     slitedges, edgeinfo = IO.load_edges(maskname, bandname, options)
     Ld = IO.load_lambdadata(wavename, maskname, bandname, options)
 
-    if longslit['mode'] is "longslit":
+    if longslit is not None and longslit['mode'] is "longslit":
         print "*** LONGSLIT MODE *** Slit edges set to:"
         print "Bottom: "+str(slitedges[0]["yposs_bot"][0])
         print "Top:    "+str(slitedges[0]["yposs_top"][0])
