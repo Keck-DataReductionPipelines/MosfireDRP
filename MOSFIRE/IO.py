@@ -14,6 +14,7 @@ import warnings
 
 import os
 import pdb
+import shutil
 
 import MOSFIRE
 import CSU
@@ -335,7 +336,48 @@ returns ['file1', 'file2', 'file3']
             output.append(os.path.join(path, inputs[i][0]))
 
     return output
-    
+
+def fix_long2pos_headers(filelist):
+    '''Fixes old long2pos observations which have a wrong set of keywords'''
+    files = list_file_to_strings(filelist)
+    # Print the filenames to Standard-out
+    print "Fixing long2pos headers for files in "+str(filelist)
+
+    # Iterate through files
+    for fname in files:
+        if os.path.isabs(fname): path = fname
+        else: path = os.path.join(fname_to_path(fname, options), fname)
+
+        hdulist = pf.open(path, mode='update')
+        header = hdulist[0].header
+
+        #determine if this file really needs to be updated (for example, prevents a second update of an already updated file
+        if header['MASKNAME']=='long2pos' and header['FRAMEID']=='object' and header['PATTERN']=='long2pos':
+            print "File "+str(fname)+" will be updated"
+
+            # make a copy of the original file
+            newname = path+".original"
+            print "copying ... "+str(path)
+            print "into ...... "+str(newname)
+            shutil.copyfile(path,newname)
+            if not os.path.exists(newname):
+                raise Exception("Error in generating original file:  '%s' does not exist (could not be created)." % newname)            
+
+            #updating header
+            # assign FRAMEID
+            if header['YOFFSET']==21 or header['YOFFSET']==-7:
+                header['FRAMEID']="A"
+            if header['YOFFSET']==-21 or header['YOFFSET']==7:
+                header['FRAMEID']="B"
+            #reverse sign of offsets
+            header['YOFFSET'] = header['YOFFSET']*(-1)
+            #transform Xoffset from pixels to arcseconds
+            header['XOFFSET'] = header['XOFFSET']*0.18
+        else:
+            print "File "+str(fname)+" does not need to be updated"
+        hdulist.flush()
+        hdulist.close()
+
 
 def readmosfits(fname, options, extension=None):
     '''Read a fits file written by MOSFIRE from path and return a tuple of 
