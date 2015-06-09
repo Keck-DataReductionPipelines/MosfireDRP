@@ -324,8 +324,7 @@ returns ['file1', 'file2', 'file3']
 
     for fname in filelist:
         print "Loading: %s" % fname
-        inputs = np.loadtxt(fname, dtype= [("f", "S100")])
-
+        inputs = np.loadtxt(fname, dtype= [("f", "S100")], comments='#')
         path = ""
         start_index = 0
         if os.path.isabs(inputs[0][0]):
@@ -352,7 +351,7 @@ def fix_long2pos_headers(filelist):
         header = hdulist[0].header
 
         #determine if this file really needs to be updated (for example, prevents a second update of an already updated file
-        if header['MASKNAME']=='long2pos' and header['FRAMEID']=='object' and header['PATTERN']=='long2pos':
+        if 'long2pos' in header['MASKNAME'] and header['FRAMEID']=='object' and (header['PATTERN']=='long2pos' or header['PATTERN']=='Stare'):
             print "File "+str(fname)+" will be updated"
 
             # make a copy of the original file
@@ -364,13 +363,22 @@ def fix_long2pos_headers(filelist):
                 raise Exception("Error in generating original file:  '%s' does not exist (could not be created)." % newname)            
 
             #updating header
-            # assign FRAMEID
+            # assign FRAMEID to narrow slits
             if header['YOFFSET']==21 or header['YOFFSET']==-7:
-                header['FRAMEID']="A"
-            if header['YOFFSET']==-21 or header['YOFFSET']==7:
                 header['FRAMEID']="B"
-            #reverse sign of offsets
-            header['YOFFSET'] = header['YOFFSET']*(-1)
+            if header['YOFFSET']==-21 or header['YOFFSET']==7:
+                header['FRAMEID']="A"
+
+            # assign FRAMEID to wide slits
+            if header['YOFFSET']==14 or header['YOFFSET']==-14:
+                header['FRAMEID']="A"
+                
+            #reverse sign of offsets for narrow slits
+            if header['YOFFSET']==-21:
+                header['YOFFSET']=7
+            if header['YOFFSET']==21:
+                header['YOFFSET']=-7
+
             #transform Xoffset from pixels to arcseconds
             header['XOFFSET'] = header['XOFFSET']*0.18
         else:

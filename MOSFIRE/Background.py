@@ -277,19 +277,19 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
     header['NUMFRM'] = (Nframe, 'Typical number of frames in stack')
 
 
-        header['BUNIT'] = 'ELECTRONS/SECOND'
-        IO.writefits(np.float32(electrons/itimes), maskname, "eps_%s" % (outname),
-                options, header=header, overwrite=True)
+    header['BUNIT'] = 'ELECTRONS/SECOND'
+    IO.writefits(np.float32(electrons/itimes), maskname, "eps_%s" % (outname),
+                 options, header=header, overwrite=True)
 
-        # Update itimes after division in order to not introduce nans
-        itimes[data.mask] = 0.0
+    # Update itimes after division in order to not introduce nans
+    itimes[data.mask] = 0.0
 
-        header['BUNIT'] = 'ELECTRONS^2'
-        IO.writefits(var, maskname, "var_%s" % (outname),
-                options, header=header, overwrite=True, lossy_compress=True)
+    header['BUNIT'] = 'ELECTRONS^2'
+    IO.writefits(var, maskname, "var_%s" % (outname),
+                 options, header=header, overwrite=True, lossy_compress=True)
 
-        header['BUNIT'] = 'SECOND'
-        IO.writefits(np.float32(itimes), maskname, "itimes_%s" % (outname),
+    header['BUNIT'] = 'SECOND'
+    IO.writefits(np.float32(itimes), maskname, "itimes_%s" % (outname),
                 options, header=header, overwrite=True, lossy_compress=True)
 
     return header, electrons, var, bs, itimes, Nframe
