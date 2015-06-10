@@ -22,29 +22,21 @@ import numpy as np, pylab as pl, pyfits as pf
 np.seterr(all="ignore")
 
 maskname = 'LONGSLIT-46x0.7'
-band = 'H'
-# if a target is specified, the output files will have this name.
-# to use the maskname, remove this keyword (from here and from Background and Rectify) or specify "default" as the target name
-target = 'HIP13917'
+band = 'J'
 
 flatops = Options.flat
 waveops = Options.wavelength
 
-# Specify move = longslit if you are reducing a long slit observation.
-# the row_position value should be away from the actual position of the A and B positions of the object
-# NOTE: if the yrange is changed, the Flats generation must be run again
 
-longslit = {'yrange': [800, 1200], 'row_position': 910, 'mode':'longslit'}
+longslit = {'yrange': [900, 1150], 'row_position': 1000, 'mode':'longslit'}
 
-obsfiles = ['Offset_-10_HIP13917.txt', 'Offset_10_HIP13917.txt']
+obsfiles = ['Offset_15_HD2050_wise233.txt', 'Offset_-15_HD2050_wise233.txt']
 
-#Flats.handle_flats('Flat.txt', maskname, band, flatops,  extension='/Volumes/PromiseRAID/MOSFIRE/DRP_CODE/DATA/2015jan12/m150112_0199.fits', longslit = longslit)
-
+#Flats.handle_flats('Flat.txt', maskname, band, flatops, longslit = longslit)
 
 # SKY LINES
 # Use sky lines for wavelength calibration
 # Use either Sky lines or Neon lines.
-
 #Wavelength.imcombine(obsfiles, maskname, band, waveops)
 #Wavelength.fit_lambda_interactively(maskname, band, obsfiles, waveops, longslit=longslit)
 #Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles, waveops, longslit=longslit)
@@ -52,20 +44,20 @@ obsfiles = ['Offset_-10_HIP13917.txt', 'Offset_10_HIP13917.txt']
 
 
 #Background.handle_background(obsfiles,
-#    'lambda_solution_wave_stack_H_m150112_0199-0201.fits',
-#     maskname, band, waveops, target=target)
+#    'lambda_solution_wave_stack_J_m150609_0654-0661.fits',
+#    maskname, band, waveops)
 
 redfiles = ["eps_" + file + ".fits" for file in obsfiles]
 #update the "lambda_solution_wave_stack_K*.fits" file name
 #  to the output file name from the apply_lambda process above.
 # Update the name of the first file in the offset file (use the full path name.
 #   e.g.    "/Users/user1/MOSFIRE/DRP_CODE/DATA/2014may08/m130114_0451.fits",
+
 #Rectify.handle_rectification(maskname, redfiles,
-#    "lambda_solution_wave_stack_H_m150112_0199-0201.fits",
+#    "lambda_solution_wave_stack_J_m150609_0654-0661.fits",
 #    band, 
 #    obsfiles,
-#    waveops,
-#    target=target)
+#    waveops)
 
 
 # NEON
