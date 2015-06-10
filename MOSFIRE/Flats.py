@@ -327,7 +327,10 @@ def combine(flatlist, maskname, band, options, lampsOff=False):
     if os.path.exists(out):
             os.remove(out)
 
-    IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
+    if len(flatlist)>1:
+        IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
+    else:
+        IO.imcombine(flatlist, out, options, reject="none", nlow=1, nhigh=1)
 
 def combine_off_on(maskname, band, options, lampsOff=False):
     '''
