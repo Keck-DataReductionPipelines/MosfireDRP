@@ -74,9 +74,14 @@ for fname in files:
     itime = header['truitime']
     grating_turret = header['mgtname']
 
-    if object.find("MIRA") == -1: mira = False
-    else: mira = True
+    if object.find("MIRA") == -1: 
+        mira = False
+    else: 
+        mira = True
 
+    if header['MGTNAME'] is not 'mirror':
+        mira = False
+        
     if maskname.find(" (align)") == -1:
         align = False
     else:
@@ -84,6 +89,7 @@ for fname in files:
         align = True
 
     if maskname.find('LONGSLIT') != -1:
+        print "longslit file"
         align = False
 
     if maskname.find('long2pos') != -1:
@@ -113,9 +119,11 @@ for fname in files:
             position = 'PosC'
         if header['XOFFSET']<0:
             position = 'PosA'
-        offset = offset+'_'+str(target_name)+'_'+position
-    
+        offset = offset+'_'+str(target_name)
+        if position is not '':
+            offset = offset+'_'+position
 
+    
     if mira:
         masks[maskname][date][filter]['MIRA'].append(fname)
     elif align:
@@ -135,10 +143,13 @@ for fname in files:
     elif header['mgtname'] == 'mirror':
         masks[maskname][date][filter]['Image'].append(fname)
     elif offset != 0:
+        print "offset is now:"+str(offset)
         if offset in masks[maskname][date][filter]: 
             masks[maskname][date][filter][offset].append((fname, itime))
+            print "adding file to existing offset file"
         else: 
             masks[maskname][date][filter][offset] = [(fname, itime)]
+            print "creating new offset file"
     else:
         masks[maskname][date][filter]['Unknown'].append(fname)
 
