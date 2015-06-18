@@ -3,3 +3,6 @@ bin/pyraf/clcache.v2/*
 REDUX
 DATA
 *.pyc
+bin/*
+.DS_Store
+.idea
