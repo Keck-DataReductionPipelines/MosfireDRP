@@ -1843,12 +1843,15 @@ class InteractiveSolution:
         if self.slitno > len(self.bs.ssl): 
             self.done = True
             self.slitno -= 1
+            if bypass is False:
+                self.draw_done()
 
         print "Saving to: ", self.outfilename
         np.save(self.outfilename, np.array(self.solutions))
 
-        self.setup(bypass=bypass)
-        self.fit_event(0,0,bypass=bypass)
+        if self.done is False:
+            self.setup(bypass=bypass)
+            self.fit_event(0,0,bypass=bypass)
 
     def prevobject(self, x, y):
         """Go to the previous object"""
@@ -1890,41 +1893,54 @@ class InteractiveSolution:
         print "Fitting"
         [xs, sxs, sigmas] = find_known_lines(self.linelist, self.ll,
             self.spec, self.options)
-
-        [deltas, cfit, perror] = fit_chebyshev_to_lines(xs, sxs,
-            self.linelist, self.options)
-
-        self.cfit = cfit
-        self.ll = CV.chebval(self.pix, self.cfit)
         self.foundlines = xs
         self.foundlinesig = sxs
+        print "Length of the input list of lines "+str(len(self.linelist))
+        print "Length of the found list of lines "+str(len(xs))
+        mask = (np.isfinite(sxs))
+        local_linelist=self.linelist[mask]
+        xs = xs[mask]
+        sxs = sxs[mask]
+        print "Length of the good  list of lines "+str(len(xs))
+        [deltas, cfit, perror] = fit_chebyshev_to_lines(xs, sxs,
+            local_linelist, self.options)
+        print perror
+        print "Lengh of the vector deltas        "+str(len(deltas))
+        self.cfit = cfit
+        self.ll = CV.chebval(self.pix, self.cfit)
+
         # Calculate current std error
         error = np.std(deltas[np.isfinite(deltas)])
-        if self.sigma_clip is True:
+        if self.sigma_clip is True or bypass:
             # prepare a sigma tolerance (reject values of deltas > tolerance * sigma)
             tolerance = 3
             # if the std error is > 0.10, iteratively reject lines
+            print "deltas:"+str(len(deltas))
+            print "linelist:"+str(len(local_linelist))
             while error>0.10:        
                 print "Current error is "+str(error)
                 print "Current tolerance is "+str(tolerance)+" sigmas"
                 print "Number of lines used for fit: "+str(len(xs))
+                print "deltas:"+str(len(deltas))
+                print "linelist:"+str(len(local_linelist))
                 print "Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)]))
                 mask = (abs(deltas)<tolerance*np.std(deltas[np.isfinite(deltas)]))
-                print "Number of rejected lines: "+str(len(xs)-len(mask))
-                self.linelist = self.linelist[mask]
-                [xs, sxs, sigmas] = find_known_lines(self.linelist, self.ll,
-                    self.spec, self.options)
-                self.foundlines = xs
-                self.foundlinesig = sxs
+                print "Number of rejected lines: "+str(len(xs)-len(xs[mask]))
+                print "mask: "+str(len(mask))
+                local_linelist = local_linelist[mask]
+                xs=xs[mask]
+                sxs=sxs[mask]
                 print "Fitting again..."
                 [deltas, cfit, perror] = fit_chebyshev_to_lines(xs, sxs,
-                                                                self.linelist, self.options)
+                                                                local_linelist, self.options)
                 error = np.std(deltas[np.isfinite(deltas)])
                 print "Error is now "+str(error)
                 self.cfit = cfit
                 self.ll = CV.chebval(self.pix, self.cfit)
                 tolerance = tolerance - 0.2
-        
+                self.foundlines = xs
+                self.foundlinesig = sxs
+                self.linelist = local_linelist
         ok = np.isfinite(deltas)
         self.STD = np.std(deltas[ok])
         self.MAD = np.ma.median(np.abs(deltas[ok]))
@@ -1933,7 +1949,7 @@ class InteractiveSolution:
         print self.cfit
 
 
-        self.solutions[self.slitno-1] = {"linelist": self.linelist, "MAD":
+        self.solutions[self.slitno-1] = {"linelist": local_linelist, "MAD":
                 self.MAD, "foundlines": self.foundlines, "foundlinesig":
                 self.foundlinesig, "sol_1d": [deltas, cfit, sigmas], "STD":
                 self.STD, "slitno": self.slitno, "extract_pos":
