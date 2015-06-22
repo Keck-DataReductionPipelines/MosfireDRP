@@ -94,14 +94,63 @@ class Driver:
         
     def printWavelengthFit(self):
         if self.type is 'slitmask':
-            # regular mask, with sky lines
+
+            self.useNeon = False
+            self.useArgon = False
+            # determine is Argon and Neon files contain data for K bands
+            if os.path.isfile('Ar.txt') and self.band is 'K':
+                self.useArgon = True
+            if os.path.isfile('Ne.txt') and self.band is 'K':
+                self.useNeon = True
+
             self.addLine("Wavelength.imcombine(obsfiles, maskname, band, waveops)")
+            if self.useArgon:
+                self.addLine("Wavelength.imcombine('Ar.txt', maskname, band, waveops)")
+            if self.useNeon:
+                self.addLine("Wavelength.imcombine('Ne.txt', maskname, band, waveops)")
+
             self.addLine("Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops)")
+
+            if self.useArgon:
+                self.addLine("Wavelength.apply_interactive(maskname, band, waveops, apply=obsfiles, to='Ar.txt', argon=True)")
+            if self.useNeon:
+                self.addLine("Wavelength.apply_interactive(maskname, band, waveops, apply=obsfiles, to='Ne.txt', neon=True)")
+
             self.addLine("Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles,waveops)")
+
+            if self.useArgon and self.useNeon:
+                self.addLine("Wavelength.fit_lambda(maskname, band, 'Ne.txt', 'Ne.txt',waveops, wavenames2='Ar.txt')")
+            if self.useArgon and not self.useNeon:
+                self.addLine("Wavelength.fit_lambda(maskname, band, 'Ar.txt', 'Ar.txt',waveops)")
+            if self.useNeon and not self.useArgon:
+                self.addLine("Wavelength.fit_lambda(maskname, band, 'Ne.txt', 'Ne.txt',waveops)")
+
+            if self.useNeon or self.useArgon:
+                self.addLine("LROI = [[21000,22800]]*1")
+            if self.useNeon:
+                self.addLine("LROIs = Wavelength.check_wavelength_roi(maskname, band, obsfiles, 'Ne.txt', LROI, waveops)")
+            if self.useArgon and not self.useNeon:
+                self.addLine("LROIs = Wavelength.check_wavelength_roi(maskname, band, obsfiles, 'Ar.txt', LROI, waveops)")
+
             self.addLine("Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops)")
+
+            if self.useArgon and self.useNeon:
+                self.addLine("Wavelength.apply_lambda_sky_and_arc(maskname, band, obsfiles,  'Ne.txt', LROIs, waveops)")
+            if self.useArgon and not self.useNeon:
+                self.addLine("Wavelength.apply_lambda_sky_and_arc(maskname, band, obsfiles,  'Ar.txt', LROIs, waveops)")
+            if self.useNeon and not self.useArgon:
+                self.addLine("Wavelength.apply_lambda_sky_and_arc(maskname, band, obsfiles,  'Ne.txt', LROIs, waveops)")
+
             # determine waveleng name
             files = IO.list_file_to_strings(self.offsetFiles)
-            self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))
+            if self.useNeon:
+                neon_files = IO.list_file_to_strings('Ne.txt')
+                self.waveName = "merged_lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))+"_and_"+str(Wavelength.filelist_to_wavename(neon_files, self.band, self.maskName,""))
+            elif self.useArgon and not self.useNeon:
+                argon_files = IO.list_file_to_strings('Ar.txt')
+                self.waveName = "merged_lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))+"_and_"+str(Wavelength.filelist_to_wavename(argon_files, self.band, self.maskName,""))           
+            else:
+                self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))            
         if self.type is 'long2pos' or self.type is 'long2pos_specphot':
             self.addLine("argon = ['Ar.txt']")
             self.addLine("Wavelength.imcombine(argon, maskname, band, waveops)")
