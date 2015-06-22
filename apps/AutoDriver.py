@@ -145,10 +145,10 @@ class Driver:
             files = IO.list_file_to_strings(self.offsetFiles)
             if self.useNeon:
                 neon_files = IO.list_file_to_strings('Ne.txt')
-                self.waveName = "merged_lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))+"_and_"+str(Wavelength.filelist_to_wavename(neon_files, self.band, self.maskName,""))
+                self.waveName = "merged_lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,"")).rstrip(".fits")+"_and_"+str(Wavelength.filelist_to_wavename(neon_files, self.band, self.maskName,""))
             elif self.useArgon and not self.useNeon:
                 argon_files = IO.list_file_to_strings('Ar.txt')
-                self.waveName = "merged_lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))+"_and_"+str(Wavelength.filelist_to_wavename(argon_files, self.band, self.maskName,""))           
+                self.waveName = "merged_lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,"")).rstrip(".fits")+"_and_"+str(Wavelength.filelist_to_wavename(argon_files, self.band, self.maskName,""))           
             else:
                 self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))            
         if self.type is 'long2pos' or self.type is 'long2pos_specphot':
