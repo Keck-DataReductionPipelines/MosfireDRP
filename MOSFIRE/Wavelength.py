@@ -1584,7 +1584,6 @@ class InteractiveSolution:
     STD = None
 
     first_time = True
-    bypass=False
 
     def __init__(self, fig, mfits, linelist, options, slitno, outfilename, 
             solutions=None,bypass=False, starting_pos=None):
@@ -1597,7 +1596,7 @@ class InteractiveSolution:
         self.fig = fig
         self.outfilename = outfilename
         self.starting_pos = starting_pos
-
+        self.bypass = bypass
         self.pix = np.arange(2048)
         band = self.header["filter"].rstrip()
         self.xrng = Filters.hpp[band][:]
@@ -1605,32 +1604,31 @@ class InteractiveSolution:
         self.xrng[0] *= 0.99
         self.xrng[1] /= 0.99
         self.sigma_clip = False
-        
+
         if solutions is None:
             self.solutions = range(len(self.bs.ssl))
         else:
             self.solutions = solutions
 
-        if bypass:
-            # By pass the interactive fitting and just fit ourselves                                                                                      
-            self.setup(bypass=bypass)
-            self.fit_event(0,0,bypass=bypass)
-            self.nextobject(0,0,bypass=bypass)
+        if self.bypass:
+            self.setup()
+            self.fit_event(0,0)
+            #self.nextobject(0,0)  ### the call to next object is built-in in fit_event
 
             while self.done is False:
-                self.fit_event(0,0,bypass=bypass)
-                self.nextobject(0,0,bypass=bypass)
+                self.fit_event(0,0)
+                self.nextobject(0,0)
         else:
             self.cid = self.fig.canvas.mpl_connect('key_press_event', self)
-            self.setup(bypass=bypass)
-            self.fit_event(0,0,bypass=bypass)
+            self.setup()
+            self.fit_event(0,0)
 
         # follow line prevents window from going full screen when the
         # 'f'it button is pressed.
         pl.rcParams['keymap.fullscreen'] = ''
 
     
-    def setup(self,bypass=False):
+    def setup(self):
         csuslits = self.bs.scislit_to_csuslit(self.slitno)
         try:
             l = len(csuslits)
@@ -1698,12 +1696,20 @@ class InteractiveSolution:
 
         self.ll = CV.chebval(self.pix, self.cfit)
 
-        if bypass:
+        if self.bypass:
             pass
         else:
             print "Launching graphics display.    "
             self.redraw()
-            
+
+    def toggle_bypass(self,x,y):
+        print "############ NON INTERACTIVE MODE ENABLED ###########"
+        print "# From now on, the fit will proceed automatically   #"
+        print "#####################################################"
+        self.bypass = True
+        self.quit(0,0)
+        self.nextobject(0,0)
+        
 
     def draw_found_lines(self):
         pl.subplot(2,1,1)
@@ -1836,22 +1842,22 @@ class InteractiveSolution:
                 break
 
 
-    def nextobject(self, x, y,bypass=False):
+    def nextobject(self, x, y):
         """Go to the next object"""
         self.slitno += 1
         self.done = False
         if self.slitno > len(self.bs.ssl): 
             self.done = True
             self.slitno -= 1
-            if bypass is False:
+            if self.bypass is False:
                 self.draw_done()
 
         print "Saving to: ", self.outfilename
         np.save(self.outfilename, np.array(self.solutions))
 
         if self.done is False:
-            self.setup(bypass=bypass)
-            self.fit_event(0,0,bypass=bypass)
+            self.setup()
+            self.fit_event(0,0)
 
     def prevobject(self, x, y):
         """Go to the previous object"""
@@ -1878,55 +1884,46 @@ class InteractiveSolution:
         """Save the figure to disk"""
         pass
 
-    def toggle_sigma_clip(self,x,y, bypass=bypass):
+    def toggle_sigma_clip(self,x,y):
         if self.sigma_clip is True: 
             self.sigma_clip = False
             print "Sigma clipping disabled"
         else:
             self.sigma_clip = True
             print "Sigma clipping enabled"
-            self.fit_event(0,0,bypass=bypass)
+            self.fit_event(0,0)
     
-    def fit_event(self, x, y, bypass=bypass ):
+    def fit_event(self, x, y):
         """Fit Chebyshev polynomial to predicted line locations """
 
-        print "Fitting"
         [xs, sxs, sigmas] = find_known_lines(self.linelist, self.ll,
             self.spec, self.options)
         self.foundlines = xs
         self.foundlinesig = sxs
-        print "Length of the input list of lines "+str(len(self.linelist))
-        print "Length of the found list of lines "+str(len(xs))
         mask = (np.isfinite(sxs))
         local_linelist=self.linelist[mask]
         xs = xs[mask]
         sxs = sxs[mask]
-        print "Length of the good  list of lines "+str(len(xs))
         [deltas, cfit, perror] = fit_chebyshev_to_lines(xs, sxs,
             local_linelist, self.options)
-        print perror
-        print "Lengh of the vector deltas        "+str(len(deltas))
         self.cfit = cfit
         self.ll = CV.chebval(self.pix, self.cfit)
 
         # Calculate current std error
         error = np.std(deltas[np.isfinite(deltas)])
-        if self.sigma_clip is True or bypass:
+        if self.sigma_clip is True or self.bypass:
             # prepare a sigma tolerance (reject values of deltas > tolerance * sigma)
             tolerance = 3
             # if the std error is > 0.10, iteratively reject lines
-            print "deltas:"+str(len(deltas))
-            print "linelist:"+str(len(local_linelist))
-            while error>0.10:        
+            while error>0.10:
+                print "#####################################################"
+                print "Large error detected. Iterating with sigma clipping"
                 print "Current error is "+str(error)
                 print "Current tolerance is "+str(tolerance)+" sigmas"
                 print "Number of lines used for fit: "+str(len(xs))
-                print "deltas:"+str(len(deltas))
-                print "linelist:"+str(len(local_linelist))
                 print "Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)]))
                 mask = (abs(deltas)<tolerance*np.std(deltas[np.isfinite(deltas)]))
                 print "Number of rejected lines: "+str(len(xs)-len(xs[mask]))
-                print "mask: "+str(len(mask))
                 local_linelist = local_linelist[mask]
                 xs=xs[mask]
                 sxs=sxs[mask]
@@ -1935,6 +1932,8 @@ class InteractiveSolution:
                                                                 local_linelist, self.options)
                 error = np.std(deltas[np.isfinite(deltas)])
                 print "Error is now "+str(error)
+                if error<=0.10: print "The error is acceptable, continuing..."
+                print "#####################################################"                
                 self.cfit = cfit
                 self.ll = CV.chebval(self.pix, self.cfit)
                 tolerance = tolerance - 0.2
@@ -1957,8 +1956,10 @@ class InteractiveSolution:
 
         print 'Stored: ', self.solutions[self.slitno-1]['slitno']
 
-        if bypass is False:
+        if self.bypass is False:
             self.redraw()
+        else:
+            self.nextobject(0,0)
 
     def __call__(self, event):
         kp = event.key
@@ -1969,7 +1970,7 @@ class InteractiveSolution:
 
         actions_mouseless = {".": self.fastforward, "n": self.nextobject, "p":
                 self.prevobject, "q": self.quit, "r": self.reset, "f":
-                self.fit_event, "k": self.toggle_sigma_clip, "\\": self.fit_event}
+                self.fit_event, "k": self.toggle_sigma_clip, "\\": self.fit_event, "b": self.toggle_bypass}
 
         actions = { "c": self.shift, "d": self.drop_point,
                 "z": self.zoom, "x": self.unzoom, "s": self.savefig}
