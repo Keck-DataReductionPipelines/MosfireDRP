@@ -15,7 +15,7 @@ import pdb
 
 import MOSFIRE
 from MOSFIRE import Background, CSU, Fit, IO, Options, Filters, Detector, Wavelength
-
+from MosfireDrpLog import debug, info, warning, error
 
 
 def handle_rectification(maskname, in_files, wavename, band_pass, files, options,
@@ -57,10 +57,10 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
     lambdas = IO.readfits(wavename, options)
 
     if np.any(lambdas[1].data < 0) or np.any(lambdas[1].data > 29000):
-        print "***********WARNING ***********"
-        print "The file {0} may not be a wavelength file.".format(wavename)
-        print "Check before proceeding."
-        print "***********WARNING ***********"
+        info("***********WARNING ***********")
+        info("The file {0} may not be a wavelength file.".format(wavename))
+        info("Check before proceeding.")
+        info("***********WARNING ***********")
 
     edges, meta = IO.load_edges(maskname, band, options)
     shifts = []
@@ -70,7 +70,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
     
     for file in in_files:
 
-        print ":: ", file
+        info(":: "+str(file))
         II = IO.read_drpfits(maskname, file, options)
 
         off = np.array((II[0]["decoff"], II[0]["raoff"]),dtype=np.float64)
@@ -90,7 +90,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         posnames.append(II[0]["frameid"])
         postoshift[II[0]['frameid']] = shift
     
-        print "Position {0} shift: {1:2.2f} as".format(off, shift)
+        info("Position {0} shift: {1:2.2f} as".format(off, shift))
     
 
     plans = Background.guess_plan_from_positions(set(posnames))
@@ -120,7 +120,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         p0 = plan[0].replace("'", "p")
         p1 = plan[1].replace("'", "p")
         suffix = "%s-%s" % (p0,p1)
-        print "Handling plan %s" % suffix
+        info("Handling plan %s" % suffix)
         fname = "bsub_{0}_{1}_{2}.fits".format(outname,band,suffix)
         EPS = IO.read_drpfits(maskname, fname, options)
         EPS[1] = np.ma.masked_array(EPS[1], theBPM, fill_value=0)
@@ -152,7 +152,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         all_solutions.append(solutions)
 
     tick = time.time()
-    print "-----> Mask took %i. Writing to disk." % (tick-tock)
+    info("-----> Mask took %i. Writing to disk." % (tick-tock))
 
 
     output = np.zeros((1, len(fidl)))
@@ -163,7 +163,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
 
     # the barset [bs] is used for determining object position
     files = IO.list_file_to_strings(files)
-    print "Using "+str(files[0])+" for slit configuration."
+    info("Using "+str(files[0])+" for slit configuration.")
     x, x, bs = IO.readmosfits(files[0], options)
     
 
@@ -211,7 +211,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
 
 
         for i_solution in xrange(1,len(all_solutions)):
-            print "Combining solution %i" %i_solution
+            info("Combining solution %i" %i_solution)
             solution = all_solutions[i_solution][i_slit]
             img += solution["eps_img"]
             std += solution["sd_img"]
@@ -349,7 +349,7 @@ def handle_rectification_helper(edgeno):
     
     edge = edges[edgeno]
 
-    print "Handling edge: ", edge["Target_Name"]
+    info("Handling edge: "+str(edge["Target_Name"]))
 
     tops = edge["top"](pix)
     bots = edge["bottom"](pix)

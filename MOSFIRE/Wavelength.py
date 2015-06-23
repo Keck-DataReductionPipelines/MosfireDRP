@@ -67,7 +67,7 @@ from numpy.polynomial import chebyshev as CV
 
 
 from MOSFIRE import CSU, Fit, IO, Options, Filters, Detector
-
+from MosfireDrpLog import debug, info, warning, error
 #from IPython.Shell import IPShellEmbed
 #ipshell = IPShellEmbed()
 
@@ -140,7 +140,10 @@ def imcombine(files, maskname, bandname, options, extension=None):
 
     files = IO.list_file_to_strings(files)
 
-    print "combining : %s" % files
+    info("combining Wavelength files")
+    for file in files:
+        info(str(file))
+    info("list complete")
 
     ADUs = np.zeros((len(files), 2048, 2048))
     prevssl = None
@@ -161,18 +164,22 @@ def imcombine(files, maskname, bandname, options, extension=None):
         if prevssl is not None:
             if len(prevssl) != len(bs.ssl):
                 # todo Improve these checks
-                print "Reading file "+str(fname)
-                print "This file contains "+str(len(bs.ssl))+" slits instead of "+str(len(prevssl))
+                info( "Reading file "+str(fname))
+                error("This file contains "+str(len(bs.ssl))+" slits instead of "+str(len(prevssl)))
                 raise Exception("The stack of input files seems to be of "
                         "different masks")
         prevssl = bs.ssl
 
         if maskname is not None:
             if maskname != thishdr["maskname"]:
-                print("Maskname specified ({0}) does not match header maskname "
+                warning("Maskname specified ({0}) does not match header maskname "
                     " ({1}).".format(maskname, thishdr["maskname"]))
 
         if thishdr["BUNIT"] != "ADU per coadd":
+            error("The units of '%s' are not in ADU per coadd and "
+                    "this violates an assumption of the DRP. Some new code " 
+                    "is needed in the DRP to handle the new units of "
+                    "'%s'." % (fname, thishdr["BUNIT"]))
             raise Exception("The units of '%s' are not in ADU per coadd and "
                     "this violates an assumption of the DRP. Some new code " 
                     "is needed in the DRP to handle the new units of "
@@ -187,6 +194,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
         for key in header.keys():
             try: val = header[key]
             except KeyError: 
+                warning("Header should have key '%s' but does not" % key)
                 print("Header should have key '%s' but does not" % key)
             
             if key in thishdr:
@@ -199,7 +207,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
 
         if maskname is not None:
             if thishdr["maskname"] != maskname:
-                print("File %s uses mask '%s' but the stack is of '%s'" %
+                warning("File %s uses mask '%s' but the stack is of '%s'" %
                     (fname, thishdr["maskname"], maskname))
 
         for key in header.keys():
@@ -215,11 +223,12 @@ def imcombine(files, maskname, bandname, options, extension=None):
 
         if maskname is not None:
             if thishdr["maskname"] != maskname:
-                print("File %s uses mask '%s' but the stack is of '%s'" %
+                warning("File %s uses mask '%s' but the stack is of '%s'" %
                     (fname, thishdr["maskname"], maskname))
 
         ''' Error checking is complete'''
-        print "%s %s/%s" % (fname, maskname, thishdr['filter'])
+        info("Checking maskname and filter")
+        info("%s %s/%s" % (fname, maskname, thishdr['filter']))
 
     header.update("frameid", "median")
     electrons = np.median(np.array(ADUs) * Detector.gain, axis=0)
@@ -228,7 +237,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
 
     IO.writefits(electrons, maskname, wavename, options, overwrite=True,
             header=header)
-
+    info("Imcombine done")
     
 def fit_lambda(maskname, 
         bandname, 
@@ -294,18 +303,18 @@ def fit_lambda(maskname,
     center_solutions=None    
 
     wavenames = IO.list_file_to_strings(wavenames)
-    print "WAVENAMES", wavenames
+    debug("WAVENAMES"+ str(wavenames))
     wavename = filelist_to_wavename(wavenames, bandname, maskname,
             options).rstrip(".fits")
 
     guessnames = IO.list_file_to_strings(wavenames)
-    print "GUESSNAMES", guessnames
+    debug("GUESSNAMES"+str(guessnames))
     guessname = filelist_to_wavename(guessnames, bandname, maskname,
             options).rstrip(".fits")
 
     fn = "lambda_coeffs_{0}.npy".format(wavename)
 
-    print "%s] Writing to: %s" % (maskname, fn)
+    info("%s] Writing to: %s" % (maskname, fn))
 
     wavepath = filelist_to_path(wavenames, bandname, maskname,
             options)
@@ -323,12 +332,12 @@ def fit_lambda(maskname,
 
     if wavenames2 is not None:
         wavenames2 = IO.list_file_to_strings(wavenames2)
-        print "WAVENAMES Second Set:", wavenames2
+        debug("WAVENAMES Second Set:"+str(wavenames2))
         wavename2 = filelist_to_wavename(wavenames2, bandname, maskname,
                                          options).rstrip(".fits")
 
         guessnames2 = IO.list_file_to_strings(wavenames2)
-        print "GUESSNAMES Second Set:", guessnames2
+        debug("GUESSNAMES Second Set:"+str(guessnames2))
         guessname2 = filelist_to_wavename(guessnames2, bandname, maskname,
                                          options).rstrip(".fits")
 
@@ -341,9 +350,9 @@ def fit_lambda(maskname,
         center_solutions2 = IO.load_lambdacenter(fnum2, maskname, options)
 
     if longslit is not None and longslit['mode'] is "longslit":
-        print "*** Longslit mode ***  Slitedges set to:"
-        print "Bottom: "+str(edgedata[0]["yposs_bot"][0])
-        print "Top:    "+str(edgedata[0]["yposs_top"][0])        
+        info("*** Longslit mode ***  Slitedges set to:")
+        info("Bottom: "+str(edgedata[0]["yposs_bot"][0]))
+        info("Top:    "+str(edgedata[0]["yposs_top"][0]))
 
     solutions = []
     lamout = np.zeros(shape=(2048, 2048), dtype=np.float32)
@@ -360,7 +369,7 @@ def fit_lambda(maskname,
 
     tick = time.time()
 
-    print "-----> Mask took %i" % (tick-tock)
+    info("-----> Mask took %i" % (tick-tock))
 
     try: os.remove(fn)
     except: pass
@@ -388,8 +397,8 @@ def fit_lambda_helper(slitno):
     bottom = np.ceil(edge["bottom"](1024))+2
     top    = np.ceil(edge["top"](1024))-2
 
-    print("* Fitting Slit %s from %i to %i" % (bs.ssl[slitno]["Target_Name"],
-        bottom, top))
+    info(("* Fitting Slit %s from %i to %i" % (bs.ssl[slitno]["Target_Name"],
+        bottom, top)))
 
     if data2 is not None:
         sol_1d2 = center_solutions2[slitidx]["sol_1d"]
@@ -403,7 +412,7 @@ def fit_lambda_helper(slitno):
     sol = {"slitno": slitno, "center_sol": np.array(sol_1d[1]), "2d":
         sol_2d, "lines": np.array(linelist)}
     
-    print "S%2.2i] TOOK: %i s" % (slitno, time.time()-tick)
+    info("S%2.2i] TOOK: %i s" % (slitno, time.time()-tick))
 
     return sol
 
@@ -431,7 +440,7 @@ def apply_interactive(maskname, band, options, apply=None, to=None, neon=False,
     solutions = []
     pix = np.arange(2048)
     for slitno in xrange(len(waves)):
-        print "Slit number = " , slitno+1
+        info("Slit number = "+str(slitno+1))
         csuslits = bs.scislit_to_csuslit(slitno+1)
 
         try:
@@ -468,11 +477,11 @@ def apply_interactive(maskname, band, options, apply=None, to=None, neon=False,
                 STD, "slitno": slitno, "extract_pos":
                 extract_pos})
 
-        print "slitno %2.0i STD: %1.2f MAD: %1.2f" % (slitno+1, STD, MAD)
-        
+        info("slitno %2.0i STD: %1.2f MAD: %1.2f" % (slitno+1, STD, MAD))
+
 
     # Output filename
-    print to_filename
+    info(str(to_filename))
     outfn = "lambda_center_coeffs_{0}.npy".format(to_filename.rstrip(".fits"))
 
     np.save(outfn, solutions)
@@ -492,13 +501,17 @@ def check_wavelength_roi(maskname, band, skyfiles, arcfiles, LROI, options):
     fn = "lambda_center_coeffs_{0}.npy".format(arcfilename.rstrip(".fits"))
     arcsols = np.load(fn)
 
-    if len(skysols) != len(arcsols): raise Exception("Number of slits in sky (%i) and arcs (%i) is different" % ( len(skysols) , len(arcsols)))
+    if len(skysols) != len(arcsols): 
+        error("Number of slits in sky (%i) and arcs (%i) is different" % ( len(skysols) , len(arcsols)))
+        raise Exception("Number of slits in sky (%i) and arcs (%i) is different" % ( len(skysols) , len(arcsols)))
 
     pix = np.arange(2048)
     pl.figure(1)
 
     if len (LROI) == 1: LROI *= len(skysols)
-    if len (LROI) != len(skysols): raise Exception("Number of solutions is not equal to the LROI vector (%i!=%i)" % ( len(LROI), len(skysols)))
+    if len (LROI) != len(skysols): 
+        error("Number of solutions is not equal to the LROI vector (%i!=%i)" % ( len(LROI), len(skysols)))
+        raise Exception("Number of solutions is not equal to the LROI vector (%i!=%i)" % ( len(LROI), len(skysols)))
 
     MeanDiffs = []
     for i in xrange(len(skysols)):
@@ -528,8 +541,8 @@ def check_wavelength_roi(maskname, band, skyfiles, arcfiles, LROI, options):
     pl.ylabel("Sky - Arc Wavelength [Angstrom]")
     
     MeanDiffs =np.array(MeanDiffs)
-    print "RMS in 21500 < lambda < 22000 is %2.2f Ang" % (
-        np.sqrt(np.mean(MeanDiffs**2)))
+    info("RMS in 21500 < lambda < 22000 is %2.2f Ang" % (
+        np.sqrt(np.mean(MeanDiffs**2))))
     pl.show()
 
     return LROI
@@ -564,7 +577,8 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     wavenames = IO.list_file_to_strings(wavenames)
     input_f = filelist_to_path(wavenames, band, maskname, options)
     
-    print "{0} resolves to input files: {1}".format(wavenames, input_f)
+    debug("{0} resolves to input files: {1}".format(str(wavenames), str(input_f)))
+    info("The wavelength files resolve to input file {0}".format(str(input_f)))
     mfits = IO.readfits(input_f, use_bpm=True)
     (drop, data) = mfits
     (header, drop, bs) = IO.readmosfits(wavenames[0], options, extension=extension)
@@ -578,7 +592,7 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     
     try: 
         solutions = np.load(fn)
-        print "Solutions loaded from: ", fn
+        info( "Solutions loaded from: "+str(fn))
     except IOError: solutions = None
 
     lamout = np.zeros(shape=(2048, 2048), dtype=np.float32)
@@ -587,15 +601,15 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     
     outfilename = fn
     fig = pl.figure(1,figsize=(16,8))
-    print "Started interactive solution"
+    info("Started interactive solution")
     if longslit is not None and longslit['mode'] is "longslit":
         starting_pos = longslit["row_position"]
-        print "*** LONGSLIT MODE *** Extract position set to %i" % starting_pos
+        info("*** LONGSLIT MODE *** Extract position set to %i" % starting_pos)
     else:
         starting_pos = None
     II = InteractiveSolution(fig, mfits, linelist, options, 1,
         outfilename, solutions=solutions, bypass=bypass, starting_pos=starting_pos)
-    print "Waiting"
+    info( "Waiting")
 
     if bypass is False:
         pl.ioff()
@@ -603,7 +617,7 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
         #pl.draw()
         #pl.show(block=True)
 
-    print "save to: ", fn
+    info("save to: "+str(fn))
     np.save(outfilename, np.array(II.solutions))
     np.save('barset.npy', [II.bs])
 
@@ -701,8 +715,8 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
     arcname = filelist_to_wavename(arcnames, bandname, maskname,
             options).rstrip(".fits")
 
-    print skyname
-    print arcname
+    info(str(skyname))
+    info(str(arcname))
     drop, data = IO.readfits(skyname+'.fits', use_bpm=True)
     header, drop, bs = IO.readmosfits(skynames[0], options, extension=extension)
     skydata = data.filled(0)
@@ -730,6 +744,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
     xypairs = []
 
     if len(SkyL) != len(ArcL):
+        error("Number of lines in Sky file not the same as those in Arc file")
         raise Exception("Number of lines in Sky file not the same as those in Arc file")
 
     fitpix = np.arange(0,2048,100)
@@ -742,7 +757,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
         alc = ArcL[i]["2d"]["coeffs"]
         alm = ArcL[i]["2d"]["lambdaMAD"]
 
-        print "2d wavelengths: Slit %i/%i" % (i+1, len(SkyL))
+        info("2d wavelengths: Slit %i/%i" % (i+1, len(SkyL)))
 
         prev = 0
         dpixels = []
@@ -779,7 +794,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
 
             
 
-        print "Shifted arc by an average of %1.2f pixels" % (np.mean(dpixels))
+        info("Shifted arc by an average of %1.2f pixels" % (np.mean(dpixels)))
 
         if np.isfinite(np.mean(dpixels)):
             if smooth == True:
@@ -790,7 +805,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
                     d = lams[slp,i] - ff(xr)
                     lams[slp, i] = ff(xr)
 
-    print("{0}: writing lambda".format(maskname))
+    info("{0}: writing lambda".format(maskname))
 
     ### FIX FROM HERE
     fn = "merged_lambda_coeffs_{0}_and_{1}".format(skyname, arcname)
@@ -805,7 +820,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
     IO.writefits(lams, maskname, "merged_lambda_solution_{0}_and_{1}.fits".format(skyname, arcname), 
             options, overwrite=True, header=header)
                 
-    print("{0}: rectifying".format(maskname))
+    info("{0}: rectifying".format(maskname))
     dlam = np.ma.median(np.diff(lams[1024,:]))
     hpp = Filters.hpp[bandname] 
     ll_fid = np.arange(hpp[0], hpp[1], dlam)
@@ -866,9 +881,9 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
     Ld = IO.load_lambdadata(wavename, maskname, bandname, options)
 
     if longslit is not None and longslit['mode'] is "longslit":
-        print "*** LONGSLIT MODE *** Slit edges set to:"
-        print "Bottom: "+str(slitedges[0]["yposs_bot"][0])
-        print "Top:    "+str(slitedges[0]["yposs_top"][0])
+        info("*** LONGSLIT MODE *** Slit edges set to:")
+        info("Bottom: "+str(slitedges[0]["yposs_bot"][0]))
+        info("Top:    "+str(slitedges[0]["yposs_top"][0]))
         
     bmap = {"Y": 6, "J": 5, "H": 4, "K": 3}
     order = bmap[bandname]
@@ -890,7 +905,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
         lp = Ld[i]["2d"]["positions"].astype(np.int)
         lc = Ld[i]["2d"]["coeffs"]
         lm = Ld[i]["2d"]["lambdaMAD"]
-        print "2d wavelengths: Slit %i/%i" % (i+1, len(Ld))
+        info("2d wavelengths: Slit %i/%i" % (i+1, len(Ld)))
 
         prev = 0
         for j in xrange(len(lp)):
@@ -916,7 +931,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
 
         if False == True:
             xs,ys,zs = map(np.array, [xs,ys,zs])
-            print "smoothing"
+            info("smoothing")
 
             polyx, polyy, cov = polyfit2d(np.array(zs,dtype=np.double),
                     np.array(ys, dtype=np.double),
@@ -929,7 +944,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
             M = lams[lp,:] = np.polyval(polyy, yy) + np.polyval(polyx, xx)
 
 
-    print("{0}: writing lambda".format(maskname))
+    info(("{0}: writing lambda".format(maskname)))
 
     header = pf.Header()
     header.update("maskname", maskname)
@@ -941,12 +956,12 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
             options, overwrite=True, header=header)
                 
 
-    print("{0}: writing sigs".format(maskname))
+    info("{0}: writing sigs".format(maskname))
     header.update("object", "Sigmas {0}/{1}".format(maskname, bandname))
     IO.writefits(sigs, maskname, "sigs_solution_{0}.fits".format(wavename), 
             options, overwrite=True, header=header, lossy_compress=True)
 
-    print("{0}: rectifying".format(maskname))
+    info("{0}: rectifying".format(maskname))
     dlam = 0
     central_line = 1024
     step = 0
@@ -957,7 +972,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
             line = central_line-(10*step)
             dlam = np.ma.median(np.diff(lams[line,:]))
         step=step+1
-    print "Non-empty line found at pixel "+str(line)
+    info("Non-empty line found at pixel "+str(line))
     hpp = Filters.hpp[bandname] 
     ll_fid = np.arange(hpp[0], hpp[1], dlam)
     nspec = len(ll_fid)
@@ -1107,7 +1122,7 @@ def pick_linelist(header, neon=False, argon=False):
     if neon:
         # http://www2.keck.hawaii.edu/inst/mosfire/data/MosfireArcs/mosfire_Ne_vac.list
         # Trimmed using PDF of id'd lines
-        print "Picking Neon's arc line list"
+        info("Picking Neon's arc line list")
         if band == 'Y':
             lines = np.array([
                 9668.071,
@@ -1179,7 +1194,7 @@ def pick_linelist(header, neon=False, argon=False):
                 ])
 
     if argon:
-        print "Picking Argon's arc line list"
+        info("Picking Argon's arc line list")
         if band == 'Y':
             lines = np.array([
                 9660.43,
@@ -1334,7 +1349,7 @@ global color=red
     for i in xrange(1,len(bs.ssl)+1):
         slits = bs.scislit_to_csuslit(i)
 
-        print "Guessing: ", slits
+        info("Guessing: "+str(slits))
         
         cidx = (cidx + 1) % 2
         color = colors[cidx]
@@ -1363,7 +1378,7 @@ global color=red
         f.write(ds9)
         f.close()
     except:
-        print "Could not write %s" % fn
+        error("Could not write %s" % fn)
 
 
 def estimate_half_power_points(slitno, header, bs):
@@ -1494,6 +1509,8 @@ def fit_chebyshev_to_lines(xs, sxs, lines, options):
         return [baddelt, badfit, lines[ok]]
 
     if np.median(lines) < 1000:
+        error("Units fed to this function are likely in micron but "
+                "should be in angstrom")
         raise Exception("Units fed to this function are likely in micron but "
                 "should be in angstrom")
 
@@ -1640,16 +1657,16 @@ class InteractiveSolution:
             csuslit = csuslits
 
 
-        print csuslits, csuslit
+        info(str(csuslits)+" "+str(csuslit))
         self.linelist = self.linelist0
         if self.starting_pos is None:
             self.extract_pos = self.bs.science_slit_to_pixel(self.slitno)
         else:
-            print "LONGSLIT mode: forced longslit center line"
+            info("LONGSLIT mode: forced longslit center line")
             '''This is used in longslits to handle a forced start position'''
             self.extract_pos = self.starting_pos
 
-        print "Extracting at %i " % self.extract_pos
+        info("Extracting at %i " % self.extract_pos)
 
         S = self.solutions[self.slitno-1]
         if type(S) is not int: # previously setup
@@ -1699,13 +1716,13 @@ class InteractiveSolution:
         if self.bypass:
             pass
         else:
-            print "Launching graphics display.    "
+            info("Launching graphics display.    ")
             self.redraw()
 
     def toggle_bypass(self,x,y):
-        print "############ NON INTERACTIVE MODE ENABLED ###########"
-        print "# From now on, the fit will proceed automatically   #"
-        print "#####################################################"
+        info("############ NON INTERACTIVE MODE ENABLED ###########")
+        info("# From now on, the fit will proceed automatically   #")
+        info("#####################################################")
         self.bypass = True
         self.quit(0,0)
         self.nextobject(0,0)
@@ -1852,7 +1869,7 @@ class InteractiveSolution:
             if self.bypass is False:
                 self.draw_done()
 
-        print "Saving to: ", self.outfilename
+        info("Saving to: "+str(self.outfilename))
         np.save(self.outfilename, np.array(self.solutions))
 
         if self.done is False:
@@ -1864,13 +1881,13 @@ class InteractiveSolution:
         self.slitno -= 1
         self.done = False
         if self.slitno < 1: 
-            print "first limit"
+            warning("first limit")
             self.slitno = 1
         self.setup()
 
     def quit(self, x, y):
         """Quit and save the results """
-        print "Closing figure"
+        info("Closing figure")
         pl.close(self.fig)
 
 
@@ -1887,10 +1904,10 @@ class InteractiveSolution:
     def toggle_sigma_clip(self,x,y):
         if self.sigma_clip is True: 
             self.sigma_clip = False
-            print "Sigma clipping disabled"
+            info("Sigma clipping disabled")
         else:
             self.sigma_clip = True
-            print "Sigma clipping enabled"
+            info("Sigma clipping enabled")
             self.fit_event(0,0)
     
     def fit_event(self, x, y):
@@ -1916,24 +1933,24 @@ class InteractiveSolution:
             tolerance = 3
             # if the std error is > 0.10, iteratively reject lines
             while error>0.10:
-                print "#####################################################"
-                print "Large error detected. Iterating with sigma clipping"
-                print "Current error is "+str(error)
-                print "Current tolerance is "+str(tolerance)+" sigmas"
-                print "Number of lines used for fit: "+str(len(xs))
-                print "Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)]))
+                info("#####################################################")
+                info("Large error detected. Iterating with sigma clipping")
+                info("Current error is "+str(error))
+                info("Current tolerance is "+str(tolerance)+" sigmas")
+                info("Number of lines used for fit: "+str(len(xs)))
+                info("Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)])))
                 mask = (abs(deltas)<tolerance*np.std(deltas[np.isfinite(deltas)]))
-                print "Number of rejected lines: "+str(len(xs)-len(xs[mask]))
+                info("Number of rejected lines: "+str(len(xs)-len(xs[mask])))
                 local_linelist = local_linelist[mask]
                 xs=xs[mask]
                 sxs=sxs[mask]
-                print "Fitting again..."
+                info("Fitting again...")
                 [deltas, cfit, perror] = fit_chebyshev_to_lines(xs, sxs,
                                                                 local_linelist, self.options)
                 error = np.std(deltas[np.isfinite(deltas)])
-                print "Error is now "+str(error)
-                if error<=0.10: print "The error is acceptable, continuing..."
-                print "#####################################################"                
+                info("Error is now "+str(error))
+                if error<=0.10: info("The error is acceptable, continuing...")
+                info("#####################################################")
                 self.cfit = cfit
                 self.ll = CV.chebval(self.pix, self.cfit)
                 tolerance = tolerance - 0.2
@@ -1944,8 +1961,8 @@ class InteractiveSolution:
         self.STD = np.std(deltas[ok])
         self.MAD = np.ma.median(np.abs(deltas[ok]))
 
-        print "STD: %1.2f MAD: %1.2f" % (self.STD, self.MAD)
-        print self.cfit
+        info("STD: %1.2f MAD: %1.2f" % (self.STD, self.MAD))
+        debug(str(self.cfit))
 
 
         self.solutions[self.slitno-1] = {"linelist": local_linelist, "MAD":
@@ -1954,7 +1971,7 @@ class InteractiveSolution:
                 self.STD, "slitno": self.slitno, "extract_pos":
                 self.extract_pos}
 
-        print 'Stored: ', self.solutions[self.slitno-1]['slitno']
+        info('Stored: '+str(self.solutions[self.slitno-1]['slitno']))
 
         if self.bypass is False:
             self.redraw()
@@ -1966,7 +1983,7 @@ class InteractiveSolution:
         x = event.xdata
         y = event.ydata
 
-        print kp, x, y
+        info( str(kp)+" "+str(x)+" "+str(y))
 
         actions_mouseless = {".": self.fastforward, "n": self.nextobject, "p":
                 self.prevobject, "q": self.quit, "r": self.reset, "f":
@@ -1976,11 +1993,11 @@ class InteractiveSolution:
                 "z": self.zoom, "x": self.unzoom, "s": self.savefig}
 
         if (kp == 'h') or (kp == '?'):
-            print "Commands Desc"
+            info("Commands Desc")
             for key, value in actions.items():
-                print "%8s %s" % (key, value.__doc__)
+                info("%8s %s" % (key, value.__doc__))
             for key, value in actions_mouseless.items():
-                print "%8s %s" % (key, value.__doc__)
+                info("%8s %s" % (key, value.__doc__))
 
         if kp in actions_mouseless:
             actions_mouseless[kp](x, y)
@@ -2057,7 +2074,7 @@ def fit_wavelength_solution(data, parguess, lines, options,
 
         return [deltas, params, perror, sigmas]
     else:
-        print("%3i: Could not find parameters" % slitno)
+        warning("%3i: Could not find parameters" % slitano)
         return [[], parguess, None, []]
 
 
@@ -2073,7 +2090,7 @@ def construct_model(slitno):
 
     global coeffs, data, linelist, options
 
-    print "Constructing model on %i" % slitno
+    info("Constructing model on %i" % slitno)
 
     pix = np.arange(2048)
 
@@ -2131,9 +2148,9 @@ def construct_model(slitno):
                 pre = bcolors.ENDC
 
 
-            print pre + "2d model S%2.2i p%4.4i: residual %1.3f Angstrom " \
+            info(pre + "2d model S%2.2i p%4.4i: residual %1.3f Angstrom " \
                     "RMS / %3.1e lam/dlam / %1.3f Angstrom MAD" % (slitno, pos,
-                            rms, rmsR, np.median(np.abs(delt))) + bcolors.ENDC
+                            rms, rmsR, np.median(np.abs(delt))) + bcolors.ENDC)
 
 
             lambdaRMS.append(np.std(delt))
@@ -2149,7 +2166,7 @@ def construct_model(slitno):
                 "positions": positions[ok]}
 
     else:
-        print "No fit stats"
+        info("No fit stats")
 
         return {"functions": np.array(cfit_coeffs), "cpolys": [], "RMS":
                 np.zeros(len(positions[ok])), "MAD":
@@ -2249,9 +2266,9 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
                                                          linelist, options)
 
         #if np.std(delt) < .01: pdb.set_trace()
-        print "resid ang S%2.2i @ p%4.0i: %1.2f rms %1.2f mad [shift%2.0f]" % \
+        info("resid ang S%2.2i @ p%4.0i: %1.2f rms %1.2f mad [shift%2.0f]" % \
                 (slitno+1, yhere, np.std(delt), np.median(np.abs(delt)),
-                    shift)
+                    shift))
 
         return cfit, delt
 
@@ -2282,7 +2299,7 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
     positions = np.concatenate((np.arange(start, top, 1), 
         np.arange(start-1,bottom,-1)))
     positions = np.arange(bottom, top, 1)
-    print "Computing 0 spectrum at %i" % start
+    info("Computing 0 spectrum at %i" % start)
     spec0 = np.ma.median(data[start-1:start+1, :], axis=0)
     if data2 is not None:
             spec2 = np.ma.median(data2[start-1:start+1, :], axis=0)
@@ -2310,6 +2327,8 @@ def fit_to_coefficients(fits, pos, slitno=None):
                 break
             slitno += 1
         if not found:
+            warning("Position %i does not have a fitted wavelength " \
+            " solution" % pos)
             raise NoSuchFit("Position %i does not have a fitted wavelength " \
             " solution" % pos)
             return np.zeros(5)
@@ -2321,6 +2340,8 @@ def fit_to_coefficients(fits, pos, slitno=None):
         fitpos = fit["positions"]
         mn = min(fitpos) ; mx = max(fitpos)
         if not ((pos >= mn) and (pos <= mx)):
+            warning("Slitno %i has a pixel range of %i-%i but " \
+                    "position %i was requested" % (slitno, mn, mx, pos))
             raise Exception("Slitno %i has a pixel range of %i-%i but " \
                     "position %i was requested" % (slitno, mn, mx, pos))
             return np.zeros(5)
@@ -2487,7 +2508,7 @@ def plot_sky_spectra(maskname, fname, options):
     for solution in solutions:
         slitno = solution["slitno"]
         parameters = solution["center_sol"][0]
-        print "Slit: {0}".format(slitno)
+        info("Slit: {0}".format(slitno))
 
         parguess = guess_wavelength_solution(slitno, header, bs)
         y0 = parguess[-2]
@@ -2515,6 +2536,8 @@ def plot_data_quality(maskname, fname, options):
     from matplotlib.backends.backend_pdf import PdfPages
     path = os.path.join(options["indir"])
     if not os.path.exists(path):
+        error("Output directory '%s' does not exist. This " 
+            "directory should exist." % path)
         raise Exception("Output directory '%s' does not exist. This " 
             "directory should exist." % path)
 
@@ -2548,7 +2571,7 @@ def plot_data_quality(maskname, fname, options):
     all_deltas = []
     for solution in solutions:
         sol_2d = solution["2d"]
-        print "Slit: {0}".format(solution["slitno"])
+        info("Slit: {0}".format(solution["slitno"]))
         ff = filter(filter_fun, sol_2d)
         ar = np.array(map(lambda x: x[0], ff))
 
@@ -2574,12 +2597,12 @@ def plot_data_quality(maskname, fname, options):
         gammamodel = np.poly1d(np.polyfit(pixels, gammas, 1))
         deltamodel = np.poly1d(np.polyfit(pixels, deltas, 1))
 
-        print "Scatters: {0:3.5} {1:3.5} {2:3.5} {3:3.5}".format(
+        info("Scatters: {0:3.5} {1:3.5} {2:3.5} {3:3.5}".format(
                 np.std(alphas-alphamodel(pixels)),
                 np.std(betas-betamodel(pixels)),
                 np.std(gammas-gammamodel(pixels)),
                 np.std(deltas-deltamodel(pixels)),
-                )
+                ))
 
         pl.clf()
         pl.subplot(2,2,1)
@@ -2623,7 +2646,7 @@ def plot_data_quality(maskname, fname, options):
 
     ff = np.poly1d(np.polyfit(all_pix, all_alphas, 4))
     pl.plot(all_pix, ff(all_pix))
-    print "Alpha: ", ff
+    info("Alpha: "+str(ff))
     pl.ylabel(r'$\alpha$')
     pp.savefig()
 
@@ -2631,7 +2654,7 @@ def plot_data_quality(maskname, fname, options):
     delts = all_alphas - ff(all_pix)
     pl.scatter(all_pix, delts, c=all_gammas)
     pl.ylabel(r'$\Delta \alpha$')
-    print "Scatter is {0} pixels".format(np.std(delts)*2048)
+    info("Scatter is {0} pixels".format(np.std(delts)*2048))
     pp.savefig()
 
     pl.clf()
@@ -2643,7 +2666,7 @@ def plot_data_quality(maskname, fname, options):
     pl.scatter(all_pix, all_gammas, c=all_gammas)
     pl.plot(all_pix, gamma_pixel(all_pix), 'r')
     ff = np.poly1d(np.polyfit(all_pix, all_gammas, 4))
-    print "Gamma: ", ff
+    info("Gamma: "+str(ff))
 
     pl.plot(all_pix, ff(all_pix), 'b')
     pl.ylabel(r'$\gamma$')
@@ -2655,7 +2678,7 @@ def plot_data_quality(maskname, fname, options):
     pl.plot(all_pix, delta_pixel(all_pix), 'r')
     
     ff = np.poly1d(np.polyfit(all_pix, all_deltas, 4))
-    print "Delta: ", ff
+    info("Delta: "+str(ff))
 
     pl.ylabel(r'$\delta$')
     pp.savefig()

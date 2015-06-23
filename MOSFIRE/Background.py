@@ -16,6 +16,7 @@ import pdb
 
 import MOSFIRE
 from MOSFIRE import CSU, Fit, IO, Options, Filters, Detector, Wavelength
+from MosfireDrpLog import debug, info, warning, error
 
 #from IPython.Shell import IPShellEmbed
 #ipshell = IPShellEmbed()
@@ -143,24 +144,33 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
 
         if maskname is not None:
             if thishdr["maskname"] != maskname:
+                error("File %s uses mask '%s' but the stack is of '%s'" %
+                    (fname, thishdr["maskname"], maskname))
                 raise Exception("File %s uses mask '%s' but the stack is of '%s'" %
                     (fname, thishdr["maskname"], maskname))
 
         maskname = thishdr["maskname"]
             
         if thishdr["aborted"]:
+            error("Img '%s' was aborted and should not be used" %
+                    fname)
             raise Exception("Img '%s' was aborted and should not be used" %
                     fname)
 
         if prevssl is not None:
             if len(prevssl) != len(bs.ssl):
                 # todo Improve these checks
+                error("The stack of input files seems to be of "
+                        "different masks")
                 raise Exception("The stack of input files seems to be of "
                         "different masks")
         prevssl = bs.ssl
 
         if patternid is not None:
             if patternid != thishdr["frameid"]:
+                error("The stack should be of '%s' frames only, but "
+                        "the current image is a '%s' frame." % (patternid, 
+                            thishdr["frameid"]))
                 raise Exception("The stack should be of '%s' frames only, but "
                         "the current image is a '%s' frame." % (patternid, 
                             thishdr["frameid"]))
@@ -170,6 +180,9 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
 
         if maskname is not None:
             if maskname != thishdr["maskname"]:
+                error("The stack should be of CSU mask '%s' frames "
+                        "only but contains a frame of '%s'." % (maskname,
+                        thishdr["maskname"]))
                 raise Exception("The stack should be of CSU mask '%s' frames "
                         "only but contains a frame of '%s'." % (maskname,
                         thishdr["maskname"]))
@@ -177,14 +190,18 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
         maskname = thishdr["maskname"]
 
         if thishdr["BUNIT"] != "ADU per coadd":
+            error("The units of '%s' are not in ADU per coadd and "
+                    "this violates an assumption of the DRP. Some new code " 
+                    "is needed in the DRP to handle the new units of "
+                    "'%s'." % (fname, thishdr["BUNIT"]))
             raise Exception("The units of '%s' are not in ADU per coadd and "
                     "this violates an assumption of the DRP. Some new code " 
                     "is needed in the DRP to handle the new units of "
                     "'%s'." % (fname, thishdr["BUNIT"]))
 
         ''' Error checking is complete'''
-        print "%s %s[%s]/%s: %5.1f s,  Shift: %i px" % (fname, maskname, patternid,
-            header['filter'], np.mean(itimes[i]), shifts[i])
+        info("%s %s[%s]/%s: %5.1f s,  Shift: %i px" % (fname, maskname, patternid,
+            header['filter'], np.mean(itimes[i]), shifts[i]))
 
     warnings.filterwarnings('always')
 
@@ -205,7 +222,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
     # Cosmic ray rejection code begins here. This code construction the
     # electrons and itimes arrays.
     if len(files) >= 9:
-        print "Sigclip CRR"
+        info("Sigclip CRR")
         srt = np.argsort(electrons, axis=0, kind='quicksort')
         shp = el_per_sec.shape
         sti = np.ogrid[0:shp[0], 0:shp[1], 0:shp[2]]
@@ -220,7 +237,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
         std = np.std(el_per_sec[2:-2,:,:], axis = 0)
 
         drop = np.where( (el_per_sec > (mean+std*4)) | (el_per_sec < (mean-std*4)) )
-        print "dropping: ", len(drop[0])
+        info("dropping: "+str(len(drop[0])))
         electrons[drop] = 0.0
         itimes[drop] = 0.0
 
@@ -229,7 +246,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
         Nframe = len(files) 
 
     elif len(files) > 5:
-        print "WARNING: Drop min/max CRR"
+        warning( "WARNING: Drop min/max CRR")
         srt = np.argsort(el_per_sec,axis=0)
         shp = el_per_sec.shape
         sti = np.ogrid[0:shp[0], 0:shp[1], 0:shp[2]]
@@ -243,7 +260,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
         Nframe = len(files) - 2
 
     else:
-        print "WARNING: CRR through median filtering"
+        warning( "WARNING: CRR through median filtering")
         for i in xrange(len(files)):
             el = electrons[i,:,:]
             it = itimes[i,:,:]
@@ -272,7 +289,9 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
     electrons[data.mask] = np.nan
     var[data.mask] = np.inf
 
-    if "RN" in header: raise Exception("RN Already populated in header")
+    if "RN" in header:
+        error("RN Already populated in header")
+        raise Exception("RN Already populated in header")
     header['RN'] = ("%1.3f" , "Read noise in e-")
     header['NUMFRM'] = (Nframe, 'Typical number of frames in stack')
 
@@ -337,6 +356,7 @@ def handle_background(filelist, wavename, maskname, band_name, options, shifts=N
     hdr, flat = IO.readfits("pixelflat_2d_%s.fits" % (band_name), options)
 
     if np.abs(np.median(flat) - 1) > 0.1:
+        error("Flat seems poorly behaved.")
         raise Exception("Flat seems poorly behaved.")
 
     '''
@@ -357,7 +377,7 @@ def handle_background(filelist, wavename, maskname, band_name, options, shifts=N
     for i in xrange(len(filelist)):
         fl = filelist[i]
         files = IO.list_file_to_strings(fl)
-        print "Combining"
+        info("Combining")
         if shifts is None: shift = None
         else: shift = shifts[i]
         hdr, electron, var, bs, time, Nframe = imcombine(files, maskname,
@@ -392,7 +412,7 @@ def handle_background(filelist, wavename, maskname, band_name, options, shifts=N
     for i in xrange(num_outputs):
         posname0 = plan[i][0]
         posname1 = plan[i][1]
-        print "Handling %s - %s" % (posname0, posname1)
+        info("Handling %s - %s" % (posname0, posname1))
         data = epss[posname0] - epss[posname1]
         Var = vars[posname0] + vars[posname1]
         itime = np.mean([times[posname0], times[posname1]], axis=0)
@@ -543,7 +563,7 @@ def background_subtract_helper(slitno):
     # 1
     top = np.int(edges[slitno]["top"](1024))  
     bottom = np.int(edges[slitno]["bottom"](1024)) 
-    print "Background subtracting slit %i [%i,%i]" % (slitno, top, bottom)
+    info("Background subtracting slit %i [%i,%i]" % (slitno, top, bottom))
 
     pix = np.arange(2048)
     xroi = slice(0,2048)
@@ -582,7 +602,7 @@ def background_subtract_helper(slitno):
             & (np.isfinite(ss[sort]))
 
     if len(np.where(OK)[0]) < 1000:
-        print "Failed on slit ", slitno
+        warning("Failed on slit "+str(slitno))
         return {"ok": False}
 
     # 3
@@ -605,7 +625,7 @@ def background_subtract_helper(slitno):
             try:
                 bspline = II.splrep(ls[OK], ss[OK], k=5, task=-1, t=knots)
             except:
-                print "Could not construct spline on slit ", slitno
+                warning("Could not construct spline on slit "+str(slitno))
                 return {"ok": False}
 
         ll = lslit.flatten()

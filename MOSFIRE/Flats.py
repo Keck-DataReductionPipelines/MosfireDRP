@@ -45,7 +45,7 @@ import pdb
 
 import MOSFIRE
 from MOSFIRE import Fit, IO, Options, CSU, Wavelength, Filters, Detector
-
+from MosfireDrpLog import debug, info, warning, error
 __version__ = 0.1
 
 #from IPython.Shell import IPShellEmbed
@@ -78,7 +78,8 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     #Retrieve the list of files to use for flat creation.
     flatlist = IO.list_file_to_strings(flatlist)
     # Print the filenames to Standard-out
-    print flatlist
+    for flat in flatlist:
+        info(str(flat))
 
     #Determine if flat files headers are in agreement
     for fname in flatlist:
@@ -89,9 +90,12 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
 
         if np.any(bs0.pos != bs.pos):
             print "bs0: "+str(bs0.pos)+" bs: "+str(bs.pos)
+            error("Barset do not seem to match")
             raise Exception("Barsets do not seem to match")
 
         if hdr["filter"] != band:
+            error ("Filter name %s does not match header filter name "
+                    "%s in file %s" % (band, hdr["filter"], fname))
             raise Exception("Filter name %s does not match header filter name "
                     "%s in file %s" % (band, hdr["filter"], fname))
         for i in xrange(len(bpos)):
@@ -100,12 +104,14 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
                 bpos[i] = b
             else:
                 if bpos[i] != b:
+                    error("Bar positions are not all the same in "
+                            "this set of flat files")
                     raise Exception("Bar positions are not all the same in "
                             "this set of flat files")
     bs = bs0
 
     # Imcombine the lamps ON flats
-    print "Attempting to combine: ", flatlist
+    info("Attempting to combine previous files")
     combine(flatlist, maskname, band, options)
 
     # Imcombine the lamps OFF flats and subtract the off from the On sets
@@ -113,24 +119,27 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         #Retrieve the list of files to use for flat creation. 
         lampOffList = IO.list_file_to_strings(lampOffList)
         # Print the filenames to Standard-out
-        print "Attempting to combine Lamps off data: ", lampOffList
+        for flat in lampOffList:
+            info(str(flat))
+        print "Attempting to combine Lamps off data"
         combine(lampOffList, maskname, band, options, lampsOff=True)
         combine_off_on( maskname, band, options)
 
-    print "Combined '%s' to '%s'" % (flatlist, maskname)
+    debug("Combined '%s' to '%s'" % (flatlist, maskname))
+    info("Comgined to '%s'" % (maskname))
     path = "combflat_2d_%s.fits" % band
     (header, data) = IO.readfits(path, use_bpm=True)
 
-    print "Flat written to %s" % path
+    info("Flat written to %s" % path)
 
     # Edge Trace
     if bs.long_slit:
-        print "Long slit mode recognized"
-        print "Central row position:   "+str(longslit["row_position"])
-        print "Upper and lower limits: "+str(longslit["yrange"][0])+" "+str(longslit["yrange"][1])
+        info( "Long slit mode recognized")
+        info( "Central row position:   "+str(longslit["row_position"]))
+        info( "Upper and lower limits: "+str(longslit["yrange"][0])+" "+str(longslit["yrange"][1]))
         results = find_longslit_edges(data,header, bs, options, edgeThreshold=edgeThreshold, longslit=longslit)
     elif bs.long2pos_slit:
-        print "Long2pos mode recognized"
+        info( "Long2pos mode recognized")
         results = find_long2pos_edges(data,header, bs, options, edgeThreshold=edgeThreshold, longslit=longslit)
     else:
         results = find_and_fit_edges(data, header, bs, options,edgeThreshold=edgeThreshold)
@@ -146,7 +155,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     else:
          make_pixel_flat(data, results, options, out, flatlist, lampsOff=False)
 
-    print "Pixel flat took {0:6.4} s".format(time.time()-tick)
+    info( "Pixel flat took {0:6.4} s".format(time.time()-tick))
 
     
 
@@ -185,7 +194,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
         try:
             hpps = result["hpps"]
         except:
-            print "No half power points for this slit"
+            error( "No half power points for this slit")
             hpps = [0, Detector.npix[0]]
 
         xs = np.arange(hpps[0], hpps[1])
@@ -196,8 +205,8 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
         hdu.header.update("top%2.2i" % slitno, top)
         hdu.header.update("bottom%2.2i" % slitno, bottom)
 
-        print "%s] Bounding top/bottom: %i/%i" % (result["Target_Name"],
-                bottom, top)
+        info( "%s] Bounding top/bottom: %i/%i" % (result["Target_Name"],
+                bottom, top))
 
         v = collapse_flat_box(data[bottom:top,hpps[0]:hpps[1]])
 
@@ -208,7 +217,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
         for i in np.arange(bottom-1, top+1):
             flat[i,hpps[0]:hpps[1]] = v
 
-    print "Producing Pixel Flat..."
+    info( "Producing Pixel Flat...")
     for r in range(len(results)-1):
         theslit = results[r]
 
@@ -309,7 +318,7 @@ def save_ds9_edges(results, options):
             f.write(ds9)
             f.close()
     except IOError:
-            print "IO Error"
+            error("IO Error")
             raise
     except:
             raise
@@ -469,7 +478,7 @@ def find_edge_pair(data, y, roi_width, edgeThreshold=450):
         else:
             xposs_bot_missing.append(xp)
             xposs_top_missing.append(xp)
-            print "Skipping wavelength pixel): %i" % (xp)
+            info("Skipping wavelength pixel): %i" % (xp))
 
     
     return map(np.array, (xposs_bot, xposs_bot_missing, yposs_bot, xposs_top,
@@ -497,6 +506,7 @@ def fit_edge_poly(xposs, xposs_missing, yposs, order):
     # Remove any fits that deviate wildly from the 2nd order polynomial
     ok = np.abs(yposs - fun(xposs)) < 1
     if not ok.any():
+            error("Flat is not well illuminated? Cannot find edges")
             raise Exception("Flat is not well illuminated? Cannot find edges")
 
     # Now refit to user requested order
@@ -511,6 +521,7 @@ def fit_edge_poly(xposs, xposs_missing, yposs, order):
     pix = np.arange(2048)
     V = fun(pix)
     if np.abs(V.max() - V.min()) > 10:
+        info ("Forcing a horizontal slit edge")
         print "Forcing a horizontal slit edge"
         fun = np.poly1d(np.median(yposs[ok]))
 
@@ -539,6 +550,7 @@ def find_long2pos_edges(data, header, bs, options, edgeThreshold=450,longslit=No
         try:
             y=longslit["yrange"][1]
         except:
+            error ("Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y))
             print "Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y)
 
 
@@ -551,7 +563,7 @@ def find_long2pos_edges(data, header, bs, options, edgeThreshold=450,longslit=No
 
         numslits[i] = len(M[0])
     numslits = np.array(numslits)
-    print "Number of slits allocated for this longslit: "+str(np.sum(numslits))
+    info("Number of slits allocated for this longslit: "+str(np.sum(numslits)))
 
     # now begin steps outline above
     results = []
@@ -586,6 +598,7 @@ def find_long2pos_edges(data, header, bs, options, edgeThreshold=450,longslit=No
         yposs_top = yposs_top[ok]
 
         if len(xposs_bot) == 0:
+            error ("The slit edges specifications appear to be incorrect.")
             raise Exception("The slit edges specifications appear to be incorrect.")
 
         # bot is the polynomium that defines the shape of the bottom of the slit. In this case, we set it to a constant.
@@ -633,6 +646,7 @@ def find_longslit_edges(data, header, bs, options, edgeThreshold=450,longslit=No
         try:
             y=longslit["yrange"][1]
         except:
+            error("Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y))
             print "Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y)
 
 
@@ -645,7 +659,7 @@ def find_longslit_edges(data, header, bs, options, edgeThreshold=450,longslit=No
 
         numslits[i] = len(M[0])
     numslits = np.array(numslits)
-    print "Number of slits allocated for this longslit: "+str(np.sum(numslits))
+    info("Number of slits allocated for this longslit: "+str(np.sum(numslits)))
 
     # now begin steps outline above
     results = []
@@ -680,6 +694,7 @@ def find_longslit_edges(data, header, bs, options, edgeThreshold=450,longslit=No
     yposs_top = yposs_top[ok]
 
     if len(xposs_bot) == 0:
+        error ("The slit edges specifications appear to be incorrect.")
         raise Exception("The slit edges specifications appear to be incorrect.")
 
     # bot is the polynomium that defines the shape of the bottom of the slit. In this case, we set it to a constant.
@@ -778,6 +793,9 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
 
 
     if (np.sum(numslits) != CSU.numslits) and (not bs.long_slit) and (not bs.long2pos_slit):
+        error ("The number of allocated CSU slits (%i) does not match "
+                " the number of possible slits (%i)." % (np.sum(numslits),
+                    CSU.numslits))
         raise Exception("The number of allocated CSU slits (%i) does not match "
                 " the number of possible slits (%i)." % (np.sum(numslits),
                     CSU.numslits))
@@ -812,8 +830,8 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
 
         y -= DY * numslits[target]
         y = max(y, 1)
-
-        print("%2.2i] Finding Slit Edges for %s ending at %4.0i. Slit "
+        
+        info("%2.2i] Finding Slit Edges for %s ending at %4.0i. Slit "
                 "composed of %i CSU slits" % ( target,
                     ssl[target]["Target_Name"], y, numslits[target]))
 

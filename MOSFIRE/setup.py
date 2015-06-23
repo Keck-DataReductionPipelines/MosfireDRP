@@ -9,6 +9,6 @@ setup(name='MOSFIRE',
     url='http://mosfire.googlecode.com',
     py_modules=['Background', 'Bspline', 'Combine', 'CSU', 'Detector',
     'Filters', 'Fit', 'Flats', 'IO', 'Longslit', 'Options', 'Rectify', 'Util',
-    'Wavelength'])
+    'Wavelength','MosfireDrpLog'])
 
 

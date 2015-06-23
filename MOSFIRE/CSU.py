@@ -31,7 +31,7 @@ import os
 from pyraf import iraf
 
 import pdb
-
+from MosfireDrpLog import debug, info, warning, error
 
 class MismatchError(Exception):
     '''The code expected a CSU with 46 slits, but found something else.'''
@@ -88,6 +88,7 @@ def csu_mm_to_pix(x_mm, slitno, Please_Use=False):
     '''
 
     if Please_Use==False:
+        error("Use csu_mm_to_pix_poly (a polynomial fit) rather than csu_mm_to_pix (a linear fit)")
         raise Exception("Use csu_mm_to_pix_poly (a polynomial fit) rather than csu_mm_to_pix (a linear fit)")
         return
 
@@ -153,6 +154,7 @@ def mosfire_geoxytrans(x_kfp, y_kfp, transform="final.pix2mm.4.972.120k",
 def bar_to_slit(x):
     '''Convert a bar #(1-92) to a slit(1-46) number'''
     if (x < 1) or (x > numbars):
+        error("Not indexing CSU properly")
         raise MismatchError("Not indexing CSU properly")
     return int(x+1)/2
 
@@ -214,6 +216,7 @@ class Barset:
 
         # If len(ssl) == 0 then the header is for a long slit
         if (header['MASKNAME'] == 'long2pos'):
+            info("long2pos mode in CSU slit determination")
             self.long2pos_slit = True
 
         if (len(ssl) == 0):
@@ -251,6 +254,7 @@ class Barset:
 
             if (len(self.scislit_to_slit) != len(ssl)) and not (self.long_slit
                     and len(self.scislit_to_slit) == 1):
+                error("SSL should match targets in slit")
                 raise Exception("SSL should match targets in slit")
 
 
@@ -261,6 +265,8 @@ class Barset:
         '''Returns the mechanical (middle) position of a csu slit in mm'''
 
         if (slitno < 1) or (slitno > 46):
+            error("The requested slit number (%i) does not exist" % 
+                    slitno)
             raise Exception("The requested slit number (%i) does not exist" % 
                     slitno)
 
@@ -272,6 +278,8 @@ class Barset:
     def scislit_to_csuslit(self, scislit):
         '''Convert a science slit number to a mechanical slit list'''
         if (scislit < 1) or (scislit > len(self.ssl)+1):
+            error("The requested slit number (%i) does not exist" %
+                    scislit)
             raise Exception("The requested slit number (%i) does not exist" %
                     scislit)
 
@@ -282,6 +290,8 @@ class Barset:
         y0 = 2013
 
         if (slit < 1) or (slit > 46):
+            error("The requested slit number (%i) does not exist" %
+                    slit)
             raise Exception("The requested slit number (%i) does not exist" %
                     slit)
 
@@ -292,11 +302,13 @@ class Barset:
         '''Convert a science slit number to spatial pixel'''
 
         if (scislit < 1) or (scislit > len(self.ssl)):
+            error("The requested science slit number %i does not exist" \
+                    % scislit)
             raise Exception("The requested science slit number %i does not exist" \
                     % scislit)
 
         slits = self.scislit_to_csuslit(scislit)
-        print slits
+        debug(str(slits))
         return self.csu_slit_to_pixel(np.median(slits))
 
     def set_pos_pix(self):
