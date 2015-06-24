@@ -204,9 +204,10 @@ class Driver:
             for slit in ['posAnarrow','posCnarrow']:
                 self.addLine('redfiles = ["eps_" + file + ".fits" for file in obsfiles_'+str(slit)+']')            
                 self.addLine('Rectify.handle_rectification(maskname, redfiles,Wavelength_file,band,obsfiles_'+str(slit)+',waveops, target=target_'+str(slit)+')')
-        if self.type is 'long2pos': 
+        if self.type is 'long2pos_specphot': 
             for slit in ['posAwide','posCwide']:
-                self.addLine('redfiles = ["eps_" + file + ".fits" for file in obsfiles_'+str(slit)+']')            
+                self.addLine('redfiles = ["eps_" + file + ".fits" for file in obsfiles_'+str(slit)+']')
+                self.addLine('redfiles = [redfiles[0]]')
                 self.addLine('Rectify.handle_rectification(maskname, redfiles,Wavelength_file,band,obsfiles_'+str(slit)+',waveops, target=target_'+str(slit)+')')
         self.addLine("")
 
@@ -300,18 +301,18 @@ def SetupFiles(target=None, offsets=None, type=None):
         if set([-7,-21,7,21]).issubset(offsets):
             setupLines.append("obsfiles_posCnarrow = ['Offset_-21_"+str(target)+"_PosC.txt', 'Offset_-7_"+str(target)+"_PosC.txt']")
             obsFiles.append("Offset_-21_"+str(target)+"_PosC.txt")  # we are using this to determine maskname and band
-            setupLines.append('target_posCnarrow = "'+str(target)+'_posC_narrow"')
+            setupLines.append('target_posCnarrow = "'+str(target)+'_POSC_NARROW"')
             setupLines.append("IO.fix_long2pos_headers(obsfiles_posCnarrow)")
             setupLines.append("obsfiles_posAnarrow = ['Offset_7_"+str(target)+"_PosA.txt', 'Offset_21_"+str(target)+"_PosA.txt']")
-            setupLines.append('target_posAnarrow = "'+str(target)+'_posA_narrow"')
+            setupLines.append('target_posAnarrow = "'+str(target)+'_POSA_NARROW"')
             setupLines.append("IO.fix_long2pos_headers(obsfiles_posAnarrow)")
         # wide slits
         if set([-7,-14,7,14]).issubset(offsets):
             setupLines.append("obsfiles_posCwide = ['Offset_-14_"+str(target)+"_PosC.txt', 'Offset_-7_"+str(target)+"_PosC.txt']")
-            setupLines.append('target_posCwide = "'+str(target)+'_posC_wide"')
+            setupLines.append('target_posCwide = "'+str(target)+'_POSC_WIDE"')
             setupLines.append("IO.fix_long2pos_headers(obsfiles_posCwide)") 
             setupLines.append("obsfiles_posAwide = ['Offset_14_"+str(target)+"_PosA.txt', 'Offset_21_"+str(target)+"_PosA.txt']")
-            setupLines.append('target_posAwide = "'+str(target)+'_posA_wide"')
+            setupLines.append('target_posAwide = "'+str(target)+'_POSA_WIDE"')
             setupLines.append("IO.fix_long2pos_headers(obsfiles_posAwide)") 
             specphot = True
         # new long 2 pos (-7,0,7)
@@ -319,15 +320,15 @@ def SetupFiles(target=None, offsets=None, type=None):
         if set([-7,7]).issubset(offsets) and not(set([21,21]).issubset(offsets)):
             setupLines.append("obsfiles_posCnarrow = ['Offset_7_"+str(target)+"_PosC.txt', 'Offset_-7_"+str(target)+"_PosC.txt']")
             obsFiles.append("Offset_7_"+str(target)+"_PosC.txt")  # we are using this to determine maskname and band
-            setupLines.append('target_posCnarrow = "'+str(target)+'_posC_narrow"')
+            setupLines.append('target_posCnarrow = "'+str(target)+'_POSC_NARROW"')
             setupLines.append("obsfiles_posAnarrow = ['Offset_7_"+str(target)+"_PosA.txt', 'Offset_-7_"+str(target)+"_PosA.txt']")
-            setupLines.append('target_posAnarrow = "'+str(target)+'_posA_narrow"')
+            setupLines.append('target_posAnarrow = "'+str(target)+'_POSA_NARROW"')
         # wide slits
         if set([-7,0,7]).issubset(offsets):
             setupLines.append("obsfiles_posCwide = ['Offset_0_"+str(target)+"_PosC.txt', 'Offset_-7_"+str(target)+"_PosC.txt']")
-            setupLines.append('target_posCwide = "'+str(target)+'_posC_wide"')
+            setupLines.append('target_posCwide = "'+str(target)+'_POSC_WIDE"')
             setupLines.append("obsfiles_posAwide = ['Offset_0_"+str(target)+"_PosA.txt', 'Offset_-7_"+str(target)+"_PosA.txt']")
-            setupLines.append('target_posAwide = "'+str(target)+'_posA_wide"')
+            setupLines.append('target_posAwide = "'+str(target)+'_POSA_WIDE"')
             specphot=True
 
     return setupLines, obsFiles, specphot
