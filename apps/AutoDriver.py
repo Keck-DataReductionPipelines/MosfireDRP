@@ -24,9 +24,11 @@ class Driver:
         self.target.write(line+"\n")
 
     def import_section(self):
-        self.addLine("import os, time")
+        self.addLine("import os, time, logging")
         self.addLine("import MOSFIRE")
         self.addLine("from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify, Wavelength")
+        self.addLine("from MOSFIRE.MosfireDrpLog import info, debug, warning, error")
+        self.addLine("logger = logging.getLogger(__name__)")
         self.addLine("import numpy as np, pylab as pl, pyfits as pf")
         self.addLine("np.seterr(all='ignore')")
         self.addLine("flatops = Options.flat")
@@ -69,7 +71,7 @@ class Driver:
 
     def printFlat(self):
         longslit=""
-        if self.type is 'long2pos' or self.type is 'long2pos_specphot':
+        if self.type is 'long2pos' or self.type is 'long2pos_specphot' or self.type is 'longslit':
             longslit=",longslit=longslit"
     
         # using only Flat.txt
@@ -89,18 +91,35 @@ class Driver:
         self.addLine("")        
 
     def addLongslit(self):
-        self.addLine("# Note: for long2pos, the row position is ignored, and the middle point of the slit is used")
-        self.addLine("longslit = {'yrange': [[1062,1188],[887,1010]], 'row_position': 0, 'mode':'long2pos'}")
+        if self.type is 'long2pos' or self.type is 'long2pos_specphot':
+            self.addLine("# Note: for long2pos, the row position is ignored, and the middle point of the slit is used")
+            self.addLine("longslit = {'yrange': [[1062,1188],[887,1010]], 'row_position': 0, 'mode':'long2pos'}")
+        if self.type is 'longslit':
+            # use the slitname to determine the range (such as LONGSLIT-3x0.7)
+            numberOfSlits = int(self.maskName.lstrip("LONGSLIT-").split("x")[0])
+            verticalOffset = 10 # this is the vertical offset to apply to each measurement to shift the position up in the detector. It seems to be around 10
+            slitSizePixels = int(numberOfSlits*(2048/46))
+            slitTop = 1024+slitSizePixels/2+verticalOffset
+            slitBottom = 1024-slitSizePixels/2+verticalOffset
+            RowPosition = 1024+verticalOffset
+            self.addLine("longslit = {'yrange':["+str(slitBottom)+","+str(slitTop)+"],'row_position':"+str(RowPosition)+",'mode':'longslit'}")
+            
         
     def printWavelengthFit(self):
-        if self.type is 'slitmask':
+        if self.type is 'longslit' or self.type is 'long2pos':
+            addLongSlit = ",longslit=longslit"
+        else:
+            addLongSlit = ""
+            
+        
+        if self.type is 'slitmask' or self.type is 'longslit':
 
             self.useNeon = False
             self.useArgon = False
             # determine is Argon and Neon files contain data for K bands
-            if os.path.isfile('Ar.txt') and self.band is 'K':
+            if self.isEmpty('Ar.txt') is False and self.band is 'K':
                 self.useArgon = True
-            if os.path.isfile('Ne.txt') and self.band is 'K':
+            if self.isEmpty('Ne.txt') is False and self.band is 'K':
                 self.useNeon = True
 
             self.addLine("Wavelength.imcombine(obsfiles, maskname, band, waveops)")
@@ -109,21 +128,21 @@ class Driver:
             if self.useNeon:
                 self.addLine("Wavelength.imcombine('Ne.txt', maskname, band, waveops)")
 
-            self.addLine("Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops)")
+            self.addLine("Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops"+addLongSlit+")")
 
             if self.useArgon:
                 self.addLine("Wavelength.apply_interactive(maskname, band, waveops, apply=obsfiles, to='Ar.txt', argon=True)")
             if self.useNeon:
                 self.addLine("Wavelength.apply_interactive(maskname, band, waveops, apply=obsfiles, to='Ne.txt', neon=True)")
 
-            self.addLine("Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles,waveops)")
+            self.addLine("Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles,waveops"+addLongSlit+")")
 
             if self.useArgon and self.useNeon:
-                self.addLine("Wavelength.fit_lambda(maskname, band, 'Ne.txt', 'Ne.txt',waveops, wavenames2='Ar.txt')")
+                self.addLine("Wavelength.fit_lambda(maskname, band, 'Ne.txt', 'Ne.txt',waveops, wavenames2='Ar.txt'"+addLongSlit+")")
             if self.useArgon and not self.useNeon:
-                self.addLine("Wavelength.fit_lambda(maskname, band, 'Ar.txt', 'Ar.txt',waveops)")
+                self.addLine("Wavelength.fit_lambda(maskname, band, 'Ar.txt', 'Ar.txt',waveops"+addLongSlit+")")
             if self.useNeon and not self.useArgon:
-                self.addLine("Wavelength.fit_lambda(maskname, band, 'Ne.txt', 'Ne.txt',waveops)")
+                self.addLine("Wavelength.fit_lambda(maskname, band, 'Ne.txt', 'Ne.txt',waveops"+addLongSlit+")")
 
             if self.useNeon or self.useArgon:
                 self.addLine("LROI = [[21000,22800]]*1")
@@ -132,7 +151,7 @@ class Driver:
             if self.useArgon and not self.useNeon:
                 self.addLine("LROIs = Wavelength.check_wavelength_roi(maskname, band, obsfiles, 'Ar.txt', LROI, waveops)")
 
-            self.addLine("Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops)")
+            self.addLine("Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops"+addLongSlit+")")
 
             if self.useArgon and self.useNeon:
                 self.addLine("Wavelength.apply_lambda_sky_and_arc(maskname, band, obsfiles,  'Ne.txt', LROIs, waveops)")
@@ -152,14 +171,19 @@ class Driver:
             else:
                 self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))            
         if self.type is 'long2pos' or self.type is 'long2pos_specphot':
-            self.addLine("argon = ['Ar.txt']")
-            self.addLine("Wavelength.imcombine(argon, maskname, band, waveops)")
-            self.addLine("Wavelength.fit_lambda_interactively(maskname, band, argon,waveops,longslit=longslit, argon=True)")
-            self.addLine("Wavelength.fit_lambda(maskname, band, argon, argon,waveops,longslit=True)")
-            self.addLine("Wavelength.apply_lambda_simple(maskname, band, argon, waveops, longslit=longslit, smooth=True)")            
-            # determine waveleng name
-            files = IO.list_file_to_strings('Ar.txt')
-            self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))
+            if self.isEmpty('Ar.txt') is False: 
+                self.addLine("argon = ['Ar.txt']")
+                calibWith = "argon"
+                waveFiles = IO.list_file_to_strings('Ar.txt')
+            if self.isEmpty('Ne.txt') is False:
+                self.addLine("neon = ['Ne.txt')")
+                calibWith = "neon"
+                waveFiles = IO.list_file_to_strings('Ne.txt')            
+            self.addLine("Wavelength.imcombine("+str(calibWith)+", maskname, band, waveops)")
+            self.addLine("Wavelength.fit_lambda_interactively(maskname, band, "+str(calibWith)+",waveops,longslit=longslit, "+str(calibWith)+"=True)")
+            self.addLine("Wavelength.fit_lambda(maskname, band, "+str(calibWith)+","+str(calibWith)+",waveops,longslit=longslit)")
+            self.addLine("Wavelength.apply_lambda_simple(maskname, band, "+str(calibWith)+", waveops, longslit=longslit, smooth=True)")            
+            self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(waveFiles, self.band, self.maskName,""))
             self.addLine("Wavelength_file = '"+str(self.waveName)+"'")
         self.addLine("")
             
@@ -167,13 +191,13 @@ class Driver:
         if self.type is 'long2pos_specphot' or self.type is 'long2pos':
             for slit in ['posAnarrow','posCnarrow','posAwide','posCwide']:
                 self.addLine("Background.handle_background(obsfiles_"+str(slit)+",Wavelength_file,maskname,band,waveops, target=target_"+str(slit)+")")
-        if self.type is 'slitmask':
+        if self.type is 'slitmask' or self.type is 'longslit':
             self.addLine("Background.handle_background(obsfiles,'"+str(self.waveName)+"',maskname,band,waveops)")
 
         self.addLine("")
 
     def printRectification(self):
-        if self.type is 'slitmask':
+        if self.type is 'slitmask' or self.type is 'longslit':
             self.addLine('redfiles = ["eps_" + file + ".fits" for file in obsfiles]')
             self.addLine('Rectify.handle_rectification(maskname, redfiles,"'+str(self.waveName)+'",band,obsfiles,waveops)')
         if self.type is 'long2pos' or self.type is 'long2pos_specphot':
@@ -215,6 +239,7 @@ def OffsetPairs():
 
         # if the array has only one element, this is a slitmask (Offset_1.5.txt), add this value to the slitmask offsets
         if len(off_array)==1:
+            type = 'slitmask'
             if "slitmask" in targets_and_offsets:
                 tmp = targets_and_offsets["slitmask"]
                 tmp.append(float(off_array[0]))
@@ -226,40 +251,50 @@ def OffsetPairs():
             # if the last element is a PosC or PosA, then it's long2pos
             #print off_array
             if off_array[-1] in ['PosA','PosC']:
+                type = 'long2pos'
                 # check if we have already seen this target
-                tname = "_".join(off_array[1:-1])    # we are doing this for cases in which the file is Offset_-7_HIP87_7.25_PosA.txt (the _ in the file name is a problem)
-                if tname not in processedTargets:
-                    # add the new target to the list
-                    processedTargets.append(tname)
-                    # add the current offset to the list of offsets files for this target
-                if tname in targets_and_offsets:
-                    tmp=targets_and_offsets[tname]
-                    tmp.append(float(off_array[0]))
-                    #print "adding new offset to target "+str(tname)
-                    targets_and_offsets[tname]=tmp
-                else:
-                    #print "creating new offset set for target "+str(tname)
-                    targets_and_offsets[tname]=[float(off_array[0]),]
+                tname = "_".join(off_array[1:-1])
+                # we are doing this for cases in which the file is Offset_-7_HIP87_7.25_PosA.txt (the _ in the file name is a problem)
+            else:
+                type = 'longslit'
+                tname = "_".join(off_array[1:])
 
+            if tname not in processedTargets:
+                # add the new target to the list
+                processedTargets.append(tname)
+                # add the current offset to the list of offsets files for this target
+            if tname in targets_and_offsets:
+                tmp=targets_and_offsets[tname]
+                tmp.append(float(off_array[0]))
+                #print "adding new offset to target "+str(tname)
+                targets_and_offsets[tname]=tmp
+            else:
+                #print "creating new offset set for target "+str(tname)
+                targets_and_offsets[tname]=[float(off_array[0]),]
 
-    return targets_and_offsets
+    return targets_and_offsets,type
 
-def SetupFiles(target=None, offsets=None):
+def SetupFiles(target=None, offsets=None, type=None):
     # convert numbers such as 1.0 to 1, but leaves 1.5 as 1.5
     offsets = [int(f) if f % 1 ==0 else f for f in offsets]
     setupLines = []
     obsFiles = []
     specphot = False
+    type=type
 
     # slitmask
-    if target is 'slitmask':
+    if type is 'slitmask' or type is 'longslit':
         # files are assumed to be in pairs, and we drop the "0" value is present.
+        # remove negative and 0 offsets
+        if type is 'slitmask':
+            target=""
+        offsets = [f for f in offsets if f>0]
         for off in offsets:
-            if off>0:
-                setupLines.append("obsfiles=['Offset_"+str(off)+".txt','Offset_"+str(off*-1)+".txt']")
-                obsFiles.append("Offset_"+str(off)+".txt")
-                obsFiles.append("Offset_"+str(off*-1)+".txt")
-    else:
+            obsFiles.append("Offset_"+str(off)+"_"+str(target)+".txt")
+            obsFiles.append("Offset_"+str(off*-1)+"_"+str(target)+".txt")
+
+        setupLines.append("obsfiles=['"+str("','".join(obsFiles))+"']")
+    elif type is 'long2pos':
         # old long 2 pos (-7,-14,-21, 7,14,21)
         # narrow slits
         if set([-7,-21,7,21]).issubset(offsets):
@@ -294,17 +329,21 @@ def SetupFiles(target=None, offsets=None):
             setupLines.append("obsfiles_posAwide = ['Offset_0_"+str(target)+"_PosA.txt', 'Offset_-7_"+str(target)+"_PosA.txt']")
             setupLines.append('target_posAwide = "'+str(target)+'_posA_wide"')
             specphot=True
+
     return setupLines, obsFiles, specphot
 
 
 
-targets_and_offsets=OffsetPairs()
+targets_and_offsets,type = OffsetPairs()
+print targets_and_offsets
+print type
+
 
 if 'slitmask' in targets_and_offsets:
     print "slitmask mode"
     mydriver=Driver("Driver_test.py","slitmask")
     mydriver.printHeader()    
-    obsLines,obsFiles,specphot = SetupFiles('slitmask',targets_and_offsets['slitmask'])    
+    obsLines,obsFiles,specphot = SetupFiles('slitmask',targets_and_offsets['slitmask'],type)    
     mydriver.printObsfiles(obsLines)
     mydriver.addOffsetFiles(obsFiles)
     mydriver.printMaskAndBand()
@@ -314,20 +353,22 @@ if 'slitmask' in targets_and_offsets:
     mydriver.printRectification()
     mydriver.CloseFile()
 
-else:
+elif type is 'long2pos' or type is 'longslit':
     Targets = targets_and_offsets.keys()
     for target in Targets:
-        print "long2pos mode"
-        obsLines,obsFiles,specphot = SetupFiles(target,targets_and_offsets[target])
-        if specphot:
+        print str(type)+" mode"
+        obsLines,obsFiles,specphot = SetupFiles(target,targets_and_offsets[target],type)
+        if type is 'longslit':
+            mydriver=Driver("Longslit_"+str(target)+"_test.py","longslit")
+        elif specphot:
             mydriver=Driver("Long2pos_"+str(target)+"_test.py","long2pos_specphot")
         else:
             mydriver=Driver("Long2pos_"+str(target)+"_test.py","long2pos")
         mydriver.printHeader()
-        mydriver.addLongslit()
         mydriver.printObsfiles(obsLines)
         mydriver.addOffsetFiles(obsFiles)
         mydriver.printMaskAndBand()
+        mydriver.addLongslit()        
         mydriver.printFlat()
         mydriver.printWavelengthFit()
         mydriver.printBackground()
