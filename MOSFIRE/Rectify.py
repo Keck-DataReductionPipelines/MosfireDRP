@@ -91,9 +91,11 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         postoshift[II[0]['frameid']] = shift
     
         info("Position {0} shift: {1:2.2f} as".format(off, shift))
-    
-
-    plans = Background.guess_plan_from_positions(set(posnames))
+    # this is to deal with cases in which we want to rectify one single file
+    if len(set(posnames)) is 1:
+        plans = [['A']]
+    else:
+        plans = Background.guess_plan_from_positions(set(posnames))
 
     all_shifts = []
     for plan in plans:
@@ -117,8 +119,12 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         outname = target
 
     for plan in plans:
-        p0 = plan[0].replace("'", "p")
-        p1 = plan[1].replace("'", "p")
+        if len(plan) is 1:
+            p0 = 'A'
+            p1 = 'B'
+        else:
+            p0 = plan[0].replace("'", "p")
+            p1 = plan[1].replace("'", "p")
         suffix = "%s-%s" % (p0,p1)
         info("Handling plan %s" % suffix)
         fname = "bsub_{0}_{1}_{2}.fits".format(outname,band,suffix)
@@ -376,7 +382,8 @@ def handle_rectification_helper(edgeno):
     epss = []
     ivss = []
     itss = []
-    sign = -1
+    if len(shifts) is 1: sign = 1
+    else: sign = -1
     for shift in shifts:
         output = r_interpol(ll, eps, fidl, tops, top, shift_pix=shift/0.18,
             pad=[mnshift, mxshift], fill_value = np.nan)
