@@ -276,6 +276,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
 
 
     header["bunit"] = "ELECTRONS/SECOND"
+    info("############ Final reduced file: {0}_{1}_eps.fits".format(outname,band))
     IO.writefits(output, maskname, "{0}_{1}_eps.fits".format(outname,
         band), options, overwrite=True, header=header,
         lossy_compress=False)
