@@ -19,6 +19,10 @@ else
             mospy_handle.py $*
             breaksw
 
+        case "AutoDriver":
+            AutoDriver.py
+            breaksw
+	    
         case "what":
             mospy_what.py $*
             breaksw
