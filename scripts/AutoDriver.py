@@ -284,18 +284,22 @@ def SetupFiles(target=None, offsets=None, type=None):
     type=type
 
     # slitmask
-    if type is 'slitmask' or type is 'longslit':
+    if type is 'slitmask':
+        offsets = [f for f in offsets if f>0]
+        for off in offsets:
+            obsFiles.append("Offset_"+str(off)+".txt")
+            obsFiles.append("Offset_"+str(off*-1)+".txt")
+        setupLines.append("obsfiles=['"+str("','".join(obsFiles))+"']")
+    elif type is 'longslit':
         # files are assumed to be in pairs, and we drop the "0" value is present.
         # remove negative and 0 offsets
-        if type is 'slitmask':
-            target=""
         offsets = [f for f in offsets if f>0]
         for off in offsets:
             obsFiles.append("Offset_"+str(off)+"_"+str(target)+".txt")
             obsFiles.append("Offset_"+str(off*-1)+"_"+str(target)+".txt")
 
         setupLines.append("obsfiles=['"+str("','".join(obsFiles))+"']")
-    elif type is 'long2pos':
+    elif type is 'long2pos' or type is 'long2pos_specphot':
         # old long 2 pos (-7,-14,-21, 7,14,21)
         # narrow slits
         if set([-7,-21,7,21]).issubset(offsets):
@@ -344,7 +348,7 @@ if 'slitmask' in targets_and_offsets:
     print "slitmask mode"
     mydriver=Driver("Driver_test.py","slitmask")
     mydriver.printHeader()    
-    obsLines,obsFiles,specphot = SetupFiles('slitmask',targets_and_offsets['slitmask'],type)    
+    obsLines,obsFiles,specphot = SetupFiles('slitmask',targets_and_offsets['slitmask'],type)   
     mydriver.printObsfiles(obsLines)
     mydriver.addOffsetFiles(obsFiles)
     mydriver.printMaskAndBand()
