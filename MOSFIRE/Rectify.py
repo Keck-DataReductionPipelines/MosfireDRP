@@ -15,11 +15,11 @@ import pdb
 
 import MOSFIRE
 from MOSFIRE import Background, CSU, Fit, IO, Options, Filters, Detector, Wavelength
+from MosfireDrpLog import debug, info, warning, error
 
 
-
-def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, options,
-        commissioning_shift=3.0):
+def handle_rectification(maskname, in_files, wavename, band_pass, files, options,
+        commissioning_shift=3.0, target='default'):
     '''Handle slit rectification and coaddition.
 
     Args:
@@ -57,10 +57,10 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
     lambdas = IO.readfits(wavename, options)
 
     if np.any(lambdas[1].data < 0) or np.any(lambdas[1].data > 29000):
-        print "***********WARNING ***********"
-        print "The file {0} may not be a wavelength file.".format(wavename)
-        print "Check before proceeding."
-        print "***********WARNING ***********"
+        info("***********WARNING ***********")
+        info("The file {0} may not be a wavelength file.".format(wavename))
+        info("Check before proceeding.")
+        info("***********WARNING ***********")
 
     edges, meta = IO.load_edges(maskname, band, options)
     shifts = []
@@ -70,7 +70,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
     
     for file in in_files:
 
-        print ":: ", file
+        info(":: "+str(file))
         II = IO.read_drpfits(maskname, file, options)
 
         off = np.array((II[0]["decoff"], II[0]["raoff"]),dtype=np.float64)
@@ -90,10 +90,12 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
         posnames.append(II[0]["frameid"])
         postoshift[II[0]['frameid']] = shift
     
-        print "Position {0} shift: {1:2.2f} as".format(off, shift)
-    
-
-    plans = Background.guess_plan_from_positions(set(posnames))
+        info("Position {0} shift: {1:2.2f} as".format(off, shift))
+    # this is to deal with cases in which we want to rectify one single file
+    if len(set(posnames)) is 1:
+        plans = [['A']]
+    else:
+        plans = Background.guess_plan_from_positions(set(posnames))
 
     all_shifts = []
     for plan in plans:
@@ -110,20 +112,30 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
 
     all_solutions = []
     cntr = 0
+
+    if target is 'default':
+        outname = maskname
+    else:
+        outname = target
+
     for plan in plans:
-        p0 = plan[0].replace("'", "p")
-        p1 = plan[1].replace("'", "p")
+        if len(plan) is 1:
+            p0 = 'A'
+            p1 = 'B'
+        else:
+            p0 = plan[0].replace("'", "p")
+            p1 = plan[1].replace("'", "p")
         suffix = "%s-%s" % (p0,p1)
-        print "Handling plan %s" % suffix
-        fname = "bsub_{0}_{1}_{2}.fits".format(maskname,band,suffix)
+        info("Handling plan %s" % suffix)
+        fname = "bsub_{0}_{1}_{2}.fits".format(outname,band,suffix)
         EPS = IO.read_drpfits(maskname, fname, options)
         EPS[1] = np.ma.masked_array(EPS[1], theBPM, fill_value=0)
 
-        fname = "var_{0}_{1}_{2}.fits".format(maskname, band, suffix)
+        fname = "var_{0}_{1}_{2}.fits".format(outname, band, suffix)
         VAR = IO.read_drpfits(maskname, fname, options)
         VAR[1] = np.ma.masked_array(VAR[1], theBPM, fill_value=np.inf)
 
-        fname = "itime_{0}_{1}_{2}.fits".format(maskname, band, suffix)
+        fname = "itime_{0}_{1}_{2}.fits".format(outname, band, suffix)
         ITIME = IO.read_drpfits(maskname, fname, options)
         ITIME[1] = np.ma.masked_array(ITIME[1], theBPM, fill_value=0)
 
@@ -141,13 +153,12 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
         cntr += 1
         p = Pool()
         solutions = p.map(handle_rectification_helper, sols)
-        #solutions = map(handle_rectification_helper, [15])
         p.close()
 
         all_solutions.append(solutions)
 
     tick = time.time()
-    print "-----> Mask took %i. Writing to disk." % (tick-tock)
+    info("-----> Mask took %i. Writing to disk." % (tick-tock))
 
 
     output = np.zeros((1, len(fidl)))
@@ -157,7 +168,9 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
 
 
     # the barset [bs] is used for determining object position
-    x, x, bs = IO.readmosfits(barset_file, options)
+    files = IO.list_file_to_strings(files)
+    info("Using "+str(files[0])+" for slit configuration.")
+    x, x, bs = IO.readmosfits(files[0], options)
     
 
     for i_slit in xrange(len(solutions)):
@@ -204,7 +217,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
 
 
         for i_solution in xrange(1,len(all_solutions)):
-            print "Combining solution %i" %i_solution
+            info("Combining solution %i" %i_solution)
             solution = all_solutions[i_solution][i_slit]
             img += solution["eps_img"]
             std += solution["sd_img"]
@@ -221,22 +234,22 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
 
         header['bunit'] = ('electron/second', 'electron power')
         IO.writefits(img, maskname,
-            "{0}_{1}_{2}_eps.fits".format(maskname, band, target_name), options,
+            "{0}_{1}_{2}_eps.fits".format(outname, band, target_name), options,
             overwrite=True, header=header, lossy_compress=False)
 
         header['bunit'] = ('electron/second', 'sigma/itime')
         IO.writefits(std/tms, maskname,
-            "{0}_{1}_{2}_sig.fits".format(maskname, band, target_name), options,
+            "{0}_{1}_{2}_sig.fits".format(outname, band, target_name), options,
             overwrite=True, header=header, lossy_compress=False)
 
         header['bunit'] = ('second', 'exposure time')
         IO.writefits(tms, maskname,
-            "{0}_{1}_{2}_itime.fits".format(maskname, band, target_name), options,
+            "{0}_{1}_{2}_itime.fits".format(outname, band, target_name), options,
             overwrite=True, header=header, lossy_compress=False)
 
         header['bunit'] = ('', 'SNR')
         IO.writefits(img*tms/std, maskname,
-            "{0}_{1}_{2}_snrs.fits".format(maskname, band, target_name), options,
+            "{0}_{1}_{2}_snrs.fits".format(outname, band, target_name), options,
             overwrite=True, header=header, lossy_compress=False)
 
     header = EPS[0].copy()
@@ -263,22 +276,23 @@ def handle_rectification(maskname, in_files, wavename, band_pass, barset_file, o
 
 
     header["bunit"] = "ELECTRONS/SECOND"
-    IO.writefits(output, maskname, "{0}_{1}_eps.fits".format(maskname,
+    info("############ Final reduced file: {0}_{1}_eps.fits".format(outname,band))
+    IO.writefits(output, maskname, "{0}_{1}_eps.fits".format(outname,
         band), options, overwrite=True, header=header,
         lossy_compress=False)
 
     header["bunit"] = ""
-    IO.writefits(snrs, maskname, "{0}_{1}_snrs.fits".format(maskname,
+    IO.writefits(snrs, maskname, "{0}_{1}_snrs.fits".format(outname,
         band), options, overwrite=True, header=header,
         lossy_compress=False)
 
     header["bunit"] = "ELECTRONS/SECOND"
-    IO.writefits(sdout/itout, maskname, "{0}_{1}_sig.fits".format(maskname,
+    IO.writefits(sdout/itout, maskname, "{0}_{1}_sig.fits".format(outname,
         band), options, overwrite=True, header=header,
         lossy_compress=False)
 
     header["bunit"] = "SECOND"
-    IO.writefits(itout, maskname, "{0}_{1}_itime.fits".format(maskname,
+    IO.writefits(itout, maskname, "{0}_{1}_itime.fits".format(outname,
         band), options, overwrite=True, header=header,
         lossy_compress=False)
 
@@ -342,7 +356,7 @@ def handle_rectification_helper(edgeno):
     
     edge = edges[edgeno]
 
-    print "Handling edge: ", edge["Target_Name"]
+    info("Handling edge: "+str(edge["Target_Name"]))
 
     tops = edge["top"](pix)
     bots = edge["bottom"](pix)
@@ -352,8 +366,8 @@ def handle_rectification_helper(edgeno):
     mxshift = np.abs(np.int(np.ceil(np.max(all_shifts)/0.18)))
     mnshift = np.abs(np.int(np.floor(np.min(all_shifts)/0.18)))
     
-    top = min(np.floor(np.min(tops)), 2048)
-    bot = max(np.ceil(np.max(bots)), 0)
+    top = int(min(np.floor(np.min(tops)), 2048))
+    bot = int(max(np.ceil(np.max(bots)), 0))
 
     ll = lambdas[1].data[bot:top, :]
     eps = dats[1][bot:top, :].filled(0.0)
@@ -369,8 +383,8 @@ def handle_rectification_helper(edgeno):
     epss = []
     ivss = []
     itss = []
-    sign = -1
-    
+    if len(shifts) is 1: sign = 1
+    else: sign = -1
     for shift in shifts:
         output = r_interpol(ll, eps, fidl, tops, top, shift_pix=shift/0.18,
             pad=[mnshift, mxshift], fill_value = np.nan)

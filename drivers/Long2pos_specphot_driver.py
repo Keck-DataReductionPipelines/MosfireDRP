@@ -21,31 +21,38 @@ import numpy as np, pylab as pl, pyfits as pf
 
 np.seterr(all="ignore")
 
-maskname = 'LONGSLIT-46x0.7'
-band = 'J'
+maskname = 'long2pos_specphot'
+band = 'H'
 
 flatops = Options.flat
 waveops = Options.wavelength
 
+# Note: for long2pos, the row position is ignored, and the middle point of the slit is used
+longslit = {'yrange': [[1062,1188],[887,1010]], 'row_position': 0}
 
-longslit = {'yrange': [900, 1150], 'row_position': 1000, 'mode':'longslit'}
 
-obsfiles = ['Offset_15_HD2050_wise233.txt', 'Offset_-15_HD2050_wise233.txt']
+# Narrow slits: use the -7 and -21 (or 7 and 21) Offsets files 
+obsfiles = ['Offset_-7_HIP85871_7.25.txt', 'Offset_-21_HIP85871_7.25.txt']
 
-#Flats.handle_flats('Flat.txt', maskname, band, flatops, longslit = longslit)
+# Wide slits: use the -14 and -21 (or 14 and 21) Offset files
+obsfiles = ['Offset_-14_HIP85871_7.25.txt','Offset_-21_HIP85871_7.25.txt']
 
-# SKY LINES
-# Use sky lines for wavelength calibration
-# Use either Sky lines or Neon lines.
-#Wavelength.imcombine(obsfiles, maskname, band, waveops)
-#Wavelength.fit_lambda_interactively(maskname, band, obsfiles, waveops, longslit=longslit)
-#Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles, waveops, longslit=longslit)
-#Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops, longslit=longslit, smooth=True)
+# Argon files
+argon = ['Ar.txt']
+
+Flats.handle_flats('Flat.txt', maskname, band, flatops, longslit = longslit)
+
+# Uses the argon calibration taken in the afternoon with long2pos for the wavelength calibration
+
+#Wavelength.imcombine(argon, maskname, band, waveops)
+#Wavelength.fit_lambda_interactively(maskname, band, argon, waveops, longslit=longslit, argon=True)
+#Wavelength.fit_lambda(maskname, band, argon, argon, waveops, longslit=longslit)
+#Wavelength.apply_lambda_simple(maskname, band, argon, waveops, longslit=longslit, smooth=True)
 
 
 #Background.handle_background(obsfiles,
-#    'lambda_solution_wave_stack_J_m150609_0654-0661.fits',
-#    maskname, band, waveops)
+#    'lambda_solution_wave_stack_H_m150428_0091-0091.fits',
+#    maskname, band, waveops, plan=[["A","B"]])
 
 redfiles = ["eps_" + file + ".fits" for file in obsfiles]
 #update the "lambda_solution_wave_stack_K*.fits" file name
@@ -54,7 +61,7 @@ redfiles = ["eps_" + file + ".fits" for file in obsfiles]
 #   e.g.    "/Users/user1/MOSFIRE/DRP_CODE/DATA/2014may08/m130114_0451.fits",
 
 #Rectify.handle_rectification(maskname, redfiles,
-#    "lambda_solution_wave_stack_J_m150609_0654-0661.fits",
+#    "lambda_solution_wave_stack_H_m150428_0091-0091.fits",
 #    band, 
 #    obsfiles,
 #    waveops)

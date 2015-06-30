@@ -14,12 +14,14 @@ try:
     import pytools
     import pytools.nmpfit as mpfit
 except ImportError: import stsci.tools.nmpfit as mpfit
-
+from MosfireDrpLog import debug, info, warning, error
 import unittest
 
 def xcor(a,b,lags):
 
     if len(a) != len(b):
+        error("cross correlation (xcor) requires a and b "
+                "to be of same length")
         raise Exception(
                 "cross correlation (xcor) requires a and b "
                 "to be of same length")
@@ -291,6 +293,7 @@ def do_fit(data, residual_fun=residual_single):
                 np.ma.median(data), 
                 width]
     else:
+        error("residual_fun not specified")
         raise Exception("residual_fun not specified")
 
 
@@ -366,11 +369,11 @@ class TestFitFunctions(unittest.TestCase):
         xs = np.arange(25)
         ys = fit_single(p0, xs)
         lsf = do_fit(ys, residual_single)
-        print lsf[0]
+        info(str(lsf[0]))
 
         ys = fit_single(pn0, xs)
         lsf = do_fit(ys, residual_single)
-        print lsf[0]
+        info(str(lsf[0]))
 
 if __name__ == '__main__':
     unittest.main()
