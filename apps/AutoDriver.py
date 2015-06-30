@@ -289,12 +289,10 @@ def SetupFiles(target=None, offsets=None, type=None):
         for off in offsets:
             obsFiles.append("Offset_"+str(off)+".txt")
             obsFiles.append("Offset_"+str(off*-1)+".txt")
-
+        setupLines.append("obsfiles=['"+str("','".join(obsFiles))+"']")
     elif type is 'longslit':
         # files are assumed to be in pairs, and we drop the "0" value is present.
         # remove negative and 0 offsets
-        if type is 'slitmask':
-            target=""
         offsets = [f for f in offsets if f>0]
         for off in offsets:
             obsFiles.append("Offset_"+str(off)+"_"+str(target)+".txt")
@@ -350,7 +348,7 @@ if 'slitmask' in targets_and_offsets:
     print "slitmask mode"
     mydriver=Driver("Driver_test.py","slitmask")
     mydriver.printHeader()    
-    obsLines,obsFiles,specphot = SetupFiles('slitmask',targets_and_offsets['slitmask'],type)    
+    obsLines,obsFiles,specphot = SetupFiles('slitmask',targets_and_offsets['slitmask'],type)   
     mydriver.printObsfiles(obsLines)
     mydriver.addOffsetFiles(obsFiles)
     mydriver.printMaskAndBand()
