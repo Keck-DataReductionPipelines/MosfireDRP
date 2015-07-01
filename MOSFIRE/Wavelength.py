@@ -852,7 +852,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
     header.update("cdelt2", 1)
     header.update("cname1", "angstrom")
     header.update("cname2", "pixel")
-    header.update("cd1_1", dlam)
+    header.update("cd1_1", dlam.item())
     header.update("cd1_2", 0)
     header.update("cd2_1", 0)
     header.update("cd2_2", 1)
@@ -972,6 +972,11 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
             line = central_line-(10*step)
             dlam = np.ma.median(np.diff(lams[line,:]))
         step=step+1
+
+    # if a masked array, as returned by numpy 1.9, then get the internal representation
+    if type(dlam) == np.ma.MaskedArray:
+        dlam = dlam.item()
+        
     info("Non-empty line found at pixel "+str(line))
     hpp = Filters.hpp[bandname] 
     ll_fid = np.arange(hpp[0], hpp[1], dlam)

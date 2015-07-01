@@ -872,7 +872,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
             return
 
         ## Parameters can either be stored in parinfo, or x. x takes precedence if it exists
-        if (xall == None) and (parinfo == None):
+        if (xall is None) and (parinfo is None):
             self.errmsg = 'ERROR: must pass parameters in P or PARINFO'
             return
 
@@ -891,9 +891,9 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
 
         ## If the parameters were not specified at the command line, then
         ## extract them from PARINFO
-        if (xall == None):
+        if (xall is None):
             xall = self.parinfo(parinfo, 'value')
-            if (xall == None):
+            if (xall is None):
                 self.errmsg = 'ERROR: either P or PARINFO(*)["value"] must be supplied.'
                 return
 
@@ -1060,7 +1060,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
                                                     epsfcn=epsfcn,
                                                     autoderivative=autoderivative, dstep=dstep,
                                                     functkw=functkw, ifree=ifree, xall=self.params)
-            if (fjac == None):
+            if (fjac is None):
                 self.errmsg = 'WARNING: premature termination by FDJAC2'
                 return
 
@@ -1361,7 +1361,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
 
         if (self.debug): print 'Entering defiter...'
         if (quiet): return
-        if (fnorm == None):
+        if (fnorm is None):
             [status, fvec] = self.call(fcn, x, functkw)
             fnorm = self.enorm(fvec)**2
 
@@ -1429,7 +1429,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
         if (self.debug): print 'Entering call...'
         if (self.qanytied): x = self.tie(x, self.ptied)
         self.nfev = self.nfev + 1
-        if (fjac == None):
+        if (fjac is None):
             [status, f] = fcn(x, fjac=fjac, **functkw)
 
             if (self.damp > 0):
@@ -1479,10 +1479,10 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
 
         if (self.debug): print 'Entering fdjac2...'
         machep = self.machar.machep
-        if epsfcn == None:  epsfcn = machep
-        if xall == None:    xall = x
-        if ifree == None:   ifree = numpy.arange(len(xall))
-        if step == None:    step = x * 0.
+        if epsfcn is None:  epsfcn = machep
+        if xall is None:    xall = x
+        if ifree is None:   ifree = numpy.arange(len(xall))
+        if step is None:    step = x * 0.
         nall = len(xall)
 
         eps = numpy.sqrt(max([epsfcn, machep]))
@@ -2123,7 +2123,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
     ## Procedure to tie one parameter to another.
     def tie(self, p, ptied=None):
         if (self.debug): print 'Entering tie...'
-        if (ptied == None): return
+        if (ptied is None): return
         for i in range(len(ptied)):
             if ptied[i] == '': continue
             cmd = 'p[' + str(i) + '] = ' + ptied[i]
@@ -2210,7 +2210,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
             print 'ERROR: r must be a square matrix'
             return(-1)
 
-        if (ipvt == None): ipvt = numpy.arange(n)
+        if (ipvt is None): ipvt = numpy.arange(n)
         r = rr.copy()
         r.shape = [n,n]
 
