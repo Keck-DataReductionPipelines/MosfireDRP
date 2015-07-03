@@ -877,7 +877,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
             return
 
         ## Be sure that PARINFO is of the right type
-        if (parinfo != None):
+        if (parinfo is not None):
             if (type(parinfo) != types.ListType):
                 self.errmsg = 'ERROR: PARINFO must be a list of dictionaries.'
                 return
@@ -885,7 +885,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
                 if (type(parinfo[0]) != types.DictionaryType):
                     self.errmsg = 'ERROR: PARINFO must be a list of dictionaries.'
                     return
-            if ((xall != None) and (len(xall) != len(parinfo))):
+            if ((xall is not None) and (len(xall) != len(parinfo))):
                 self.errmsg = 'ERROR: number of elements in PARINFO and P must agree'
                 return
 
@@ -956,7 +956,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
         limited = self.parinfo(parinfo, 'limited', default=[0,0], n=npar)
         limits = self.parinfo(parinfo, 'limits', default=[0.,0.], n=npar)
 
-        if (limited != None) and (limits != None):
+        if (limited is not None) and (limits is not None):
             ## Error checking on limits in parinfo
             wh = numpy.nonzero((limited[:,0] & (xall < limits[:,0])) |
                                                                     (limited[:,1] & (xall > limits[:,1])))
@@ -1031,7 +1031,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
             numpy.put(self.params, ifree, x)
             if (self.qanytied): self.params = self.tie(self.params, ptied)
 
-            if (nprint > 0) and (iterfunct != None):
+            if (nprint > 0) and (iterfunct is not None):
                 if (((self.niter-1) % nprint) == 0):
                     mperr = 0
                     xnew0 = self.params.copy()
@@ -1040,7 +1040,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
                     status = iterfunct(fcn, self.params, self.niter, self.fnorm**2,
                             functkw=functkw, parinfo=parinfo, quiet=quiet,
                             dof=dof, **iterkw)
-                    if (status != None): self.status = status
+                    if (status is not None): self.status = status
 
                     ## Check for user termination
                     if (self.status < 0):
@@ -1318,15 +1318,15 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
             catch_msg = 'in the termination phase'
             self.fnorm = self.enorm(fvec)
 
-        if ((self.fnorm != None) and (fnorm1 != None)):
+        if ((self.fnorm is not None) and (fnorm1 is not None)):
             self.fnorm = max([self.fnorm, fnorm1])
             self.fnorm = self.fnorm**2.
 
         self.covar = None
         self.perror = None
         ## (very carefully) set the covariance matrix COVAR
-        if ((self.status > 0) and (nocovar==0) and (n != None)
-                                                and (fjac != None) and (ipvt != None)):
+        if ((self.status > 0) and (nocovar==0) and (n is not None)
+                                                and (fjac is not None) and (ipvt is not None)):
             sz = numpy.shape(fjac)
             if ((n > 0) and (sz[0] >= n) and (sz[1] >= n)
                             and (len(ipvt) >= n)):
@@ -1369,11 +1369,11 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
         nprint = len(x)
         print "Iter ", ('%6i' % iter),"   CHI-SQUARE = ",('%.10g' % fnorm)," DOF = ", ('%i' % dof)
         for i in range(nprint):
-            if (parinfo != None) and ('parname' in parinfo[i]):
+            if (parinfo is not None) and ('parname' in parinfo[i]):
                 p = '   ' + parinfo[i]['parname'] + ' = '
             else:
                 p = '   P' + str(i) + ' = '
-            if (parinfo != None) and ('mpprint' in parinfo[i]):
+            if (parinfo is not None) and ('mpprint' in parinfo[i]):
                 iprint = parinfo[i]['mpprint']
             else:
                 iprint = 1
@@ -1401,14 +1401,14 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
     ## Procedure to parse the parameter values in PARINFO, which is a list of dictionaries
     def parinfo(self, parinfo=None, key='a', default=None, n=0):
         if (self.debug): print 'Entering parinfo...'
-        if (n == 0) and (parinfo != None): n = len(parinfo)
+        if (n == 0) and (parinfo is not None): n = len(parinfo)
         if (n == 0):
             values = default
             return(values)
 
         values = []
         for i in range(n):
-            if ((parinfo != None) and (key in parinfo[i])):
+            if ((parinfo is not None) and (key in parinfo[i])):
                 values.append(parinfo[i][key])
             else:
                 values.append(default)
@@ -1516,7 +1516,7 @@ e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
         h = eps * abs(x)
 
         ## if STEP is given, use that
-        if step != None:
+        if step is not None:
             stepi = numpy.take(step, ifree)
             wh = (numpy.nonzero(stepi > 0) )[0]
             if (len(wh) > 0): numpy.put(h, wh, numpy.take(stepi, wh))
