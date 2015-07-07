@@ -1964,13 +1964,13 @@ class InteractiveSolution:
                 self.linelist = local_linelist
         ok = np.isfinite(deltas)
         self.STD = np.std(deltas[ok])
-        self.MAD = np.ma.median(np.abs(deltas[ok]))
+        self.MAD = np.median(np.abs(deltas[ok]))
 
         info("STD: %1.2f MAD: %1.2f" % (self.STD, self.MAD))
         debug(str(self.cfit))
 
 
-        self.solutions[self.slitno-1] = {"linelist": local_linelist, "MAD":
+        self.solutions[self.slitno-1] = {"linelist": self.linelist, "MAD":
                 self.MAD, "foundlines": self.foundlines, "foundlinesig":
                 self.foundlinesig, "sol_1d": [deltas, cfit, sigmas], "STD":
                 self.STD, "slitno": self.slitno, "extract_pos":
