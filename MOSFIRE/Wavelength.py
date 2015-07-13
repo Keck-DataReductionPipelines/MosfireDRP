@@ -417,7 +417,7 @@ def fit_lambda_helper(slitno):
     return sol
 
 def apply_interactive(maskname, band, options, apply=None, to=None, neon=False,
-    argon=False, extension=None):
+    argon=False, extension=None,short_exp = False):
     """Fit the one-dimensional wavelength solution to each science slit"""
     np.seterr(all="ignore")
 
@@ -435,7 +435,7 @@ def apply_interactive(maskname, band, options, apply=None, to=None, neon=False,
     (header, drop, bs) = IO.readmosfits(wavenames[0], options, extension=extension)
 
     mfits = header, data, bs
-    linelist = pick_linelist(header, neon=neon, argon=argon)
+    linelist = pick_linelist(header, neon=neon, argon=argon, short_exp = short_exp)
 
     solutions = []
     pix = np.arange(2048)
@@ -486,7 +486,7 @@ def apply_interactive(maskname, band, options, apply=None, to=None, neon=False,
 
     np.save(outfn, solutions)
 
-def check_wavelength_roi(maskname, band, skyfiles, arcfiles, LROI, options):
+def check_wavelength_roi(maskname, band, skyfiles, arcfiles, LROI, options, no_check=False):
     '''The purpose of this function is to help the user selection a wavelength
         range of interest over which to normalize the arcs versus sky solutions.
         '''
@@ -532,23 +532,24 @@ def check_wavelength_roi(maskname, band, skyfiles, arcfiles, LROI, options):
         roi = (ls > 21500) & (ls < 22000)
         MeanDiffs.append(np.mean(ls[roi] - la[roi]))
 
-        
-    pl.xlim(19000, 25000)
-    pl.ylim(-7,7)
-    pl.grid(True)
-    pl.title("Close this window to continue")
-    pl.xlabel("Sky Wavelength [Angstrom]")
-    pl.ylabel("Sky - Arc Wavelength [Angstrom]")
-    
-    MeanDiffs =np.array(MeanDiffs)
-    info("RMS in 21500 < lambda < 22000 is %2.2f Ang" % (
-        np.sqrt(np.mean(MeanDiffs**2))))
-    pl.show()
+
+    if not no_check:
+        pl.xlim(19000, 25000)
+        pl.ylim(-7,7)
+        pl.grid(True)
+        pl.title("Close this window to continue")
+        pl.xlabel("Sky Wavelength [Angstrom]")
+        pl.ylabel("Sky - Arc Wavelength [Angstrom]")
+
+        MeanDiffs =np.array(MeanDiffs)
+        info("RMS in 21500 < lambda < 22000 is %2.2f Ang" % (
+            np.sqrt(np.mean(MeanDiffs**2))))
+        pl.show()
 
     return LROI
 
 
-def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, longslit=None,argon=None, extension=None, bypass=False):
+def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, longslit=None,argon=None, extension=None, bypass=False,short_exp=False):
     """Fit the one-dimensional wavelength solution to each science slit
     
     Args:
@@ -588,7 +589,7 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     name = filelist_to_wavename(wavenames, band, maskname, options)
     fn = "lambda_center_coeffs_{0}.npy".format(name.rstrip(".fits"))
 
-    linelist = pick_linelist(header, neon=neon, argon=argon)
+    linelist = pick_linelist(header, neon=neon, argon=argon, short_exp = short_exp)
     
     try: 
         solutions = np.load(fn)
@@ -607,6 +608,8 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
         info("*** LONGSLIT MODE *** Extract position set to %i" % starting_pos)
     else:
         starting_pos = None
+    print("using line list")
+    print(linelist)
     II = InteractiveSolution(fig, mfits, linelist, options, 1,
         outfilename, solutions=solutions, bypass=bypass, starting_pos=starting_pos)
     info( "Waiting")
@@ -702,7 +705,7 @@ def find_pixel_offset(lam_sky, coeff_arc, LROI):
 
 
 def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
-    options, longslit=None, smooth=True, neon=True, extension=None):
+    options, longslit=None, smooth=True, neon=True, extension=None, short_exp = False):
     
     global lams, sigs
     
@@ -732,7 +735,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
     bmap = {"Y": 6, "J": 5, "H": 4, "K": 3}
     order = bmap[bandname]
 
-    skylines = pick_linelist(header)
+    skylines = pick_linelist(header, short_exp = short_exp)
     arclines = pick_linelist(header, neon=neon)
 
     # write lambda
@@ -863,7 +866,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
     
 
 def apply_lambda_simple(maskname, bandname, wavenames, options,
-        longslit=None, smooth=True, neon=None):
+        longslit=None, smooth=True, neon=None, short_exp = False):
     """Convert solutions into final output products. This is the function that
     should be used for now."""
 
@@ -888,7 +891,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
     bmap = {"Y": 6, "J": 5, "H": 4, "K": 3}
     order = bmap[bandname]
 
-    lines = pick_linelist(header, neon=neon)
+    lines = pick_linelist(header, neon=neon, short_exp = short_exp)
 
     # write lambda
     lams = np.zeros((2048, 2048), dtype=np.float32)
@@ -1062,7 +1065,7 @@ def dlambda_model(p):
 
     return scale/(order/d) * sinbeta / costerm
 
-def pick_linelist(header, neon=False, argon=False):
+def pick_linelist(header, neon=False, argon=False, short_exp = False):
     band = header["filter"]
     
     # following linelinests are produced by ccs and can be found in the iraf
@@ -1112,7 +1115,19 @@ def pick_linelist(header, neon=False, argon=False):
             13156.9911 , 13210.6977 , 13236.5414 , 13301.9624 , 13324.3509 ,
              13421.579])
 
-    if band == 'K':
+    if (band == 'K') and short_exp:
+        # remove: 19518.4784 , 19593.2626 ,  19618.5719 ,19678.046 ,19839.7764 ,20193.1799 ,20499.237 ,21279.1406 ,21580.5093 ,21711.1235 , 21873.507 ,22460.4183 ,22690.1765 ,22985.9156,23914.55, 24041.62,22742.1907 
+        lines = np.array([
+        19642.4493 , 
+        19701.6455 , 19771.9063 , 
+        20008.0235 ,  20275.9409 , 20339.697 , 20412.7192 ,
+        20563.6072 , 20729.032 , 20860.2122 , 20909.5976 ,
+        21176.5323 , 21249.5368 ,  21507.1875 , 21537.4185 ,
+        21802.2757 ,  21955.6857 ,
+        22125.4484 , 22312.8204 , 22517.9267
+        ])
+        print("using short exposure line list")
+    elif band == 'K':
         #drop: 19751.3895, 19736.4099, 21711.1235, 22
         lines = np.array([
         19518.4784 , 19593.2626 , 19618.5719 , 19642.4493 , 19678.046 ,
@@ -2482,7 +2497,7 @@ def plot_mask_fits(maskname, fname, options):
 
 
 
-def plot_sky_spectra(maskname, fname, options):
+def plot_sky_spectra(maskname, fname, options, short_exp = False):
 
     from matplotlib.backends.backend_pdf import PdfPages
 
@@ -2501,7 +2516,7 @@ def plot_sky_spectra(maskname, fname, options):
     band = header['filter'].rstrip()
 
     # determine region to cutoff spectra for xlims
-    linelist = pick_linelist(header)
+    linelist = pick_linelist(header, short_exp = short_exp)
     hpps = Filters.hpp[band]
 
     # Pick top 95% of flux for ylims
