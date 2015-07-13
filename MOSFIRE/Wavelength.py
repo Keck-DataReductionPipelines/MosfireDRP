@@ -1641,7 +1641,7 @@ class InteractiveSolution:
         self.xrng[0] *= 0.99
         self.xrng[1] /= 0.99
         self.sigma_clip = False
-
+        self.xlim = self.xrng
         if solutions is None:
             self.solutions = range(len(self.bs.ssl))
         else:
