@@ -198,15 +198,20 @@ class Driver:
         if self.type is 'long2pos_specphot' or self.type is 'long2pos':
             for slit in ['posAnarrow','posCnarrow','posAwide','posCwide']:
                 self.addLine("Background.handle_background(obsfiles_"+str(slit)+",Wavelength_file,maskname,band,waveops, target=target_"+str(slit)+")")
-        if self.type is 'slitmask' or self.type is 'longslit':
+        if self.type is 'slitmask':
             self.addLine("Background.handle_background(obsfiles,Wavelength_file,maskname,band,waveops)")
+        if self.type is 'longslit':
+            self.addLine("Background.handle_background(obsfiles,Wavelength_file,maskname,band,waveops,target)")
 
         self.addLine("")
 
     def printRectification(self):
-        if self.type is 'slitmask' or self.type is 'longslit':
+        if self.type is 'slitmask': 
             self.addLine('redfiles = ["eps_" + file + ".fits" for file in obsfiles]')
             self.addLine('Rectify.handle_rectification(maskname, redfiles,Wavelength_file,band,obsfiles,waveops)')
+        if self.type is 'longslit':
+            self.addLine('redfiles = ["eps_" + file + ".fits" for file in obsfiles]')
+            self.addLine('Rectify.handle_rectification(maskname, redfiles,Wavelength_file,band,obsfiles,waveops, target=target)')
         if self.type is 'long2pos' or self.type is 'long2pos_specphot':
             for slit in ['posAnarrow','posCnarrow']:
                 self.addLine('redfiles = ["eps_" + file + ".fits" for file in obsfiles_'+str(slit)+']')            
@@ -306,6 +311,7 @@ def SetupFiles(target=None, offsets=None, type=None):
             obsFiles.append("Offset_"+str(off*-1)+"_"+str(target)+".txt")
 
         setupLines.append("obsfiles=['"+str("','".join(obsFiles))+"']")
+        setupLines.append(target="'+str(target)+'"')
     elif type is 'long2pos' or type is 'long2pos_specphot':
         # old long 2 pos (-7,-14,-21, 7,14,21)
         # narrow slits
