@@ -311,7 +311,7 @@ def SetupFiles(target=None, offsets=None, type=None):
             obsFiles.append("Offset_"+str(off*-1)+"_"+str(target)+".txt")
 
         setupLines.append("obsfiles=['"+str("','".join(obsFiles))+"']")
-        setupLines.append(target="'+str(target)+'"')
+        setupLines.append('target="'+str(target)+'"')
     elif type is 'long2pos' or type is 'long2pos_specphot':
         # old long 2 pos (-7,-14,-21, 7,14,21)
         # narrow slits
