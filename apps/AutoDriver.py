@@ -201,7 +201,7 @@ class Driver:
         if self.type is 'slitmask':
             self.addLine("Background.handle_background(obsfiles,Wavelength_file,maskname,band,waveops)")
         if self.type is 'longslit':
-            self.addLine("Background.handle_background(obsfiles,Wavelength_file,maskname,band,waveops,target)")
+            self.addLine("Background.handle_background(obsfiles,Wavelength_file,maskname,band,waveops,target=target)")
 
         self.addLine("")
 
