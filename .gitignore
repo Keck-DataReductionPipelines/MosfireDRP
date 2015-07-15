@@ -35,6 +35,7 @@ docs/_build
 # Pycharm editor project files
 .idea
 
+
 # Packages/installer info
 *.egg
 *.egg-info
@@ -55,3 +56,6 @@ distribute-*.tar.gz
 
 # Mac OSX
 .DS_Store
+
+/.project
+
