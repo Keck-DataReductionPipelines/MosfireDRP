@@ -105,8 +105,8 @@ def find_spatial_profile(inputArr, startloc, width = 2, varImage = False,
 
 
     if extractMax:
-        medSlice = np.median(image,axis=1)
-        startloc = np.argmax(medSlice)
+        medSlice = np.nanmedian(image,axis=1)
+        startloc = np.nanargmax(medSlice)
     
     s = np.shape(image)
     startInd = startloc - width
