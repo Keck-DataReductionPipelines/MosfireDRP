@@ -221,61 +221,138 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
 
     # Cosmic ray rejection code begins here. This code construction the
     # electrons and itimes arrays.
-    if len(files) >= 9:
-        info("Sigclip CRR")
-        srt = np.argsort(electrons, axis=0, kind='quicksort')
-        shp = el_per_sec.shape
-        sti = np.ogrid[0:shp[0], 0:shp[1], 0:shp[2]]
+    standard = True
+    new_from_chuck = False
+    # Chuck Steidel has provided a modified version of the CRR procedure. 
+    # to enable it, modify the variables above.
+    
+    if new_from_chuck and not standard:
+        if len(files) >= 5:
+            print "Sigclip CRR"
+            srt = np.argsort(electrons, axis=0, kind='quicksort')
+            shp = el_per_sec.shape
+            sti = np.ogrid[0:shp[0], 0:shp[1], 0:shp[2]]
 
-        electrons = electrons[srt, sti[1], sti[2]]
-        el_per_sec = el_per_sec[srt, sti[1], sti[2]]
-        itimes = itimes[srt, sti[1], sti[2]]
+            electrons = electrons[srt, sti[1], sti[2]]
+            el_per_sec = el_per_sec[srt, sti[1], sti[2]]
+            itimes = itimes[srt, sti[1], sti[2]]
 
-        # Construct the mean and standard deviation by dropping the top and bottom two 
-        # electron fluxes. This is temporary.
-        mean = np.mean(el_per_sec[2:-2,:,:], axis = 0)
-        std = np.std(el_per_sec[2:-2,:,:], axis = 0)
+            # Construct the mean and standard deviation by dropping the top and bottom two 
+            # electron fluxes. This is temporary.
+            mean = np.mean(el_per_sec[1:-1,:,:], axis = 0)
+            std = np.std(el_per_sec[1:-1,:,:], axis = 0)
 
-        drop = np.where( (el_per_sec > (mean+std*4)) | (el_per_sec < (mean-std*4)) )
-        info("dropping: "+str(len(drop[0])))
-        electrons[drop] = 0.0
-        itimes[drop] = 0.0
+            drop = np.where( (el_per_sec > (mean+std*4)) | (el_per_sec < (mean-std*4)) )
+            print "dropping: ", len(drop[0])
+            electrons[drop] = 0.0
+            itimes[drop] = 0.0
 
-        electrons = np.sum(electrons, axis=0)
-        itimes = np.sum(itimes, axis=0)
-        Nframe = len(files) 
+            electrons = np.sum(electrons, axis=0)
+            itimes = np.sum(itimes, axis=0)
+            Nframe = len(files) 
 
-    elif len(files) > 5:
-        warning( "WARNING: Drop min/max CRR")
-        srt = np.argsort(el_per_sec,axis=0)
-        shp = el_per_sec.shape
-        sti = np.ogrid[0:shp[0], 0:shp[1], 0:shp[2]]
+        elif len(files) > 5:
+            print "WARNING: Drop min/max CRR"
+            srt = np.argsort(el_per_sec,axis=0)
+            shp = el_per_sec.shape
+            sti = np.ogrid[0:shp[0], 0:shp[1], 0:shp[2]]
 
-        electrons = electrons[srt, sti[1], sti[2]]
-        itimes = itimes[srt, sti[1], sti[2]]
+            electrons = electrons[srt, sti[1], sti[2]]
+            itimes = itimes[srt, sti[1], sti[2]]
 
-        electrons = np.sum(electrons[1:-1,:,:], axis=0)
-        itimes = np.sum(itimes[1:-1,:,:], axis=0)
+            electrons = np.sum(electrons[1:-1,:,:], axis=0)
+            itimes = np.sum(itimes[1:-1,:,:], axis=0)
 
-        Nframe = len(files) - 2
+            Nframe = len(files) - 2
 
-    else:
-        warning( "WARNING: CRR through median filtering")
-        for i in xrange(len(files)):
-            el = electrons[i,:,:]
-            it = itimes[i,:,:]
-            el_mf = scipy.signal.medfilt(el, 5)
+        else:
+            warning( "With less than 5 frames, the pipeline does NOT perform")
+            warning( "Cosmic Ray Rejection.")
+            # the "if false" line disables cosmic ray rejection"
+            if False: 
+                for i in xrange(len(files)):
+                    el = electrons[i,:,:]
+                    it = itimes[i,:,:]
+                    el_mf = scipy.signal.medfilt(el, 5)
 
-            bad = np.abs(el - el_mf) / np.abs(el) > 10.0
-            el[bad] = 0.0
-            it[bad] = 0.0
+                    bad = np.abs(el - el_mf) / np.abs(el) > 10.0
+                    el[bad] = 0.0
+                    it[bad] = 0.0
 
-            electrons[i,:,:] = el
-            itimes[i,:,:] = it
+                    electrons[i,:,:] = el
+                    itimes[i,:,:] = it
 
-        electrons = np.sum(electrons, axis=0)
-        itimes = np.sum(itimes, axis=0)
-        Nframe = len(files) 
+            electrons = np.sum(electrons, axis=0)
+            itimes = np.sum(itimes, axis=0)
+            Nframe = len(files) 
+
+    if standard and not new_from_chuck:
+        if len(files) >= 9:
+            info("Sigclip CRR")
+            srt = np.argsort(electrons, axis=0, kind='quicksort')
+            shp = el_per_sec.shape
+            sti = np.ogrid[0:shp[0], 0:shp[1], 0:shp[2]]
+
+            electrons = electrons[srt, sti[1], sti[2]]
+            el_per_sec = el_per_sec[srt, sti[1], sti[2]]
+            itimes = itimes[srt, sti[1], sti[2]]
+
+            # Construct the mean and standard deviation by dropping the top and bottom two 
+            # electron fluxes. This is temporary.
+            mean = np.mean(el_per_sec[2:-2,:,:], axis = 0)
+            std = np.std(el_per_sec[2:-2,:,:], axis = 0)
+
+            drop = np.where( (el_per_sec > (mean+std*4)) | (el_per_sec < (mean-std*4)) )
+            info("dropping: "+str(len(drop[0])))
+            electrons[drop] = 0.0
+            itimes[drop] = 0.0
+
+            electrons = np.sum(electrons, axis=0)
+            itimes = np.sum(itimes, axis=0)
+            Nframe = len(files) 
+
+        elif len(files) > 5:
+            warning( "WARNING: Drop min/max CRR")
+            srt = np.argsort(el_per_sec,axis=0)
+            shp = el_per_sec.shape
+            sti = np.ogrid[0:shp[0], 0:shp[1], 0:shp[2]]
+
+            electrons = electrons[srt, sti[1], sti[2]]
+            itimes = itimes[srt, sti[1], sti[2]]
+
+            electrons = np.sum(electrons[1:-1,:,:], axis=0)
+            itimes = np.sum(itimes[1:-1,:,:], axis=0)
+
+            Nframe = len(files) - 2
+
+        else:
+            warning( "With less than 5 frames, the pipeline does NOT perform")
+            warning( "Cosmic Ray Rejection.")
+            # the "if false" line disables cosmic ray rejection"
+            if False: 
+                for i in xrange(len(files)):
+                     el = electrons[i,:,:]
+                     it = itimes[i,:,:]
+                     # calculate the median image
+                     el_mf = scipy.signal.medfilt(el, 5)
+                     el_mf_large = scipy.signal.medfilt(el_mf, 15)
+                     # LR: this is a modified version I was experimenting with. For the version 
+                     #     written by Nick, see the new_from_chuck part of this code
+                     # sky sub
+                     el_sky_sub = el_mf - el_mf_large
+                     # add a constant value
+                     el_plus_constant = el_sky_sub + 100
+
+                     bad = np.abs(el - el_mf) / np.abs(el_plus_constant) > 50.0
+                     el[bad] = 0.0
+                     it[bad] = 0.0
+
+                     electrons[i,:,:] = el
+                     itimes[i,:,:] = it
+
+            electrons = np.sum(electrons, axis=0)
+            itimes = np.sum(itimes, axis=0)
+            Nframe = len(files) 
 
 
     ''' Now handle variance '''
