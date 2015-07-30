@@ -46,7 +46,7 @@ else
             breaksw
 
         case "AutoDriver":
-            python ${MOSPATH}/apps/AutoDriver.py
+            python ${MOSPATH}/apps/AutoDriver.py $*
             breaksw
 
         case "what":
