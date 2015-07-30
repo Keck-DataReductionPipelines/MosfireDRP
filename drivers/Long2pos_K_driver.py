@@ -1,4 +1,16 @@
 
+# Help, bugs to: http://mosfire.googlecode.com
+#
+# Instructions
+#   1. edit band = '' to band = 'Y' or 'J' or 'H' or 'K'
+#       e.g. band = 'J'
+#   2. edit [709, 1350] to be the pixel values at the beginning and end 
+#       of the long slit. Look at the raw data.
+#   3. edit row_position to be a location where the standard star is not.
+#   4. Decide if you want to use sky lines or Neon lamps for lambda calibration
+#   5. Uncomment one line at a time and run mospy on the driver file
+#
+
 import os, time
 import MOSFIRE
 
@@ -10,7 +22,7 @@ import numpy as np, pylab as pl, pyfits as pf
 np.seterr(all="ignore")
 
 maskname = 'long2pos'
-band = 'H'
+band = 'K'
 
 flatops = Options.flat
 waveops = Options.wavelength
@@ -21,17 +33,17 @@ longslit = {'yrange': [[1062,1188],[887,1010]], 'row_position': 0, 'mode':'long2
 
 # SETUP FILES FOR DATES before June 10, 2015
 
-obsfiles_posC_narrow = ['Offset_-21_HIP85871_7.25_PosC.txt', 'Offset_-7_HIP85871_7.25_PosC.txt']
-targetCnarrow = "HIP85871_posC_narrow"
+#obsfiles_posC_narrow = ['Offset_-21_HIP85871_7.25.txt', 'Offset_-7_HIP85871_7.25.txt']
+#targetCnarrow = "HIP85871_posC_narrow"
 
-obsfiles_posA_narrow = ['Offset_7_HIP85871_7.25_PosA.txt', 'Offset_21_HIP85871_7.25_PosA.txt']
-targetAnarrow = "HIP85871_posA_narrow"
+#obsfiles_posA_narrow = ['Offset_7_HIP85871_7.25.txt', 'Offset_21_HIP85871_7.25.txt']
+#targetAnarrow = "HIP85871_posA_narrow"
 
-obsfiles_posC_wide = ['Offset_-14_HIP85871_7.25_PosC.txt','Offset_-7_HIP85871_7.25_PosC.txt']
-targetCwide = "HIP85871_posC_wide"
+#obsfiles_posC_wide = ['Offset_-14_HIP85871_7.25.txt','Offset_-7_HIP85871_7.25.txt']
+#targetCwide = "HIP85871_posC_wide"
 
-obsfiles_posA_wide = ['Offset_14_HIP85871_7.25_PosA.txt','Offset_21_HIP85871_7.25_PosA.txt']
-targetAwide = "HIP85871_posA_wide"
+#obsfiles_posA_wide = ['Offset_14_HIP85871_7.25.txt','Offset_21_HIP85871_7.25.txt']
+#targetAwide = "HIP85871_posA_wide"
 
 # SETUP FILES for DATES after June 10,2015 
 
@@ -39,28 +51,21 @@ obsfiles_posC_narrow = ['Offset_7_FS134_posC.txt','Offset_-7_FS134_PosC.txt']
 targetCnarrow = "FS134_posC_narrow"
 obsfiles_posA_narrow = ['Offset_7_FS134_posA.txt','Offset_-7_FS134_PosA.txt']
 targetAnarrow = "FS134_posA_narrow"
-obsfiles_posC_wide = ['Offset_0_FS134_posC.txt','Offset_-7_FS134_PosC.txt']
-targetCwide = "FS134_posC_wide"
-obsfiles_posA_wide = ['Offset_0_FS134_posA.txt','Offset_-7_FS134_PosA.txt']
-targetAwide = "FS134_posA_wide"
+
 
 # Argon files
 argon = ['Ar.txt']
 
-Flats.handle_flats('Flat.txt', maskname, band, flatops, longslit = longslit)
-# if you have thermal flats in K...
+#Flats.handle_flats('Flat.txt', maskname, band, flatops, longslit = longslit)
 #Flats.handle_flats('Flat.txt', maskname, band, flatops,lampOffList='FlatThermal.txt', longslit=longslit)
 
 # Uses the argon calibration taken in the afternoon with long2pos for the wavelength calibration
 
-Wavelength.imcombine(argon, maskname, band, waveops)
-Wavelength.fit_lambda_interactively(maskname, band, argon, waveops, longslit=longslit, argon=True)
-Wavelength.fit_lambda(maskname, band, argon, argon, waveops, longslit=longslit)
-Wavelength.apply_lambda_simple(maskname, band, argon, waveops, longslit=longslit, smooth=True)
+#Wavelength.imcombine(argon, maskname, band, waveops)
+#Wavelength.fit_lambda_interactively(maskname, band, argon, waveops, longslit=longslit, argon=True)
+#Wavelength.fit_lambda(maskname, band, argon, argon, waveops, longslit=longslit)
+#Wavelength.apply_lambda_simple(maskname, band, argon, waveops, longslit=longslit, smooth=True)
 
-
-# UPDATE THE RESULTING WAVELENGTH SOLUTION HERE!
-wavelength_file = 'lambda_solution_wave_stack_H_m150428_0091-0091.fits'
 
 ########### NARROW SLITS ############
 
@@ -72,13 +77,17 @@ target = targetCnarrow
 #IO.fix_long2pos_headers(obsfiles)
 
 #Background.handle_background(obsfiles,
-#   wavelength_file,
-#    maskname, band, waveops,  target=target)
+#    'lambda_solution_wave_stack_K_m150610_0168-0170.fits',
+#    maskname, band, waveops, plan=[["A","B"]], target=target)
 
 redfiles = ["eps_" + file + ".fits" for file in obsfiles]
+#update the "lambda_solution_wave_stack_K*.fits" file name
+#  to the output file name from the apply_lambda process above.
+# Update the name of the first file in the offset file (use the full path name.
+#   e.g.    "/Users/user1/MOSFIRE/DRP_CODE/DATA/2014may08/m130114_0451.fits",
 
 #Rectify.handle_rectification(maskname, redfiles,
-#    wavelength_file,
+#    "lambda_solution_wave_stack_K_m150610_0168-0170.fits",
 #    band, 
 #    obsfiles,
 #    waveops, target=target)
@@ -90,16 +99,20 @@ target = targetAnarrow
 #IO.fix_long2pos_headers(obsfiles)
 
 #Background.handle_background(obsfiles,
-#        wavelength_file,
-#    maskname, band, waveops,  target=target)
+#    'lambda_solution_wave_stack_K_m150610_0168-0170.fits',
+#    maskname, band, waveops, plan=[["A","B"]], target=target)
 
 redfiles = ["eps_" + file + ".fits" for file in obsfiles]
+#update the "lambda_solution_wave_stack_K*.fits" file name
+#  to the output file name from the apply_lambda process above.
+# Update the name of the first file in the offset file (use the full path name.
+#   e.g.    "/Users/user1/MOSFIRE/DRP_CODE/DATA/2014may08/m130114_0451.fits",
 
-#Rectify.handle_rectification(maskname, redfiles,
-#    wavelength_file,
-#    band, 
-#    obsfiles,
-#   waveops, target=target)
+Rectify.handle_rectification(maskname, redfiles,
+    "lambda_solution_wave_stack_K_m150610_0168-0170.fits",
+    band, 
+    obsfiles,
+   waveops, target=target)
 
 ########### WIDE SLITS ############
 
@@ -111,8 +124,8 @@ redfiles = ["eps_" + file + ".fits" for file in obsfiles]
 #IO.fix_long2pos_headers(obsfiles)
 
 #Background.handle_background(obsfiles,
-#    wavelength_file,
-#    maskname, band, waveops,  target=target)
+#    'lambda_solution_wave_stack_H_m150428_0091-0091.fits',
+#    maskname, band, waveops, plan=[["A","B"]], target=target)
 
 #obsfiles = obsfiles_posA_wide
 #target = targetAwide
@@ -120,8 +133,8 @@ redfiles = ["eps_" + file + ".fits" for file in obsfiles]
 #IO.fix_long2pos_headers(obsfiles)
 
 #Background.handle_background(obsfiles,
-#    wavelength_file,
-#    maskname, band, waveops,  target=target)
+#    'lambda_solution_wave_stack_H_m150428_0091-0091.fits',
+#    maskname, band, waveops, plan=[["A","B"]], target=target)
 
 
 

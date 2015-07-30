@@ -1,52 +1,35 @@
-# Help, bugs to: http://mosfire.googlecode.com
-
-import os, time
+import os, time, logging
 import MOSFIRE
-
-from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, \
-    Rectify
-from MOSFIRE import Wavelength
-
+from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify, Wavelength
+from MOSFIRE.MosfireDrpLog import info, debug, warning, error
+logger = logging.getLogger(__name__)
 import numpy as np, pylab as pl, pyfits as pf
-
-np.seterr(all="ignore")
-
-#Modify that maskname and band                                                                                                                           
-# e.g. maskname = goodsnorth1                                                                                                                            
-# e.g. band = H                                                                                                                                          
-maskname = 'maskname'
-band = 'band'
-
+np.seterr(all='ignore')
 flatops = Options.flat
 waveops = Options.wavelength
 
-#Update the list of names for the offset files below.
-obsfiles = ['Offset_1.5.txt', 'Offset_-1.5.txt']
+#Driver file automatically generated on Sat Jul 25 17:33:42 2015
+#For questions and comments, email mosfiredrp@gmail.com, submit a ticket on the ticketing system, or contact Luca Rizzi @ WMKO
 
-#Flats.handle_flats('Flat.txt', maskname, band, flatops)
+maskname = 'maskname'
+band = 'band'
 
-#Wavelength.imcombine(obsfiles, maskname, band, waveops)
-#Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops)
-#Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles,waveops)
-#Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops)
+#Set bypass to True to autofit wavelenth solution instead of manually fitting.
+bypassflag=False
+obsfiles=['Offset_1.25.txt','Offset_-1.25.txt']
 
-#update the "lambda_solution_wave_stack_K*.fits" file name                                                                                            
-#  to the output file name from the apply_lambda process above.                                                                                 
-#Background.handle_background(obsfiles,
-    #'lambda_solution_wave_stack_*.fits',
-    #maskname, band, waveops)
+Flats.handle_flats('Flat.txt', maskname, band, flatops)
+
+Wavelength.imcombine(obsfiles, maskname, band, waveops)
+Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops, bypass=bypassflag)
+Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles,waveops)
+Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops)
+
+# modify this variable to point to the correct wavelength file created on the previous step
+Wavelength_file = 'lambda_solution_wave_stack_H_m141130_0323-0338.fits'
+
+Background.handle_background(obsfiles,Wavelength_file,maskname,band,waveops)
 
 redfiles = ["eps_" + file + ".fits" for file in obsfiles]
-#update the "lambda_solution_wave_stack_K*.fits" file name                                                                                            
-#  to the output file name from the apply_lambda process above.                                                                                 
-# Update the name of the first file in the offset file (use the full path name
-#   e.g.    "/Users/user1/MOSFIRE/DRP_CODE/DATA/2014may08/m130114_0451.fits", 
-# this is no longer necessary, the pipeline will use the first file in obsfiles
-                                                                       
-#Rectify.handle_rectification(maskname, redfiles,
-#    "lambda_solution_wave_stack_*.fits",
-#    band, 
-#     obsfiles,
-#    waveops)
-#
+Rectify.handle_rectification(maskname, redfiles,Wavelength_file,band,obsfiles,waveops)
 
