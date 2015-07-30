@@ -64,7 +64,11 @@ for fname in files:
 
 
     datafile = header['datafile'] + '.fits'
+<<<<<<< HEAD
     maskname = str(header['maskname'])
+=======
+    maskname = header['maskname']
+>>>>>>> 2015A
     target = str(header['targname'])
     filter = header['filter']
     yr,mn,dy = IO.fname_to_date_tuple(datafile)
@@ -113,6 +117,8 @@ for fname in files:
     if (maskname.find('long2pos') != -1 and align is False) or maskname.find('LONGSLIT') != -1:
         # if the target name contains a /, replace it with _
         target_name = target.replace("/","_")
+        # if the target name contains a space, remove it
+        target_name = target.replace(" ","")
         # add a posC and posA to the offset names
         position = ''
         if header['XOFFSET']>0:
