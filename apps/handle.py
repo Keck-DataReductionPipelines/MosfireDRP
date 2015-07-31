@@ -64,11 +64,7 @@ for fname in files:
 
 
     datafile = header['datafile'] + '.fits'
-<<<<<<< HEAD
     maskname = str(header['maskname'])
-=======
-    maskname = header['maskname']
->>>>>>> 2015A
     target = str(header['targname'])
     filter = header['filter']
     yr,mn,dy = IO.fname_to_date_tuple(datafile)
