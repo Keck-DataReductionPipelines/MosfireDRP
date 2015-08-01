@@ -183,7 +183,7 @@ class Driver:
                 calibWith = "argon"
                 waveFiles = IO.list_file_to_strings('Ar.txt')
             if self.isEmpty('Ne.txt') is False:
-                self.addLine("neon = ['Ne.txt')")
+                self.addLine("neon = ['Ne.txt']")
                 calibWith = "neon"
                 waveFiles = IO.list_file_to_strings('Ne.txt')            
             if calibWith:
