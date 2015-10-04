@@ -208,7 +208,14 @@ def readfits(path, use_bpm=False):
     hdulist = pf.open(path)
     header = hdulist[0].header
     data = hdulist[0].data
-
+    datasec = ""
+    try:
+        datasec = header["DATASEC"]
+        warning("%s contains a DATASEC keyword not compatible with the pipeline" % path)
+        warning("The content of the keyword will be erased on the reduced data")
+        del header["DATASEC"]
+    except:
+        pass
     if use_bpm:
         theBPM = badpixelmask()
         data = np.ma.masked_array(data, theBPM, fill_value=0)
@@ -428,6 +435,14 @@ def readmosfits(fname, options, extension=None):
 
     try:
         header = hdulist[0].header
+        datasec = ""
+        try:
+            datasec = header["DATASEC"]
+            warning("%s contains a DATASEC keyword not compatible with the pipeline" % path)
+            warning("The content of the keyword will be erased on the reduced data")
+            del header["DATASEC"]
+        except:
+            pass
         targs = hdulist[1].data
         ssl = hdulist[2].data
         msl = hdulist[3].data

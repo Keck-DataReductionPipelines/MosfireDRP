@@ -177,26 +177,48 @@ class Driver:
             else:
                 self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))            
         if self.type is 'long2pos' or self.type is 'long2pos_specphot':
+            calibWith = ""
             if self.isEmpty('Ar.txt') is False: 
                 self.addLine("argon = ['Ar.txt']")
                 calibWith = "argon"
                 waveFiles = IO.list_file_to_strings('Ar.txt')
             if self.isEmpty('Ne.txt') is False:
-                self.addLine("neon = ['Ne.txt')")
+                self.addLine("neon = ['Ne.txt']")
                 calibWith = "neon"
                 waveFiles = IO.list_file_to_strings('Ne.txt')            
-            self.addLine("Wavelength.imcombine("+str(calibWith)+", maskname, band, waveops)")
-            self.addLine("Wavelength.fit_lambda_interactively(maskname, band, "+str(calibWith)+",waveops,longslit=longslit, "+str(calibWith)+"=True, bypass=bypassflag)")
-            self.addLine("Wavelength.fit_lambda(maskname, band, "+str(calibWith)+","+str(calibWith)+",waveops,longslit=longslit)")
-            self.addLine("Wavelength.apply_lambda_simple(maskname, band, "+str(calibWith)+", waveops, longslit=longslit, smooth=True)")            
-            self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(waveFiles, self.band, self.maskName,""))
+            if calibWith:
+                # we have either Argon, or Neon, or both, so we can use arcs for the reduction
+                self.addLine("Wavelength.imcombine("+str(calibWith)+", maskname, band, waveops)")
+                self.addLine("Wavelength.fit_lambda_interactively(maskname, band, "+str(calibWith)+",waveops,longslit=longslit, "+str(calibWith)+"=True, bypass=bypassflag)")
+                self.addLine("Wavelength.fit_lambda(maskname, band, "+str(calibWith)+","+str(calibWith)+",waveops,longslit=longslit)")
+                self.addLine("Wavelength.apply_lambda_simple(maskname, band, "+str(calibWith)+", waveops, longslit=longslit, smooth=True)")            
+                self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(waveFiles, self.band, self.maskName,""))
+            else:
+                # we have no arcs. For the time being, we can try with sky lines but this only works with long2pos specphot
+                print "#####################################################################################################"
+                print "WARNING: There are no arc calibration files"
+                print "         The pipeline will try to use sky lines but this only works if the observation is long enough"
+                print "         and if you are only using long2pos. It will NOT work on long2pos_specphot"
+                print "         Please contact the MosfireDRP team to obtain a standard wavelength solution"
+                print "#####################################################################################################" 
+                self.addLine("obsfiles = obsfiles_posAnarrow + obsfiles_posCnarrow")
+                self.addLine("Wavelength.imcombine(obsfiles, maskname, band, waveops)")
+                self.addLine("Wavelength.fit_lambda_interactively(maskname, band, obsfiles ,waveops,longslit=longslit, bypass=bypassflag)")
+                self.addLine("Wavelength.fit_lambda(maskname, band, obsfiles,obsfiles ,waveops,longslit=longslit)")
+                self.addLine("Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops, longslit=longslit, smooth=True)")            
+                files = IO.list_file_to_strings(self.offsetFiles)
+                self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(files, self.band, self.maskName,""))                
+                
         self.addLine("")
         self.addLine("Wavelength_file = '"+str(self.waveName)+"'")
         self.addLine("")
             
     def printBackground(self):
-        if self.type is 'long2pos_specphot' or self.type is 'long2pos':
+        if self.type is 'long2pos_specphot':
             for slit in ['posAnarrow','posCnarrow','posAwide','posCwide']:
+                self.addLine("Background.handle_background(obsfiles_"+str(slit)+",Wavelength_file,maskname,band,waveops, target=target_"+str(slit)+")")
+        if self.type is 'long2pos':
+            for slit in ['posAnarrow','posCnarrow']:
                 self.addLine("Background.handle_background(obsfiles_"+str(slit)+",Wavelength_file,maskname,band,waveops, target=target_"+str(slit)+")")
         if self.type is 'slitmask':
             self.addLine("Background.handle_background(obsfiles,Wavelength_file,maskname,band,waveops)")
@@ -317,7 +339,8 @@ def SetupFiles(target=None, offsets=None, type=None):
         # narrow slits
         if set([-7,-21,7,21]).issubset(offsets):
             setupLines.append("obsfiles_posCnarrow = ['Offset_-21_"+str(target)+"_PosC.txt', 'Offset_-7_"+str(target)+"_PosC.txt']")
-            obsFiles.append("Offset_-21_"+str(target)+"_PosC.txt")  # we are using this to determine maskname and band
+            obsFiles.append("Offset_7_"+str(target)+"_PosA.txt")  # we are using this to determine maskname and band
+            obsFiles.append("Offset_-7_"+str(target)+"_PosC.txt")  # we are using this to determine maskname and band            
             setupLines.append('target_posCnarrow = "'+str(target)+'_POSC_NARROW"')
             setupLines.append("IO.fix_long2pos_headers(obsfiles_posCnarrow)")
             setupLines.append("obsfiles_posAnarrow = ['Offset_7_"+str(target)+"_PosA.txt', 'Offset_21_"+str(target)+"_PosA.txt']")
@@ -336,7 +359,8 @@ def SetupFiles(target=None, offsets=None, type=None):
         # narrow slits
         if set([-7,7]).issubset(offsets) and not(set([21,21]).issubset(offsets)):
             setupLines.append("obsfiles_posCnarrow = ['Offset_7_"+str(target)+"_PosC.txt', 'Offset_-7_"+str(target)+"_PosC.txt']")
-            obsFiles.append("Offset_7_"+str(target)+"_PosC.txt")  # we are using this to determine maskname and band
+            obsFiles.append("Offset_7_"+str(target)+"_PosA.txt")
+            obsFiles.append("Offset_-7_"+str(target)+"_PosC.txt")  # we are using this to determine maskname and band
             setupLines.append('target_posCnarrow = "'+str(target)+'_POSC_NARROW"')
             setupLines.append("obsfiles_posAnarrow = ['Offset_7_"+str(target)+"_PosA.txt', 'Offset_-7_"+str(target)+"_PosA.txt']")
             setupLines.append('target_posAnarrow = "'+str(target)+'_POSA_NARROW"')
@@ -409,5 +433,3 @@ elif type is 'long2pos' or type is 'longslit':
         mydriver.printBackground()
         mydriver.printRectification()
         mydriver.CloseFile()
-
-
