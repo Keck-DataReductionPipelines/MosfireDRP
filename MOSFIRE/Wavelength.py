@@ -116,7 +116,7 @@ def filelist_to_path(files, band, maskname, options):
 
     return outf
 
-def imcombine(files, maskname, bandname, options, extension=None):
+def imcombine(files, maskname, bandname, options, extension=None,min_combine=False):
     ''' This version of imcombine is used to create the wave_stack file
     which is used only by the wavelength fitting routine. This imcombine does
     not produce science results.
@@ -129,6 +129,9 @@ def imcombine(files, maskname, bandname, options, extension=None):
         extension: path to file that contains a well formated fits header
             this should be used only when the detector server fails
             to write the full FITS header
+        min_combine: combine with a minimum instead of a minimum, this is
+            helpful for bright standard stars where the stellar continuum
+            is brighter than the OH lines
     
     Results:
         writes a median combined image in electron. It is called
@@ -231,7 +234,10 @@ def imcombine(files, maskname, bandname, options, extension=None):
         info("%s %s/%s" % (fname, maskname, thishdr['filter']))
 
     header.update("frameid", "median")
-    electrons = np.median(np.array(ADUs) * Detector.gain, axis=0)
+    if min_combine:
+        electrons = np.nanmin(np.array(ADUs) * Detector.gain, axis=0)
+    else:
+        electrons = np.nanmedian(np.array(ADUs) * Detector.gain, axis=0)
 
     wavename = filelist_to_wavename(files, bandname, maskname, options)
 
