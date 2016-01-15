@@ -10,7 +10,7 @@ import os
 __version__ = '2014.06.10'
 
 npix = 2048
-path_bpm = os.path.join(os.environ["MOSPATH"], "badpixels", "badpix_10sep2012.fits")
+path_bpm = os.path.join(os.path.dirname(__file__), "data", "badpix_10sep2012.fits")
 
 flat = {
         "version": 1, 
@@ -20,7 +20,7 @@ flat = {
 }
 
 wavelength = {
-        "datadir" : os.path.join(os.environ["MOSPATH"], "code", "data"),
+        "datadir" : os.path.join(os.path.dirname(__file__), "data"),
         "version": 2,
         "fractional-wavelength-search": 0.99935, # used in determining oned wavelength solutions
         "chebyshev-degree": 5, # polynomial order for fitting wavelengths
