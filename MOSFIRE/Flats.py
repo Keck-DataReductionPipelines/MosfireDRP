@@ -826,14 +826,41 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
     xposs_top_this = np.arange(10,2000,100)
     yposs_top_this = topfun(xposs_top_this)
 
+    initial_edges = np.array([2034])
+    edge = 2034
+
+    # build an array of values containing the lower edge of the slits
+    
+    for target in xrange(len(ssl)):        
+    # target is the slit number
+        edge -= DY * numslits[target]
+        initial_edges=np.append(initial_edges,edge)
+
+    # collapse the 2d flat along the walenegth axis to build a spatial profile of the slits
+    vertical_profile = np.mean(data, axis=1)
+
+    # build an array containing the spatial positions of the slit centers, basically the mid point between the expected
+    # top and bottom values of the slit pixels
+    spatial_centers = np.array([])
+    for k in np.arange(0,len(initial_edges)-1):
+        spatial_centers = np.append(spatial_centers,(initial_edges[k]+initial_edges[k+1])/2)
+    #slit_values=np.array([])
+    #for k in np.arange(0, len(spatial_centers)):
+    #    slit_values = np.append(slit_values,np.mean(vertical_profile[spatial_centers[k]-3:spatial_centers[k]+3]))
+    
     for target in xrange(len(ssl)):
 
         y -= DY * numslits[target]
         y = max(y, 1)
+        # select a 6 pixel wide section of the vertical profile around the slit center
+        threshold_area = vertical_profile[spatial_centers[target]-3:spatial_centers[target]+3]
+        # uses 80% of the ADU counts in the threshold area to estimate the threshold to use in defining the slits
+        edgeThreshold = np.mean(threshold_area)*0.8
         
-        info("%2.2i] Finding Slit Edges for %s ending at %4.0i. Slit "
+        info("[%2.2i] Finding Slit Edges for %s ending at %4.0i. Slit "
                 "composed of %i CSU slits" % ( target,
                     ssl[target]["Target_Name"], y, numslits[target]))
+        info("[%2.2i] Threshold used is %.1f" % (target,edgeThreshold))
 
         ''' First deal with the current slit '''
         hpps = Wavelength.estimate_half_power_points(
