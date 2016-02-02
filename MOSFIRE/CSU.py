@@ -249,7 +249,7 @@ class Barset:
 
             for science_slit in ssl:
                 targ = science_slit["Target_Name"]
-                v.append([int(x) for x in self.msl.field("Slit_Number")[np.where(self.msl.Target_in_Slit == targ)[0]]])
+                v.append([int(x) for x in self.msl.field("Slit_Number")[np.where(self.msl.field("Target_in_Slit").rstrip() == targ)[0]]])
             self.scislit_to_slit = v
 
             if (len(self.scislit_to_slit) != len(ssl)) and not (self.long_slit

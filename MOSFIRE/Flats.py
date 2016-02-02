@@ -176,18 +176,18 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
     flat = np.ones(shape=Detector.npix)
 
     hdu = pyfits.PrimaryHDU((data/flat).astype(np.float32))
-    hdu.header.update("version", __version__, "DRP version")
+    hdu.header.set("version", __version__, "DRP version")
     i = 0
     for flatname in inputs:
         nm = flatname.split("/")[-1]
-        hdu.header.update("infile%2.2i" % i, nm)
+        hdu.header.set("infile%2.2i" % i, nm)
         i += 1
 
     slitno = 0
     for result in results[0:-1]:
         slitno += 1
 
-        hdu.header.update("targ%2.2i" % slitno, result["Target_Name"])
+        hdu.header.set("targ%2.2i" % slitno, result["Target_Name"])
 
         bf = result["bottom"]
         tf = result["top"]
@@ -202,8 +202,8 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
         top = pixel_min(tf(xs))
         bottom = pixel_max(bf(xs))
 
-        hdu.header.update("top%2.2i" % slitno, top)
-        hdu.header.update("bottom%2.2i" % slitno, bottom)
+        hdu.header.set("top%2.2i" % slitno, top)
+        hdu.header.set("bottom%2.2i" % slitno, bottom)
 
         info( "%s] Bounding top/bottom: %i/%i" % (result["Target_Name"],
                 bottom, top))
@@ -856,6 +856,8 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
         threshold_area = vertical_profile[spatial_centers[target]-3:spatial_centers[target]+3]
         # uses 80% of the ADU counts in the threshold area to estimate the threshold to use in defining the slits
         edgeThreshold = np.mean(threshold_area)*0.8
+        if edgeThreshold > 450:
+            edgeThreshold = 450
         
         info("[%2.2i] Finding Slit Edges for %s ending at %4.0i. Slit "
                 "composed of %i CSU slits" % ( target,
@@ -913,6 +915,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
 
         next = target + 2
         if next > len(ssl): next = len(ssl)
+        print "Next is:",next
         hpps_next = Wavelength.estimate_half_power_points(
                 bs.scislit_to_csuslit(next)[0],
                     header, bs)
