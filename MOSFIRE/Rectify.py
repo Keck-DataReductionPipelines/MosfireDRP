@@ -10,6 +10,7 @@ from multiprocessing import Pool
 import scipy as sp
 import scipy.ndimage
 from scipy import interpolate as II
+import warnings
 
 import pdb
 
@@ -402,9 +403,14 @@ def handle_rectification_helper(edgeno):
         itss.append(output)
 
         sign *= -1
-
+    # the "mean of empty slice" warning are generated at the top and bottom edges of the array
+    # where there is basically no data due to the shifts between a and b positions
+    # we could pad a little bit less, or accept the fact that the slits have a couple of rows of
+    # nans in the results.
+    warnings.filterwarnings('ignore','Mean of empty slice')
     it_img = np.nansum(np.array(itss), axis=0)
     eps_img = np.nanmean(epss, axis=0)
+    warnings.filterwarnings('always')
 
     # Remove any NaNs or infs from the variance array
     ivar_img = []
