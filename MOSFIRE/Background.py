@@ -709,7 +709,7 @@ def background_subtract_helper(slitno):
         model = II.splev(ll, bspline)
 
         oob = np.where((ll < knotstart) | (ll > knotend))
-        model[oob] = np.median(ss)
+        model[oob] = np.median(ss[~np.isnan(ss)])
         model = model.reshape(slit.shape)
 
         output = slit - model
