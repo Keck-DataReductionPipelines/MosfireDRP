@@ -187,8 +187,9 @@ def writefits(img, maskname, fname, options, header=None, bs=None,
         except: pass
 
     info("Wrote to '%s'" % (fn))
+    warnings.filterwarnings('ignore','Card is too long, comment will be truncated.')
     hdu.writeto(fn)
-
+    warnings.filterwarnings('always')
     if lossy_compress: os.system("gzip --force {0}".format(fn))
 
 
