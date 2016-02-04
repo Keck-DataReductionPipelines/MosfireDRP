@@ -5,7 +5,10 @@ Written March 2, 2011 by npk
 Provides tools to read fits files and parse their headers.
 '''
 
-import pyfits as pf
+try:
+    import pyfits as pf
+except:
+    from astropy.io import fits as pf
 import numpy as np
 import unittest
 import warnings

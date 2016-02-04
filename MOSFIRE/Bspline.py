@@ -3,7 +3,10 @@ Convenience functions for Bspline
 '''
 
 import numpy as np
-import pyfits as pf
+try:
+    import pyfits as pf
+except:
+    from astropy.io import fits as pf
 import CSU
 
 import unittest

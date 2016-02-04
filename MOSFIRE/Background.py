@@ -6,7 +6,10 @@ import warnings
 
 import numpy as np
 import pylab as pl
-import pyfits as pf
+try:
+    import pyfits as pf
+except:
+    from astropy.io import fits as pf
 from multiprocessing import Pool
 import scipy as sp
 import scipy.ndimage

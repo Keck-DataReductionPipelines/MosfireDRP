@@ -39,7 +39,10 @@ import unittest
 import numpy as np
 import pylab as pl
 import scipy, scipy.ndimage
-import pyfits
+try:
+    import pyfits as pf
+except:
+    from astropy.io import fits as pf
 
 import pdb
 
@@ -175,7 +178,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
 
     flat = np.ones(shape=Detector.npix)
 
-    hdu = pyfits.PrimaryHDU((data/flat).astype(np.float32))
+    hdu = pf.PrimaryHDU((data/flat).astype(np.float32))
     hdu.header.set("version", __version__, "DRP version")
     i = 0
     for flatname in inputs:
@@ -355,8 +358,8 @@ def combine_off_on(maskname, band, options, lampsOff=False):
     file_on_save = os.path.join("combflat_lamps_on_2d_%s.fits" 
                     % (band))
 
-    hdu_off  = pyfits.open(file_off)
-    hdu_on   = pyfits.open(file_on)
+    hdu_off  = pf.open(file_off)
+    hdu_on   = pf.open(file_on)
 
     #save lamps On data set to new name
     hdu_on.writeto(file_on_save, clobber=True)
@@ -915,7 +918,6 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
 
         next = target + 2
         if next > len(ssl): next = len(ssl)
-        print "Next is:",next
         hpps_next = Wavelength.estimate_half_power_points(
                 bs.scislit_to_csuslit(next)[0],
                     header, bs)
