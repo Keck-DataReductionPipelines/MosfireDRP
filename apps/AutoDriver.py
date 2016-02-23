@@ -3,7 +3,7 @@
 import MOSFIRE
 from MOSFIRE import IO, Wavelength
 import os
-import pyfits as pf
+from astropy.io import fits as pf
 import time
 import sys
 import glob
