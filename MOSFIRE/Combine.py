@@ -2,7 +2,11 @@
 import os
 import pdb
 
-import numpy as np, pyfits as pf
+import numpy as np
+try:
+    import pyfits as pf
+except:
+    from astropy.io import fits as pf
 
 
 import MOSFIRE

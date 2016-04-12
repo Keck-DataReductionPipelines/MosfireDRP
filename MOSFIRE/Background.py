@@ -6,7 +6,10 @@ import warnings
 
 import numpy as np
 import pylab as pl
-import pyfits as pf
+try:
+    import pyfits as pf
+except:
+    from astropy.io import fits as pf
 from multiprocessing import Pool
 import scipy as sp
 import scipy.ndimage
@@ -709,7 +712,7 @@ def background_subtract_helper(slitno):
         model = II.splev(ll, bspline)
 
         oob = np.where((ll < knotstart) | (ll > knotend))
-        model[oob] = np.median(ss)
+        model[oob] = np.median(ss[~np.isnan(ss)])
         model = model.reshape(slit.shape)
 
         output = slit - model

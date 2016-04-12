@@ -56,7 +56,10 @@ import itertools
 import time
 
 import numpy as np
-import pyfits as pf
+try:
+    import pyfits as pf
+except:
+    from astropy.io import fits as pf
 import pylab as pl
 
 from scipy.interpolate import interp1d
@@ -189,7 +192,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
         if header is None:
             header = thishdr
 
-        header.update("imfno%2.2i" % (i), fname)
+        header.set("imfno%2.2i" % (i), fname)
 
         for key in header.keys():
             try: val = header[key]
@@ -200,7 +203,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
             if key in thishdr:
                 if val != thishdr[key]:
                     newkey = "hierarch " + key + ("_img%2.2i" % i)
-                    try: header.update(newkey.rstrip(), thishdr[key])
+                    try: header.set(newkey.rstrip(), thishdr[key])
                     except ValueError: pass
 
         ''' Now handle error checking'''
@@ -216,7 +219,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
             if key in thishdr:
                 if val != thishdr[key]:
                     newkey = "hierarch " + key + ("_img%2.2i" % i)
-                    try: header.update(newkey.rstrip(), thishdr[key])
+                    try: header.set(newkey.rstrip(), thishdr[key])
                     except ValueError: pass
 
         ''' Now handle error checking'''
@@ -230,7 +233,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
         info("Checking maskname and filter")
         info("%s %s/%s" % (fname, maskname, thishdr['filter']))
 
-    header.update("frameid", "median")
+    header.set("frameid", "median")
     electrons = np.median(np.array(ADUs) * Detector.gain, axis=0)
 
     wavename = filelist_to_wavename(files, bandname, maskname, options)
@@ -816,9 +819,9 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
     
 
     header = pf.Header()
-    header.update("maskname", maskname)
-    header.update("filter", bandname)
-    header.update("object", "Wavelengths {0}/{1}".format(maskname, bandname))
+    header.set("maskname", maskname)
+    header.set("filter", bandname)
+    header.set("object", "Wavelengths {0}/{1}".format(maskname, bandname))
 
     IO.writefits(lams, maskname, "merged_lambda_solution_{0}_and_{1}.fits".format(skyname, arcname), 
             options, overwrite=True, header=header)
@@ -838,27 +841,27 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
         f = interp1d(ll, ss, bounds_error=False)
         rectified[i,:] = f(ll_fid)
 
-    header.update("object", "Rectified wave FIXME")
-    header.update("wat0_001", "system=world")
-    header.update("wat1_001", "wtype=linear")
-    header.update("wat2_001", "wtype=linear")
-    header.update("dispaxis", 1)
-    header.update("dclog1", "Transform")
-    header.update("dc-flag", 0)
-    header.update("ctype1", "AWAV")
-    header.update("cunit1", "Angstrom")
-    header.update("crval1", ll_fid[0])
-    header.update("crval2", 0)
-    header.update("crpix1", 1)
-    header.update("crpix2", 1)
-    header.update("cdelt1", 1)
-    header.update("cdelt2", 1)
-    header.update("cname1", "angstrom")
-    header.update("cname2", "pixel")
-    header.update("cd1_1", dlam.item())
-    header.update("cd1_2", 0)
-    header.update("cd2_1", 0)
-    header.update("cd2_2", 1)
+    header.set("object", "Rectified wave FIXME")
+    header.set("wat0_001", "system=world")
+    header.set("wat1_001", "wtype=linear")
+    header.set("wat2_001", "wtype=linear")
+    header.set("dispaxis", 1)
+    header.set("dclog1", "Transform")
+    header.set("dc-flag", 0)
+    header.set("ctype1", "AWAV")
+    header.set("cunit1", "Angstrom")
+    header.set("crval1", ll_fid[0])
+    header.set("crval2", 0)
+    header.set("crpix1", 1)
+    header.set("crpix2", 1)
+    header.set("cdelt1", 1)
+    header.set("cdelt2", 1)
+    header.set("cname1", "angstrom")
+    header.set("cname2", "pixel")
+    header.set("cd1_1", dlam.item())
+    header.set("cd1_2", 0)
+    header.set("cd2_1", 0)
+    header.set("cd2_2", 1)
 
 
     IO.writefits(rectified, maskname, "merged_rectified_{0}_and_{1}.fits".format(skyname, arcname), 
@@ -950,9 +953,9 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
     info(("{0}: writing lambda".format(maskname)))
 
     header = pf.Header()
-    header.update("maskname", maskname)
-    header.update("filter", bandname)
-    header.update("object", "Wavelengths {0}/{1}".format(maskname, bandname))
+    header.set("maskname", maskname)
+    header.set("filter", bandname)
+    header.set("object", "Wavelengths {0}/{1}".format(maskname, bandname))
 
     wavename = wavename.rstrip(".fits")
     IO.writefits(lams, maskname, "lambda_solution_{0}.fits".format(wavename), 
@@ -960,7 +963,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
                 
 
     info("{0}: writing sigs".format(maskname))
-    header.update("object", "Sigmas {0}/{1}".format(maskname, bandname))
+    header.set("object", "Sigmas {0}/{1}".format(maskname, bandname))
     IO.writefits(sigs, maskname, "sigs_solution_{0}.fits".format(wavename), 
             options, overwrite=True, header=header, lossy_compress=True)
 
@@ -995,27 +998,27 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
         rectified[i,:] = f(ll_fid)
 
 
-    header.update("object", "Rectified wave FIXME")
-    header.update("wat0_001", "system=world")
-    header.update("wat1_001", "wtype=linear")
-    header.update("wat2_001", "wtype=linear")
-    header.update("dispaxis", 1)
-    header.update("dclog1", "Transform")
-    header.update("dc-flag", 0)
-    header.update("ctype1", "AWAV")
-    header.update("cunit1", "Angstrom")
-    header.update("crval1", ll_fid[0])
-    header.update("crval2", 0)
-    header.update("crpix1", 1)
-    header.update("crpix2", 1)
-    header.update("cdelt1", 1)
-    header.update("cdelt2", 1)
-    header.update("cname1", "angstrom")
-    header.update("cname2", "pixel")
-    header.update("cd1_1", dlam)
-    header.update("cd1_2", 0)
-    header.update("cd2_1", 0)
-    header.update("cd2_2", 1)
+    header.set("object", "Rectified wave FIXME")
+    header.set("wat0_001", "system=world")
+    header.set("wat1_001", "wtype=linear")
+    header.set("wat2_001", "wtype=linear")
+    header.set("dispaxis", 1)
+    header.set("dclog1", "Transform")
+    header.set("dc-flag", 0)
+    header.set("ctype1", "AWAV")
+    header.set("cunit1", "Angstrom")
+    header.set("crval1", ll_fid[0])
+    header.set("crval2", 0)
+    header.set("crpix1", 1)
+    header.set("crpix2", 1)
+    header.set("cdelt1", 1)
+    header.set("cdelt2", 1)
+    header.set("cname1", "angstrom")
+    header.set("cname2", "pixel")
+    header.set("cd1_1", dlam)
+    header.set("cd1_2", 0)
+    header.set("cd2_1", 0)
+    header.set("cd2_2", 1)
 
 
     IO.writefits(rectified, maskname, "rectified_{0}.fits".format(wavename), 

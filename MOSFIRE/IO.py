@@ -5,7 +5,10 @@ Written March 2, 2011 by npk
 Provides tools to read fits files and parse their headers.
 '''
 
-import pyfits as pf
+try:
+    import pyfits as pf
+except:
+    from astropy.io import fits as pf
 import numpy as np
 import unittest
 import warnings
@@ -187,8 +190,9 @@ def writefits(img, maskname, fname, options, header=None, bs=None,
         except: pass
 
     info("Wrote to '%s'" % (fn))
+    warnings.filterwarnings('ignore','Card is too long, comment will be truncated.')
     hdu.writeto(fn)
-
+    warnings.filterwarnings('always')
     if lossy_compress: os.system("gzip --force {0}".format(fn))
 
 
