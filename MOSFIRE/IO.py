@@ -550,6 +550,36 @@ def imarith(operand1, op, operand2, result):
 
     iraf.imarith.setParList(pars)
 
+def imarith_noiraf(operand1, op, operand2, result):
+    '''Python replacement for the IRAF imarith function.
+    
+    Currently this only supports + and - operators.
+    '''
+    info( "%s %s %s -> %s" % (operand1, op, operand2, result))
+    assert type(operand1) == str
+    assert type(operand2) == str
+    assert os.path.exists(operand1)
+    assert os.path.exists(operand2)
+    assert op in ['+', '-']
+
+    import operator
+    operation = { "+": operator.add, "-": operator.sub }
+
+    hdulist1 = fits.open(operand1, 'readonly')
+    hdulist2 = fits.open(operand2, 'readonly')
+    data = operation[op](hdulist1[0].data, hdulist2[0].data)
+    header = hdulist1[0].header
+    header['history'] = 'imarith {} {} {}'.format(operand1, op, operand2)
+    header['history'] = 'Header values copied from {}'.format(operand1)
+    if 'EXPTIME' in hdulist1[0].header and 'EXPTIME' in hdulist2[0].header:
+        exptime = operation[op](float(hdulist1[0].header['EXPTIME']),\
+                                float(hdulist2[0].header['EXPTIME']))
+        header['EXPTIME'] = exptime
+    header['history'] = 'Other than exposure time which was edited'
+
+    hdu = fits.PrimaryHDU(data=data, header=header)
+    hdu.writeto(result)
+
 def imcombine(filelist, out, options, bpmask=None, reject="none", nlow=None,
         nhigh=None):
 
