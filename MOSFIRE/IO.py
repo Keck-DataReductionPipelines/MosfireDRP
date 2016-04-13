@@ -13,7 +13,7 @@ import numpy as np
 import unittest
 import warnings
 
-
+import re
 
 import os
 import pdb
@@ -561,6 +561,13 @@ def imarith_noiraf(operand1, op, operand2, result):
     assert os.path.exists(operand1)
     assert os.path.exists(operand2)
     assert op in ['+', '-']
+
+    ## Strip off the [0] part of the operand as we are assuming that we are
+    ## operating on the 0th FITS HDU.
+    if re.match('(\w+\.fits)\[0\]', operand1):
+        operand1 = operand1[:-3]
+    if re.match('(\w+\.fits)\[0\]', operand2):
+        operand2 = operand2[:-3]
 
     import operator
     operation = { "+": operator.add, "-": operator.sub }
