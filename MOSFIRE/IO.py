@@ -19,6 +19,8 @@ import os
 import pdb
 import shutil
 
+import ccdproc
+
 import MOSFIRE
 import CSU
 import Options
