@@ -541,6 +541,9 @@ def floatcompress(data, ndig=14):
     return out
 
 def imarith(operand1, op, operand2, result):
+    imarith_noiraf(operand1, op, operand2, result)
+
+def imarith_iraf(operand1, op, operand2, result):
     from pyraf import iraf
     iraf.images()
 
@@ -590,6 +593,11 @@ def imarith_noiraf(operand1, op, operand2, result):
     hdu.writeto(result)
 
 def imcombine(filelist, out, options, bpmask=None, reject="none", nlow=None,
+        nhigh=None):
+    imcombine_noiraf(filelist, out, options, bpmask=bpmask, reject="none", nlow=nlow, nhigh=nlow)
+
+
+def imcombine_iraf(filelist, out, options, bpmask=None, reject="none", nlow=None,
         nhigh=None):
 
     '''Convenience wrapper around IRAF task imcombine
