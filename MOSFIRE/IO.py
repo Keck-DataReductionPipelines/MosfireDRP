@@ -673,7 +673,8 @@ def imcombine_noiraf(filelist, out, options, bpmask=None, reject="none", nlow=No
     if reject == 'none':
         ccdproc.combine(filelist, out, method='average',\
                         minmax_clip=False,\
-                        sigma_clip=False)
+                        sigma_clip=False,\
+                        unit="adu")
     elif reject == 'minmax':
         ## The IRAF imcombine parameter for minmax rejection specifies the
         ## number of pixels to clip, while the analogous parameters for
