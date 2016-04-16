@@ -671,10 +671,15 @@ def imcombine_noiraf(filelist, out, options, bpmask=None, reject="none", nlow=No
         Creates the imcombined file at location `out'
     '''
     if reject == 'none':
+        info('Combining files using ccdproc.combine task')
+        info('  reject=none')
+        for file in filelist:
+            info('  {}'.format(file))
         ccdproc.combine(filelist, out, method='average',\
                         minmax_clip=False,\
                         sigma_clip=False,\
                         unit="adu")
+        info('  Done.')
     elif reject == 'minmax':
         ## The IRAF imcombine parameter for minmax rejection specifies the
         ## number of pixels to clip, while the analogous parameters for
