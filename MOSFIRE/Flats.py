@@ -129,7 +129,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         combine_off_on( maskname, band, options)
 
     debug("Combined '%s' to '%s'" % (flatlist, maskname))
-    info("Comgined to '%s'" % (maskname))
+    info("Combined to '%s'" % (maskname))
     path = "combflat_2d_%s.fits" % band
     (header, data) = IO.readfits(path, use_bpm=True)
 
