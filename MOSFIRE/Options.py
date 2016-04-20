@@ -5,7 +5,7 @@ MOSFIRE Options
 
 '''
 
-import getpass
+# import getpass
 import os
 __version__ = '2014.06.10'
 
