@@ -2,8 +2,10 @@
 
 import MOSFIRE
 from MOSFIRE import IO, Wavelength
+from MOSFIRE.IO import fname_to_path
 import os
-import pyfits as pf
+# import pyfits as pf
+from astropy.io import fits as pf
 import time
 import sys
 import glob
@@ -31,7 +33,10 @@ class Driver:
         self.addLine("from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify, Wavelength")
         self.addLine("from MOSFIRE.MosfireDrpLog import info, debug, warning, error")
         self.addLine("logger = logging.getLogger(__name__)")
-        self.addLine("import numpy as np, pylab as pl, pyfits as pf")
+#         self.addLine("import numpy as np, pylab as pl, pyfits as pf")
+        self.addLine("import numpy as np")
+        self.addLine("import pylab as pl")
+        self.addLine("from astropy.io import fits as pf")
         self.addLine("np.seterr(all='ignore')")
         self.addLine("flatops = Options.flat")
         self.addLine("waveops = Options.wavelength")
