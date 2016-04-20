@@ -8,7 +8,7 @@ import pdb
 import numpy as np
 import scipy
 
-from MOSFIRE import Detector, IO, Filters, Wavelength
+from MOSFIRE import Detector, IO, Filters, Wavelength, Combine
 
 def rectify(dname, lamdat, A, B, maskname, band, wavoptions, 
         longoptions):
@@ -84,7 +84,7 @@ def imdiff(A, B, maskname, band, header, options):
     try: os.remove(dname)
     except:pass
     print "Data Diff {0}-{1}".format(operand1,operand2)
-    IO.imarith(operand1, '-', operand2, dname)
+    Combine.imarith(operand1, '-', operand2, dname)
 
     ''' Now handle variance '''
     numreads = header["READS0"]
@@ -94,11 +94,11 @@ def imdiff(A, B, maskname, band, header, options):
 
     
     print "Var Sum {0}+{1}".format(operand1,operand2)
-    IO.imarith(operand1, '+', operand2, "tmp_" + varname)
+    Combine.imarith(operand1, '+', operand2, "tmp_" + varname)
     try: os.remove(varname)
     except: pass
     print "Var add RN {0}+{1}".format(operand1,RN_adu**2)
-    IO.imarith("tmp_" + varname, '+', RN_adu**2, varname)
+    Combine.imarith("tmp_" + varname, '+', RN_adu**2, varname)
 
     try: os.remove("tmp_" + varname)
     except: pass

@@ -47,7 +47,7 @@ except:
 import pdb
 
 import MOSFIRE
-from MOSFIRE import Fit, IO, Options, CSU, Wavelength, Filters, Detector
+from MOSFIRE import Fit, IO, Options, CSU, Wavelength, Filters, Detector, Combine
 from MosfireDrpLog import debug, info, warning, error
 __version__ = 0.1
 
@@ -340,9 +340,9 @@ def combine(flatlist, maskname, band, options, lampsOff=False):
             os.remove(out)
 
     if len(flatlist)>1:
-        IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
+        Combine.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
     else:
-        IO.imcombine(flatlist, out, options, reject="none", nlow=1, nhigh=1)
+        Combine.imcombine(flatlist, out, options, reject="none", nlow=1, nhigh=1)
 
 def combine_off_on(maskname, band, options, lampsOff=False):
     '''
