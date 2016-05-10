@@ -11,6 +11,7 @@ import numpy as np
 from astropy.io import fits
 from astropy import units as u
 from astropy import table
+from astropy import wcs
 from astropy.modeling import models, fitting
 import scipy.signal as signal
 
@@ -90,6 +91,7 @@ class TraceFitter(object):
             print()
             print(textwrap.fill(textwrap.dedent(paragraph).strip('\n'), width=80))
         print('#'*80)
+        print()
 
     def plot_data(self):
         '''Plot the raw data without the fit to the traces.
@@ -257,7 +259,8 @@ def find_traces(data, guesses=[], interactive=True, plotfile=None):
 def standard_extraction(data, variance):
     spect_1D = np.sum(data, axis=0)
     variance_1D = np.sum(variance, axis=0)
-    return spect_1D
+
+    return spect_1D, variance_1D
 
 
 ##-------------------------------------------------------------------------
@@ -314,13 +317,51 @@ def iterate_spatial_profile(P, DmS, V, f,\
 ##-------------------------------------------------------------------------
 ## Optimal Spectral Extraction
 ##-------------------------------------------------------------------------
-def optimal_extraction(spectra2D, variance2D, trace_table, combine=False):
+def optimal_extraction(image, variance_image, trace_table,\
+                       fitsfileout=None,\
+                       combine=False):
     '''Given a 2D spectrum image, a 2D variance image, and a table of trace
     lines (e.g. as output by find_traces() above), this function will optimally
     extract a 1D spectrum for each entry in the table of traces.
     
     
     '''
+    if type(image) == fits.HDUList:
+        hdu = image[0]
+    elif type(image) == fits.PrimaryHDU:
+        hdu = image
+    else:
+        print('Input to standard_extraction should be an HDUList or an HDU')
+        raise TypeError
+
+    if type(variance_image) == fits.HDUList:
+        vhdu = variance_image[0]
+    elif type(image) == fits.PrimaryHDU:
+        vhdu = variance_image
+    else:
+        print('Input to standard_extraction should be an HDUList or an HDU')
+        raise TypeError
+
+    spectra2D = hdu.data
+    variance2D = vhdu.data
+    header = hdu.header
+    w = wcs.WCS(hdu.header)
+    
+    ## State assumptions
+    assert header['DISPAXIS'] == 1
+    assert w.to_header()['CTYPE1'] == 'AWAV'
+    assert header['CD1_2'] == 0
+    assert header['CD2_1'] == 0
+    flattened_wcs = w.dropaxis(1)
+    assert flattened_wcs.to_header()['CTYPE1'] == 'AWAV'
+
+    ## Replace old WCS in header with the collapsed WCS
+    for key in w.to_header().keys():
+        if key in header.keys():
+            header.remove(key)
+    for key in flattened_wcs.to_header().keys():
+        header[key] = (flattened_wcs.to_header()[key], flattened_wcs.to_header().comments[key])
+
     spectra = []
     variances = []
     for i,row in enumerate(trace_table):
@@ -333,7 +374,7 @@ def optimal_extraction(spectra2D, variance2D, trace_table, combine=False):
         V = np.ma.MaskedArray(data=variance2D[pos-width:pos+width,:],\
                               mask=np.isnan(eps.data[pos-width:pos+width,:]))
         print('  Performing standard extraction')
-        f_std = standard_extraction(DmS, V)
+        f_std, V_std = standard_extraction(DmS, V)
         print('  Forming initial spatial profile')
         P_init_data = np.array([row/f_std for row in DmS])
         P_init = np.ma.MaskedArray(data=P_init_data,\
@@ -346,21 +387,35 @@ def optimal_extraction(spectra2D, variance2D, trace_table, combine=False):
         f_opt = np.sum(P*DmS/V, axis=0)/f_new_denom
         var_fopt = np.sum(P, axis=0)/f_new_denom
         sig_fopt = np.sqrt(var_fopt)
+        spectra.append(f_opt)
         variances.append(var_fopt)
         print('  Typical level = {:.1f}'.format(np.mean(f_opt)))
         print('  Typical sigma = {:.1f}'.format(np.mean(sig_fopt[~np.isnan(sig_fopt)])))
 
-    mask = np.isnan(np.array(spectra)) | np.isnan(np.array(sigmas))
-    mspectra = np.ma.MaskedArray(data=np.array(spectra), mask=mask)
-    mvariances = np.ma.MaskedArray(data=np.array(variances), mask=mask)
+    mask = np.isnan(np.array(spectra)) | np.isnan(np.array(variances))
+    spectra = np.ma.MaskedArray(data=np.array(spectra), mask=mask)
+    variances = np.ma.MaskedArray(data=np.array(variances), mask=mask)
 
     if not combine:
-        return mspectra, mvariances
+        hdulist = []
+        for i,sp in enumerate(spectra):
+            if i == 0:
+                hdulist.append(fits.PrimaryHDU(data=sp, header=header))
+            else:
+                hdulist.append(fits.ImageHDU(data=sp, header=header))
+        for i,var in enumerate(variances):
+            hdulist.append(fits.ImageHDU(data=var, header=header))
+        if fitsfileout: hdulist.writeto(fitsfileout, clobber=True)
+        return hdulist
     else:
         print('Combining individual trace spectra in to final spectrum')
-        spectrum = np.average(mspectra, axis=0, weights=1./mvariances)
-        sigma = np.average(1./mvariances, axis=0)
-        return spectrum, variance
+        spectrum = np.average(spectra, axis=0, weights=1./variances)
+        sigma = np.average(1./variances, axis=0)
+        variance = sigma**2
+        hdulist = fits.HDUList([fits.PrimaryHDU(data=spectrum, header=header),\
+                                fits.ImageHDU(data=variance, header=header)])
+        if fitsfileout: hdulist.writeto(fitsfileout, clobber=True)
+        return hdulist
 
 
 ##-------------------------------------------------------------------------
@@ -389,13 +444,31 @@ if __name__ == '__main__':
 
     trace_table = find_traces(eps.data, guesses=guesses,\
                               interactive=True, plotfile=None)
-    spectrum, sigma = optimal_extraction(eps.data, sig.data, trace_table, combine=True)
+    hdulist = optimal_extraction(eps, sig, trace_table,\
+                                 fitsfileout='1Dspectrum.fits',\
+                                 combine=True)
+
+    spectrum = hdulist[0].data
+    w = wcs.WCS(hdulist[0].header).dropaxis(1)
+    sigma = np.sqrt(hdulist[1].data)
+    pix = np.arange(0,spectrum.shape[0],1)
+    wavelengths = w.wcs_pix2world(pix,1)[0]
+    wavelengths *= 1e6
 
     plt.figure(figsize=(16,6))
-    plt.plot(spectrum, 'k-', label='Final Spectrum')
-    plt.plot(sigma, 'y-', alpha=0.7, label='Sigma')
+
+    plt.fill_between(wavelengths, spectrum-sigma, spectrum+sigma, label='uncertainty',\
+                     facecolor='black', alpha=0.2,\
+                     linewidth=0,\
+                     interpolate=False)
+
+    plt.plot(wavelengths, spectrum, 'k-', label='Final Spectrum')
+
+#     plt.plot(pix, sigma, 'y-', alpha=0.7, label='Sigma')
+
     plt.title('Final Averaged Spectrum')
-    plt.xlim(0,spectrum.shape[0])
+    plt.xlabel('Wavelength (microns)')
+    plt.xlim(wavelengths.min(),wavelengths.max())
     plt.ylim(0,1.05*spectrum.max())
     plt.legend(loc='best')
     plt.savefig('final_result.png')
