@@ -5,6 +5,8 @@ from __future__ import division, print_function
 ## Import General Tools
 import os
 import sys
+import textwrap
+
 import numpy as np
 from astropy.io import fits
 from astropy import units as u
@@ -44,18 +46,67 @@ class TraceFitter(object):
         self.fit_line = None
         self.fit_markers = None
         self.text = None
-        self.trace_table = table.Table(names=('position', 'amplitude', 'sign', 'sigma', 'FWHM'),\
+        self.trace_table = table.Table(names=('position', 'amplitude', 'sign',\
+                                              'sigma', 'FWHM'),\
                                        dtype=('f4', 'f4', 'i1', 'f4', 'f4'))
 
+    def print_instructions(self):
+        '''Print instructions for interactive fit to screen.
+        '''
+
+
+        text = [
+        ('The figure shows the raw spectrum collapsed in the wavelength'
+        ' direction as black points.  If there are one or more object traces '
+        'with reasonable '
+        'signal to noise, you should see one or more signals (e.g. a positive '
+        'gaussian profile).'
+        ),
+
+        ('The model trace profile is a sum of '
+        'gaussians and (if it exists) it is shown as a blue line.  The peak of '
+        'each gaussian is marked with a red + sign.'
+        ),
+
+        ('To add a gaussian profile, to the model which will be fit to the '
+        'data, put the mouse near the apex (+ sign) of that profile '
+        'and press the "a" key.'
+        ),
+
+        ('To delete a gaussian profile, put the mouse near the apex (+ sign) '
+        'of the profile you wish'
+        ' to delete and press the "d" key.'
+        ),
+
+        ('When you are done adding or removing traces, close the interactive '
+        'plot window by clicking the red close button in the upper right corner'
+        ' (or by whatever method is typical for your OS or windowing system).'
+        ),
+        ]
+
+        print('#'*80)
+        print('                Interactive Trace Finder Instructions')
+        for paragraph in text:
+            print()
+            print(textwrap.fill(textwrap.dedent(paragraph).strip('\n'), width=80))
+        print('#'*80)
+
     def plot_data(self):
+        '''Plot the raw data without the fit to the traces.
+        '''
         self.ax.plot(self.xdata, self.ydata, 'ko-')
+        plt.xlim(min(self.xdata), max(self.xdata))
 
     def plot_traces(self):
+        '''Plot the trace fit on the raw data.
+        '''
         if self.traces:
             self.fit_traces()
             self.fit = [self.traces(x) for x in self.xdata]
-            xmarks = [self.traces.param_sets[3*i+1][0] for i in range(int(len(self.traces.param_sets)/3))]
-            ymarks = [self.traces.param_sets[3*i][0] for i in range(int(len(self.traces.param_sets)/3))]
+            xmarks = [self.traces.param_sets[3*i+1][0]\
+                      for i in range(int(len(self.traces.param_sets)/3))]
+            ymarks = [self.traces.param_sets[3*i][0]\
+                      for i in range(int(len(self.traces.param_sets)/3))]
         else:
             self.fit = [0. for x in self.xdata]
             xmarks = []
@@ -71,43 +122,53 @@ class TraceFitter(object):
             self.fit_line.set_ydata(self.fit)
             self.fit_markers.set_xdata(xmarks)
             self.fit_markers.set_ydata(ymarks)
-
-#             self.ax.text(self.trace_table[0]['position']+3.*self.trace_table[0]['sigma'],\
-#                          self.trace_table[0]['amplitude'],\
-#                          'Position={:.1f}'.format(self.trace_table[0]['position']))
         self.fig.canvas.draw()
 
     def fit_traces(self):
+        '''Fit the trace model to the data (or update the fit based on new
+        model parameters).
+        '''
         if self.traces:
             self.traces = self.fitter(self.traces, self.xdata, self.ydata)
-            table_data = {'position': [self.traces.param_sets[3*i+1][0]\
-                                       for i in range(int(len(self.traces.param_sets)/3))],\
-                          'amplitude': [self.traces.param_sets[3*i][0]\
-                                        for i in range(int(len(self.traces.param_sets)/3))],\
-                          'sign': [int(self.traces.param_sets[3*i][0]/abs(self.traces.param_sets[3*i][0]))\
-                                   for i in range(int(len(self.traces.param_sets)/3))],\
-                          'sigma': [self.traces.param_sets[3*i+2][0]\
-                                    for i in range(int(len(self.traces.param_sets)/3))],\
-                          'FWHM': [2.355*self.traces.param_sets[3*i+2][0]\
-                                   for i in range(int(len(self.traces.param_sets)/3))],\
+            params = self.traces.param_sets
+            ntraces = int(len(params)/3)
+            table_data = {'position': [params[3*i+1][0]\
+                                       for i in range(ntraces)],\
+                          'amplitude': [params[3*i][0]\
+                                        for i in range(ntraces)],\
+                          'sign': [int(params[3*i][0]/abs(params[3*i][0]))\
+                                   for i in range(ntraces)],\
+                          'sigma': [params[3*i+2][0]\
+                                    for i in range(ntraces)],\
+                          'FWHM': [2.355*params[3*i+2][0]\
+                                   for i in range(ntraces)],\
                          }
             self.trace_table = table.Table(table_data)
 
     def connect(self):
-        self.cid_key = self.fig.canvas.mpl_connect('key_press_event', self.keypress)
-        self.cid_click = self.fig.canvas.mpl_connect('button_press_event', self.click)
+        '''Connect keypresses to matplotlib for interactivity.
+        '''
+        self.cid_key = self.fig.canvas.mpl_connect('key_press_event',\
+                                                   self.keypress)
+        self.cid_click = self.fig.canvas.mpl_connect('button_press_event',\
+                                                     self.click)
 
     def disconnect(self):
         self.fig.canvas.mpl_disconnect(self.cid_click)
         self.fig.canvas.mpl_disconnect(self.cid_key)
 
     def click(self, event):
+        '''Print out coordinates of mouse click.  Primarily for testing.
+        '''
         if event.inaxes:
             clickX = event.xdata
             clickY = event.ydata
-            print('Click position: {:.1f}, {:.1f}'.format(event.xdata, event.ydata))
+            print('Clicked at: {:.1f}, {:.2f}'.format(event.xdata, event.ydata))
 
     def keypress(self, event):
+        '''Based on which key is presses on a key press event, call the
+        appropriate method.
+        '''
         if event.key == 'a':
             self.add_trace(event.ydata/abs(event.ydata), event.xdata)
         elif event.key == 'd':
@@ -116,6 +177,8 @@ class TraceFitter(object):
             self.quit(event)
 
     def add_trace(self, amp, pos):
+        '''Add an additional gaussian to the tracel model.
+        '''
         if not self.traces:
             self.traces = models.Gaussian1D(mean=pos, amplitude=amp)
         else:
@@ -124,21 +187,26 @@ class TraceFitter(object):
         self.plot_traces()
 
     def delete_trace(self, event):
+        '''Delete one of the gaussians from the trace model.
+        '''
         x = event.xdata
         y = event.ydata
-        distances = [np.sqrt( (row['amplitude']-y)**2 + (row['position']-x)**2 )
-                     for row in self.trace_table]
-        i = distances.index(min(distances))
-        assert type(i) == int
-        self.trace_table.remove_row(i)
-        ## Rebuild model with only remaining traces
-        self.traces = None
-        for row in self.trace_table:
-            self.add_trace(row['amplitude'], row['position'])
-            self.fit_traces()
-            self.plot_traces()
+        if len(self.trace_table) > 0:
+            distances = [np.sqrt( (row['amplitude']-y)**2 + (row['position']-x)**2 )
+                         for row in self.trace_table]
+            i = distances.index(min(distances))
+            assert type(i) == int
+            self.trace_table.remove_row(i)
+            ## Rebuild model with only remaining traces
+            self.traces = None
+            for row in self.trace_table:
+                self.add_trace(row['amplitude'], row['position'])
+                self.fit_traces()
+                self.plot_traces()
 
     def savefig(self, plotfile):
+        '''Save the figure to a png file.
+        '''
         self.fig.savefig(plotfile, bbox_inches='tight')
 
     def quit(self, event):
@@ -165,12 +233,14 @@ def find_traces(data, guesses=[], interactive=True, plotfile=None):
         traces0 = models.Gaussian1D(mean=guesses[0][0], amplitude=guesses[0][1])
         if len(guesses) > 1:
             for i in range(1,len(guesses),1):
-                traces0 += models.Gaussian1D(mean=guesses[i][0], amplitude=guesses[i][1])
+                traces0 += models.Gaussian1D(mean=guesses[i][0],\
+                                             amplitude=guesses[i][1])
 
     tf = TraceFitter(xpoints, vert_profile, traces=traces0)
     tf.plot_data()
     tf.plot_traces()
     if interactive:
+        tf.print_instructions()
         tf.connect()
         plt.show()
     if plotfile:
@@ -193,7 +263,9 @@ def standard_extraction(data, variance):
 ##-------------------------------------------------------------------------
 ## Iterate Spatial Profile
 ##-------------------------------------------------------------------------
-def iterate_spatial_profile(P, DmS, V, f, smoothing=5, order=3, minpixels=50, sigma=4, nclip=2, verbose=True):
+def iterate_spatial_profile(P, DmS, V, f,\
+                            smoothing=5, order=3, minpixels=50,\
+                            sigma=4, nclip=2, verbose=True):
     poly0 = models.Polynomial1D(degree=order)
     fit_poly = fitting.LinearLSQFitter()    
 
@@ -202,13 +274,15 @@ def iterate_spatial_profile(P, DmS, V, f, smoothing=5, order=3, minpixels=50, si
         weights = f**2/V[i]
         weights.mask = weights.mask | np.isnan(weights)
         srow = np.ma.MaskedArray(data=signal.medfilt(row, smoothing),\
-                                 mask=(np.isnan(signal.medfilt(row, smoothing)) | weights.mask ))
+                     mask=(np.isnan(signal.medfilt(row, smoothing)) | weights.mask))
         xcoord = np.ma.MaskedArray(data=np.arange(0,len(row),1),\
                                    mask=srow.mask)
 
         for iter in range(nclip+1):
             nrej_before = np.sum(srow.mask)
-            fitted_poly = fit_poly(poly0, xcoord[~xcoord.mask], srow[~srow.mask], weights=weights[~weights.mask])
+            fitted_poly = fit_poly(poly0,\
+                                   xcoord[~xcoord.mask], srow[~srow.mask],\
+                                   weights=weights[~weights.mask])
             fit = np.array([fitted_poly(x) for x in xcoord])
             resid = (DmS[i]-f*srow)**2 / V[i]
             newmask = (resid > sigma)
@@ -219,17 +293,18 @@ def iterate_spatial_profile(P, DmS, V, f, smoothing=5, order=3, minpixels=50, si
 
             nrej_after = np.sum(srow.mask)
             if nrej_after > nrej_before:
-                if verbose: print('Row {:3d}: Rejected {:d} pixels from fit on clipping iteration {:d}'.format(\
+                if verbose: print('Row {:3d}: Rejected {:d} pixels on clipping iteration {:d}'.format(\
                                   i, nrej_after-nrej_before, iter))
         
         ## Reject row if too few pixels are availabel for the fit
         if (srow.shape[0] - nrej_after) < minpixels:
-            if verbose: print('Row {:3d}: WARNING! Only {:d} pixels remain after sigma clipping and masking'.format(\
+            if verbose: print('Row {:3d}: WARNING! Only {:d} pixels remain after clipping and masking'.format(\
                               i, srow.shape[0] - nrej_after))
             fit = np.zeros(fit.shape)
         ## Set negative values to zero
         if np.sum((fit<0)) > 0 and verbose:
-            print('Row {:3d}: Reset {:d} negative pixels in fit to 0'.format(i, np.sum((fit<0))))
+            print('Row {:3d}: Reset {:d} negative pixels in fit to 0'.format(\
+                  i, np.sum((fit<0))))
         fit[(fit < 0)] = 0
         Pnew[i] = fit
     
@@ -239,7 +314,7 @@ def iterate_spatial_profile(P, DmS, V, f, smoothing=5, order=3, minpixels=50, si
 ##-------------------------------------------------------------------------
 ## Optimal Spectral Extraction
 ##-------------------------------------------------------------------------
-def optimal_extraction(spectra2D, variance2D, trace_table):
+def optimal_extraction(spectra2D, variance2D, trace_table, combine=False):
     '''Given a 2D spectrum image, a 2D variance image, and a table of trace
     lines (e.g. as output by find_traces() above), this function will optimally
     extract a 1D spectrum for each entry in the table of traces.
@@ -247,7 +322,7 @@ def optimal_extraction(spectra2D, variance2D, trace_table):
     
     '''
     spectra = []
-    sigmas = []
+    variances = []
     for i,row in enumerate(trace_table):
         pos = row['position']
         width = 5.*row['sigma']
@@ -271,15 +346,21 @@ def optimal_extraction(spectra2D, variance2D, trace_table):
         f_opt = np.sum(P*DmS/V, axis=0)/f_new_denom
         var_fopt = np.sum(P, axis=0)/f_new_denom
         sig_fopt = np.sqrt(var_fopt)
-        spectra.append(f_opt)
-        sigmas.append(sig_fopt)
+        variances.append(var_fopt)
         print('  Typical level = {:.1f}'.format(np.mean(f_opt)))
         print('  Typical sigma = {:.1f}'.format(np.mean(sig_fopt[~np.isnan(sig_fopt)])))
 
     mask = np.isnan(np.array(spectra)) | np.isnan(np.array(sigmas))
     mspectra = np.ma.MaskedArray(data=np.array(spectra), mask=mask)
-    msigmas = np.ma.MaskedArray(data=np.array(sigmas), mask=mask)
-    return mspectra, msigmas
+    mvariances = np.ma.MaskedArray(data=np.array(variances), mask=mask)
+
+    if not combine:
+        return mspectra, mvariances
+    else:
+        print('Combining individual trace spectra in to final spectrum')
+        spectrum = np.average(mspectra, axis=0, weights=1./mvariances)
+        sigma = np.average(1./mvariances, axis=0)
+        return spectrum, variance
 
 
 ##-------------------------------------------------------------------------
@@ -303,20 +384,15 @@ if __name__ == '__main__':
                (152, -1)
               ]
 
-    trace_table = find_traces(eps.data, guesses=guesses, interactive=False, plotfile=None)
-    spectra, sigmas = optimal_extraction(eps.data, sig.data, trace_table)
-
-
-    print('Combining individual trace spectra in to final spectrum')
-    spectrum = np.average(spectra, axis=0, weights=1./sigmas)
+    trace_table = find_traces(eps.data, guesses=guesses,\
+                              interactive=True, plotfile=None)
+    spectrum, sigma = optimal_extraction(eps.data, sig.data, trace_table, combine=True)
 
     plt.figure(figsize=(16,6))
-    col = ['r', 'g', 'b']
-    for i,row in enumerate(trace_table):
-        plt.plot(spectra[i]-1*i, '{}-'.format(col[i]), alpha=0.5, label='Trace{:d} (offset by {:d})'.format(i, -1*i))
     plt.plot(spectrum, 'k-', label='Final Spectrum')
+    plt.plot(sigma, 'y-', alpha=0.7, label='Sigma')
     plt.title('Final Averaged Spectrum')
     plt.xlim(0,spectrum.shape[0])
-    plt.ylim(0,1.05*spectra.max())
+    plt.ylim(0,1.05*spectrum.max())
     plt.legend(loc='best')
     plt.savefig('final_result.png')
