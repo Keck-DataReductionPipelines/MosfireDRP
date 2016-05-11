@@ -137,7 +137,7 @@ class TraceFitter(object):
     def plot_data(self):
         '''Plot the raw data without the fit to the traces.
         '''
-        self.ax.plot(self.xdata, self.ydata, 'ko-')
+        self.ax.plot(self.xdata, self.ydata, 'ko-', label='Spatial Profile')
         plt.xlim(min(self.xdata), max(self.xdata))
         plt.xlabel('Pixel Position')
         plt.ylabel('Flux (e-/sec)')
@@ -158,8 +158,11 @@ class TraceFitter(object):
             ymarks = []
 
         if not self.fit_line:
-            self.fit_line, = self.ax.plot(self.xdata, self.fit, 'b-', alpha=0.7)
+            self.fit_line, = self.ax.plot(self.xdata, self.fit, 'b-',\
+                                          label='Fit',\
+                                          alpha=0.7)
             self.fit_markers, = self.ax.plot(xmarks, ymarks, 'r+',\
+                                             label='Gaussian Model Peaks',\
                                              markersize=20.0,\
                                              markeredgewidth=3,\
                                              alpha=0.7)
@@ -167,6 +170,7 @@ class TraceFitter(object):
             self.fit_line.set_ydata(self.fit)
             self.fit_markers.set_xdata(xmarks)
             self.fit_markers.set_ydata(ymarks)
+        plt.legend(loc='best')
         self.fig.canvas.draw()
 
     def fit_traces(self):
@@ -449,8 +453,14 @@ def optimal_extraction(image, variance_image, trace_table,\
         hdulist = []
         for i,sp in enumerate(spectra):
             if i == 0:
+                ## To do: populate header with target information
+                ##   How do we handle different targets in same slit?
+                ##   Will this need ability to name traces in interactive trace
+                ##   fitting process?
                 hdulist.append(fits.PrimaryHDU(data=sp, header=header))
             else:
+                ## To do: populate header with an indication that this is a
+                ##   variance image for a particular target.
                 hdulist.append(fits.ImageHDU(data=sp, header=header))
         for i,var in enumerate(variances):
             hdulist.append(fits.ImageHDU(data=var, header=header))
@@ -491,9 +501,10 @@ if __name__ == '__main__':
                (152, -1)
               ]
     guesses = [(124, +1)]
+    guesses = None
 
     trace_table = find_traces(eps.data, guesses=guesses,\
-                              interactive=False,
+                              interactive=True,
                               plotfile='Traces.png')
     hdulist = optimal_extraction(eps, sig, trace_table,\
                                  fitsfileout='1Dspectrum.fits',\
