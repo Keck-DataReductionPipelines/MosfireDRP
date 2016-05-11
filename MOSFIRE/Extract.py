@@ -32,6 +32,47 @@ class TraceFitter(object):
     '''A callback object for matplotlib to make an interactive trace fitting
     window.  Contains funcationality for fitting gaussians to a 2D spectrum
     which has been collapsed in the wavelength direction.
+    
+    Most users will be interested in the self.traces propery which contains the
+    fitted trace profiles or in the self.trace_table which is an
+    astropy.tables.Table object containing properties of the Gaussians which
+    have been fitted.
+    
+    Inputs:
+        xdata : (list) The pixel numbers of the collapsed vertical profile of
+                the 2D spectra.  This is usually just a simple range(#pix)
+                for the ydata.
+        ydata : (list) The collapsed vertical profile of the 2D spectra.
+        traces : (optional, astropy.models.Gaussian1D or a model set) The
+                 starting model (i.e. initial guess).  If fitting interactively,
+                 then additional gaussians can be added with the "a" key.
+    
+    Example Use (non-interactive):
+    
+    Note that the non-interactive case assumes that the input traces0 contains
+    an existing model (or model set) with at least 1 Gaussian profile.
+    
+    tf = TraceFitter(xdata, ydata, traces=traces0) # traces0 is sum of Gaussians
+    tf.plot_data()   # Generate a plot of the collapsed spatial profile
+    tf.fit_traces()  # Fit the model to the data
+    tf.plot_traces() # Add the model points to the plot of the data
+    
+    The user can then examine the properties of the Gaussian model components by
+    examining tf.trace_table.
+    
+    Example Use (interactive):
+    
+    tf = TraceFitter(xdata, ydata, traces=traces0) # traces0 is sum of Gaussians
+    tf.plot_data()   # Generate a plot of the collapsed spatial profile
+    tf.fit_traces()  # Fit the model to the data
+    tf.plot_traces() # Add the model points to the plot of the data
+    tf.print_instructions() # Print instructions on how to use the interactivity
+    tf.connect()     # Connect the matplotlib plot to the keyboard input
+    plt.show()       # Show the plot
+    
+    Use the "a" and "d" keys to add and delete Gaussians from the model and
+    simply close the plot window when done.  The trace_table will be populated
+    as in the non-interactive case.
     '''
     def __init__(self, xdata, ydata, traces=None):
         self.fig = plt.figure()
@@ -103,7 +144,6 @@ class TraceFitter(object):
         '''Plot the trace fit on the raw data.
         '''
         if self.traces:
-            self.fit_traces()
             self.fit = [self.traces(x) for x in self.xdata]
             xmarks = [self.traces.param_sets[3*i+1][0]\
                       for i in range(int(len(self.traces.param_sets)/3))]
@@ -240,6 +280,7 @@ def find_traces(data, guesses=[], interactive=True, plotfile=None):
 
     tf = TraceFitter(xpoints, vert_profile, traces=traces0)
     tf.plot_data()
+    tf.fit_traces()
     tf.plot_traces()
     if interactive:
         tf.print_instructions()
@@ -296,13 +337,17 @@ def iterate_spatial_profile(P, DmS, V, f,\
 
             nrej_after = np.sum(srow.mask)
             if nrej_after > nrej_before:
-                if verbose: print('Row {:3d}: Rejected {:d} pixels on clipping iteration {:d}'.format(\
-                                  i, nrej_after-nrej_before, iter))
+                if verbose:\
+                    print('Row {:3d}: Rejected {:d} pixels on clipping '+\
+                          'iteration {:d}'.format(\
+                           i, nrej_after-nrej_before, iter))
         
         ## Reject row if too few pixels are availabel for the fit
         if (srow.shape[0] - nrej_after) < minpixels:
-            if verbose: print('Row {:3d}: WARNING! Only {:d} pixels remain after clipping and masking'.format(\
-                              i, srow.shape[0] - nrej_after))
+            if verbose:
+                print('Row {:3d}: WARNING! Only {:d} pixels remain after '+\
+                      'clipping and masking'.format(\
+                      i, srow.shape[0] - nrej_after))
             fit = np.zeros(fit.shape)
         ## Set negative values to zero
         if np.sum((fit<0)) > 0 and verbose:
@@ -360,7 +405,8 @@ def optimal_extraction(image, variance_image, trace_table,\
         if key in header.keys():
             header.remove(key)
     for key in flattened_wcs.to_header().keys():
-        header[key] = (flattened_wcs.to_header()[key], flattened_wcs.to_header().comments[key])
+        header[key] = (flattened_wcs.to_header()[key],\
+                       flattened_wcs.to_header().comments[key])
 
     spectra = []
     variances = []
@@ -457,14 +503,12 @@ if __name__ == '__main__':
 
     plt.figure(figsize=(16,6))
 
-    plt.fill_between(wavelengths, spectrum-sigma, spectrum+sigma, label='uncertainty',\
+    plt.fill_between(wavelengths, spectrum-sigma, spectrum+sigma,\
+                     label='uncertainty',\
                      facecolor='black', alpha=0.2,\
                      linewidth=0,\
-                     interpolate=False)
-
+                     interpolate=True)
     plt.plot(wavelengths, spectrum, 'k-', label='Final Spectrum')
-
-#     plt.plot(pix, sigma, 'y-', alpha=0.7, label='Sigma')
 
     plt.title('Final Averaged Spectrum')
     plt.xlabel('Wavelength (microns)')
