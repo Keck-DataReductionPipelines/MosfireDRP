@@ -1,5 +1,3 @@
-REDUX
-DATA
-.DS_Store
-MOSFIRE
-repository_version
+_site
+.sass-cache
+.jekyll-metadata
