@@ -139,6 +139,9 @@ class TraceFitter(object):
         '''
         self.ax.plot(self.xdata, self.ydata, 'ko-')
         plt.xlim(min(self.xdata), max(self.xdata))
+        plt.xlabel('Pixel Position')
+        plt.ylabel('Flux (e-/sec)')
+        plt.title('Simple Spatial Profile')
 
     def plot_traces(self):
         '''Plot the trace fit on the raw data.
@@ -412,7 +415,7 @@ def optimal_extraction(image, variance_image, trace_table,\
     variances = []
     for i,row in enumerate(trace_table):
         pos = row['position']
-        width = 5.*row['sigma']
+        width = 5.*row['sigma']  # Hard coded factor defines with of extraction
         sign = row['sign']
         print('Extracting data for trace {:d} at position {:.1f}'.format(i, pos))
         DmS = np.ma.MaskedArray(data=sign*spectra2D[pos-width:pos+width,:],\
@@ -487,19 +490,21 @@ if __name__ == '__main__':
                (124, +1),\
                (152, -1)
               ]
+    guesses = [(124, +1)]
 
     trace_table = find_traces(eps.data, guesses=guesses,\
-                              interactive=True, plotfile=None)
+                              interactive=False,
+                              plotfile='Traces.png')
     hdulist = optimal_extraction(eps, sig, trace_table,\
                                  fitsfileout='1Dspectrum.fits',\
                                  combine=True)
 
-    spectrum = hdulist[0].data
+    spectrum = hdulist[0].data * u.electron / u.second
     w = wcs.WCS(hdulist[0].header).dropaxis(1)
-    sigma = np.sqrt(hdulist[1].data)
+    sigma = np.sqrt(hdulist[1].data) * u.electron / u.second
     pix = np.arange(0,spectrum.shape[0],1)
-    wavelengths = w.wcs_pix2world(pix,1)[0]
-    wavelengths *= 1e6
+    wavelength_units = getattr(u, w.to_header()['CUNIT1'])
+    wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron) * u.micron
 
     plt.figure(figsize=(16,6))
 
@@ -512,7 +517,8 @@ if __name__ == '__main__':
 
     plt.title('Final Averaged Spectrum')
     plt.xlabel('Wavelength (microns)')
-    plt.xlim(wavelengths.min(),wavelengths.max())
-    plt.ylim(0,1.05*spectrum.max())
+    plt.ylabel('Flux (e-/sec)')
+    plt.xlim(wavelengths.value.min(),wavelengths.value.max())
+    plt.ylim(0,1.05*spectrum.value.max())
     plt.legend(loc='best')
-    plt.savefig('final_result.png')
+    plt.savefig('1Dspectrum.png', bbox_inches='tight')
