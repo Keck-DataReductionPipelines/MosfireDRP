@@ -1,8 +1,10 @@
 ---
 layout: page
-title: Changes in Version 2015A
+title: Changes
 permalink: /manual/changes
 ---
+
+# Changes in version 2015A
 
 ## New features
 
