@@ -21,3 +21,6 @@ markdown: kramdown
 collections:
   manual:
     output: true
+
+kramdown:
+  input: GFM
