@@ -56,17 +56,11 @@ Recitified outputs are also computed as tabulated in the table below.
 
 Note that signal to noise is computed as follows:
 
-$$
-\frac{\bar{Y} - \mu}{\sigma_Y/\sqrt{N}}
-$$
-
-sn = \frac{signal * integration time}{\sqrt{variance}}
+![Equation](eq1.png "Equation1: sn = \frac{signal * integration time}{\sqrt{variance}}")
 
 yes, we violate the first normal form for convenience. Also note that the STD is computed assuming the detector has a read noise of Detector.RN (documented in the MOSFIRE Pre Ship Review as 21 electron) per fowler sample. Thus, the final STD is
 
-$$STD = 21 electrons / SQRT(N_{reads}) + SQRT(N_{detected electrons})$$
-
-** Editor's Note: Equation is missing **
+![Equation](eq2.png "Equation2: STD = \frac{21 electrons}{\sqrt{N_{reads}} + \sqrt{N_{detected electrons}}")
 
 assuming the gain in Detector.gain. Note that there is no shot noise from dark current, which was measured to be negligible at pre-ship review.
 
