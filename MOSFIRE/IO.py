@@ -652,8 +652,10 @@ def imcombine_iraf(filelist, out, options, bpmask=None, reject="none", nlow=None
     iraf.imcombine.setParList(pars)
 
 
-def imcombine_noiraf(filelist, out, options, bpmask=None, reject="none", nlow=None,
-        nhigh=None):
+def imcombine_noiraf(filelist, out, options,\
+                     bpmask=None, reject="none",\
+                     mclip=False, lsigma=3, hsigma=3,\
+                     nlow=None, nhigh=None):
     '''Replacement for iraf.imcombine which uses the ccdproc.combine method.
 
     Args:
@@ -661,8 +663,10 @@ def imcombine_noiraf(filelist, out, options, bpmask=None, reject="none", nlow=No
         out: The full path to the output file
         options: Options dictionary
         bpmask: The full path to the bad pixel mask
-        reject: none, minmax, sigclip, avsigclip, pclip
+        reject: none, minmax, sigclip
         nlow,nhigh: Parameters for minmax rejection, see iraf docs
+        mclip: use median as the function to calculate the baseline values?
+        lsigma, hsigma: low and high sigma rejection thresholds.
     
     Returns:
         None
@@ -708,26 +712,16 @@ def imcombine_noiraf(filelist, out, options, bpmask=None, reject="none", nlow=No
         ##      minmax_clip_max: None or float
         ##           All pixels with values above minmax_clip_max will be masked.
         raise NotImplementedError('minmax rejection is not yet implemented')
-#         clip_min = 
-#         clip_max = 
-#         ccdproc.combine(filelist, out, method='average',\
-#                         minmax_clip=True,\
-#                         minmax_clip_min=clip_min, minmax_clip_max=clip_max,\
-#                         sigma_clip=False)
     elif reject == 'sigclip':
-        raise NotImplementedError('sigclip rejection is not yet implemented')
-#         ccdproc.combine(filelist, out, method='average',\
-#                         minmax_clip=False,\
-#                         sigma_clip=True,\
-#                         sigma_clip_low_thresh=
-#                         sigma_clip_high_thresh=
-#                         sigma_clip_func=np.mean,\
-#                         sigma_clip_dev_func=np.std,\
-#                         )
-    elif reject == 'avsigclip':
-        raise NotImplementedError('avsigclip rejection is not yet implemented')
-    elif reject == 'pclip':
-        raise NotImplementedError('pclip rejection is not yet implemented')
+        baseline_func = {False: np.mean, True: np.median}
+        ccdproc.combine(filelist, out, method='average',\
+                        minmax_clip=False,\
+                        sigma_clip=True,\
+                        sigma_clip_low_thresh=lsigma,\
+                        sigma_clip_high_thresh=hsigma,\
+                        sigma_clip_func=baseline_func[mclip],\
+                        sigma_clip_dev_func=np.std,\
+                        )
     else:
         raise NotImplementedError('{} rejection unrecognized by MOSFIRE DRP'.format(reject))
 
