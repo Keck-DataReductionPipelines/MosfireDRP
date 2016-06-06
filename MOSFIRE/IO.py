@@ -605,6 +605,7 @@ def imcombine(filelist, out, options, reject="none",\
             info('  {}'.format(file))
         ccdproc.combine(filelist, out, method='average',\
                         minmax_clip=False,\
+                        iraf_minmax_clip=True,\
                         sigma_clip=False,\
                         unit="adu")
         info('  Done.')
@@ -636,6 +637,22 @@ def imcombine(filelist, out, options, reject="none",\
         ##      minmax_clip_max: None or float
         ##           All pixels with values above minmax_clip_max will be masked.
         raise NotImplementedError('minmax rejection is not yet implemented')
+        ## Code below works with the ccdproc fork by @joshwalawender on github
+        ## Pull request to ccdproc pending: 
+        ##    https://github.com/astropy/ccdproc/pull/358
+        info('Combining files using ccdproc.combine task')
+        info('  reject=iraf_minmax_clip')
+        info('  nlow={}'.format(nlow))
+        info('  nhigh={}'.format(nhigh))
+        for file in filelist:
+            info('  {}'.format(file))
+        ccdproc.combine(filelist, out, method='average',\
+                        minmax_clip=False,\
+                        iraf_minmax_clip=True,\
+                        nlow=nlow, nhigh=nhigh,\
+                        sigma_clip=False,\
+                        unit="adu")
+        info('  Done.')
     elif reject == 'sigclip':
         baseline_func = {False: np.mean, True: np.median}
         ccdproc.combine(filelist, out, method='average',\
