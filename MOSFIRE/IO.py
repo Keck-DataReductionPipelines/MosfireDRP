@@ -541,25 +541,6 @@ def floatcompress(data, ndig=14):
     return out
 
 def imarith(operand1, op, operand2, result):
-    imarith_noiraf(operand1, op, operand2, result)
-
-def imarith_iraf(operand1, op, operand2, result):
-    from pyraf import iraf
-    iraf.images()
-
-    pars = iraf.imarith.getParList()
-    iraf.imcombine.unlearn()
-
-    info( "%s %s %s -> %s" % (operand1, op, operand2, result))
-    iraf.imarith(operand1=operand1, op=op, operand2=operand2, result=result)
-
-    iraf.imarith.setParList(pars)
-
-def imarith_noiraf(operand1, op, operand2, result):
-    '''Python replacement for the IRAF imarith function.
-    
-    Currently this only supports + and - operators.
-    '''
     info( "%s %s %s -> %s" % (operand1, op, operand2, result))
     assert type(operand1) == str
     assert type(operand2) == str
@@ -592,71 +573,11 @@ def imarith_noiraf(operand1, op, operand2, result):
     hdu = fits.PrimaryHDU(data=data, header=header)
     hdu.writeto(result)
 
-def imcombine(filelist, out, options, bpmask=None, reject="none", nlow=None,
-        nhigh=None):
-    imcombine_noiraf(filelist, out, options, bpmask=bpmask, reject="none", nlow=nlow, nhigh=nlow)
 
-
-def imcombine_iraf(filelist, out, options, bpmask=None, reject="none", nlow=None,
-        nhigh=None):
-
-    '''Convenience wrapper around IRAF task imcombine
-
-    Args:
-        filelist: The list of files to imcombine
-        out: The full path to the output file
-        options: Options dictionary
-        bpmask: The full path to the bad pixel mask
-        reject: none, minmax, sigclip, avsigclip, pclip
-        nlow,nhigh: Parameters for minmax rejection, see iraf docs
-    
-    Returns:
-        None
-
-    Side effects:
-        Creates the imcombined file at location `out'
-    '''
-
-    #TODO: REMOVE Iraf and use python instead. STSCI Python has
-    # A builtin routine.
-    from pyraf import iraf
-    iraf.images()
-
-
-    filelist = [("%s[0]" % f) for f in filelist]
-    pars = iraf.imcombine.getParList()
-    iraf.imcombine.unlearn()
-
-    path = "flatcombine.lst"
-    f = open(path, "w")
-    for file in filelist:
-        f.write(file + "\n")
-    f.close()
-
-    s = ("%s," * len(filelist))[0:-1]
-    s = s % tuple(filelist)
-
-    f = open("flatcombinelog.txt", "w")
-    if reject == 'minmax':
-        t = iraf.imcombine("@%s" % path, out, Stdout=f,
-            reject=reject, nlow=nlow, nhigh=nhigh)
-    else:
-        t = iraf.imcombine(s, out, Stdin=filelist, Stdout=f,
-            reject=reject)
-    f.close()
-    f=open("flatcombinelog.txt")
-    for line in f:
-        info(line.rstrip("\n"))
-    f.close()
-
-    iraf.imcombine.setParList(pars)
-
-
-def imcombine_noiraf(filelist, out, options,\
-                     bpmask=None, reject="none",\
-                     mclip=False, lsigma=3, hsigma=3,\
-                     nlow=None, nhigh=None):
-    '''Replacement for iraf.imcombine which uses the ccdproc.combine method.
+def imcombine(filelist, out, options, reject="none",\
+              mclip=False, lsigma=3, hsigma=3,\
+              nlow=None, nhigh=None):
+    '''Combines images in input list with optional rejection algorithms.
 
     Args:
         filelist: The list of files to imcombine
