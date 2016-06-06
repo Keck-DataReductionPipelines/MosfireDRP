@@ -18,13 +18,21 @@ The development and support team includes:
 
 For direct communication with the support and development team, please email [mosfiredrp@gmail.com](mailto:mosfiredrp@gmail.com)
 
+<p class="rss-subscribe">Subscribe to blog posts <a href="{{ "/feed.xml" | prepend: site.baseurl }}">via RSS</a></p>
 
-# MOSFIRE DRP Blog Entries
+<hr>
 
-<ul>
-  {% for post in site.posts %}
-    <li>
-      <a href="{{ post.url }}">{{ post.title }}</a>
-    </li>
-  {% endfor %}
-</ul>
+# MOSFIRE DRP Blog Posts
+
+  <ul class="post-list">
+    {% for post in site.posts %}
+      <li>
+        <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+
+        <h2>
+          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </h2>
+      </li>
+    {% endfor %}
+  </ul>
+

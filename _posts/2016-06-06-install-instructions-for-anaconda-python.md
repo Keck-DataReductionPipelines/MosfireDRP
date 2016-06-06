@@ -2,9 +2,7 @@
 layout: post
 title:  "Install Instructions for Anaconda Python"
 date:   2016-06-06 12:00:00 -1000
-categories: anaconda
 ---
-
 The Ureka package has been [deprecated](http://ssb.stsci.edu/ureka/) as of April 26, 2016.  As a result, the MOSFIRE pipeline will migrate to a version which is not dependent on IRAF/PyRAF, but only on python packages.  It __should__ work with any python install which provides the required packages and versions (look for more info on the dependencies when the next DRP release comes out in late 2016).
 
 This post is a quick instruction on how to install Anaconda and all required packages for the non-Ureka version of the MOSFIRE DRP.
