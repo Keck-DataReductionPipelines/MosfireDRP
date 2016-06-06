@@ -611,10 +611,18 @@ def imcombine(filelist, out, options, method="average", reject="none",\
                         unit="adu")
         info('  Done.')
     elif reject == 'minmax':
-        ## The IRAF imcombine parameter for minmax rejection specifies the
-        ## number of pixels to clip, while the analogous parameters for
-        ## ccdproc.combine specify the pixel values above and below which to
-        ## clip, so a conversion will have to be made.
+        ## The IRAF imcombine minmax rejection behavior is different than the
+        ## ccdproc minmax rejection behavior.  We are using the IRAF like
+        ## behavior here.  To support this a pull request for the ccdproc
+        ## package has been made:
+        ##    https://github.com/astropy/ccdproc/pull/358
+        ##
+        ## Note that the ccdproc behavior still differs slightly from the
+        ## nominal IRAF behavior in that the rejection does not consider whether
+        ## any of the rejected pixels have been rejected for other reasons, so
+        ## if nhigh=1 and that pixel was masked for some other reason, the
+        ## new ccdproc algorithm, will not mask the next highest pixel, it will
+        ## still just mask the highest pixel even if it is already masked.
         ##
         ## From IRAF (help imcombine):
         ##  nlow = 1,  nhigh = 1 (minmax)
@@ -626,21 +634,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         ##      non-overlap,   then   the  fraction  of  the  remaining  pixels,
         ##      truncated to an integer, is used.
         ##
-        ## From ccdproc.combine doc string:
-        ##  minmax_clip : Boolean (default False)
-        ##      Set to True if you want to mask all pixels that are below
-        ##      minmax_clip_min or above minmax_clip_max before combining.
-        ##  
-        ##      Parameters below are valid only when minmax_clip is set to True.
-        ##  
-        ##      minmax_clip_min: None, float
-        ##           All pixels with values below minmax_clip_min will be masked.
-        ##      minmax_clip_max: None or float
-        ##           All pixels with values above minmax_clip_max will be masked.
         raise NotImplementedError('minmax rejection is not yet implemented')
-        ## Code below works with the ccdproc fork by @joshwalawender on github
-        ## Pull request to ccdproc pending: 
-        ##    https://github.com/astropy/ccdproc/pull/358
         info('Combining files using ccdproc.combine task')
         info('  reject=iraf_minmax_clip')
         info('  nlow={}'.format(nlow))
