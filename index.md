@@ -17,3 +17,14 @@ The development and support team includes:
 * Tuan Do at UCLA
 
 For direct communication with the support and development team, please email [mosfiredrp@gmail.com](mailto:mosfiredrp@gmail.com)
+
+
+# MOSFIRE DRP Blog Entries
+
+<ul>
+  {% for post in site.posts %}
+    <li>
+      <a href="{{ post.url }}">{{ post.title }}</a>
+    </li>
+  {% endfor %}
+</ul>
