@@ -577,8 +577,8 @@ def imarith(operand1, op, operand2, result):
     hdu.writeto(result)
 
 
-def imcombine(filelist, out, options, reject="none",\
-              mclip=False, lsigma=3, hsigma=3,\
+def imcombine(filelist, out, options, method="average", reject="none",\
+              lsigma=3, hsigma=3,\
               nlow=None, nhigh=None):
     '''Combines images in input list with optional rejection algorithms.
 
@@ -589,7 +589,7 @@ def imcombine(filelist, out, options, reject="none",\
         bpmask: The full path to the bad pixel mask
         reject: none, minmax, sigclip
         nlow,nhigh: Parameters for minmax rejection, see iraf docs
-        mclip: use median as the function to calculate the baseline values?
+        method: either "average" or "median" combine
         lsigma, hsigma: low and high sigma rejection thresholds.
     
     Returns:
@@ -598,12 +598,13 @@ def imcombine(filelist, out, options, reject="none",\
     Side effects:
         Creates the imcombined file at location `out'
     '''
+    assert method in ['average', 'median']
     if reject == 'none':
         info('Combining files using ccdproc.combine task')
         info('  reject=none')
         for file in filelist:
             info('  {}'.format(file))
-        ccdproc.combine(filelist, out, method='average',\
+        ccdproc.combine(filelist, out, method=method,\
                         minmax_clip=False,\
                         iraf_minmax_clip=True,\
                         sigma_clip=False,\
@@ -646,7 +647,7 @@ def imcombine(filelist, out, options, reject="none",\
         info('  nhigh={}'.format(nhigh))
         for file in filelist:
             info('  {}'.format(file))
-        ccdproc.combine(filelist, out, method='average',\
+        ccdproc.combine(filelist, out, method=method,\
                         minmax_clip=False,\
                         iraf_minmax_clip=True,\
                         nlow=nlow, nhigh=nhigh,\
@@ -655,7 +656,7 @@ def imcombine(filelist, out, options, reject="none",\
         info('  Done.')
     elif reject == 'sigclip':
         baseline_func = {False: np.mean, True: np.median}
-        ccdproc.combine(filelist, out, method='average',\
+        ccdproc.combine(filelist, out, method=method,\
                         minmax_clip=False,\
                         sigma_clip=True,\
                         sigma_clip_low_thresh=lsigma,\
