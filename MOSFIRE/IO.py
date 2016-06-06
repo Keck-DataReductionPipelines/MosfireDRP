@@ -653,6 +653,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
     elif reject == 'sigclip':
         info('Combining files using ccdproc.combine task')
         info('  reject=sigclip')
+        info('  mclip={}'.format(mclip))
         info('  lsigma={}'.format(lsigma))
         info('  hsigma={}'.format(hsigma))
         baseline_func = {False: np.mean, True: np.median}
@@ -665,6 +666,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
                         sigma_clip_func=baseline_func[mclip],\
                         sigma_clip_dev_func=np.std,\
                         )
+        info('  Done.')
     else:
         raise NotImplementedError('{} rejection unrecognized by MOSFIRE DRP'.format(reject))
 
