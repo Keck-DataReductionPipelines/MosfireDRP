@@ -44,16 +44,22 @@ The DRP was developed using UREKA version 1.0. Navigate to the 1.0 distribution 
 3. Download either the .zip file, or the .tar.gz file from the website [https://keck-datareductionpipelines.github.io/MosfireDRP/](https://keck-datareductionpipelines.github.io/MosfireDRP/).  Note that this is the stable and supported version of the pipeline.  Alternatively, if you are a github user, you can just clone the repository using: `https://github.com/keck-DataReductionPipelines/MosfireDRP.git`.  This is the development version, and it is NOT supported.
 4. Expand the zip or tar file and rename the resulting directory. For example:
 
+```
     mkdir ~/MOSFIRE 
     mv MosfireDRP-1.1 ~/MOSFIRE/DRP_CODE
-    cd ~/MOSFIRE/DRP_CODE to navigate to that directory.
+    cd ~/MOSFIRE/DRP_CODE # to navigate to that directory
+```
+
 
 **3) Create Data Directories**
 
-Create sub directories for raw data, and reduced data. These sub directories are not specific. You can set up sub directories any way you would like. For the purposes of this manual, we have choosen generic directory names. You may choose to store the raw and reduced data using andy directory structure you would prefer. For our example, we created:
+Create sub directories for raw data, and reduced data. These sub directories are not specific. You can set up sub directories any way you would like. For the purposes of this manual, we have choosen generic directory names. You may choose to store the raw and reduced data using andy directory structure you would prefer. For our example, we created a raw data directory in the code repository: 
 
-* a raw data directory in the code repository: `mkdir ~/MOSFIRE/DRP_CODE/DATA`
-* a reduction directory in the code repository that will store reduced data: `mkdir ~/MOSFIRE/DRP_CODE/REDUX`
+mkdir ~/MOSFIRE/DRP_CODE/DATA
+
+and a reduction directory in the code repository that will store reduced data:
+
+mkdir ~/MOSFIRE/DRP_CODE/REDUX
 
 
 **4) Copy the mospy file into your bin dir**
