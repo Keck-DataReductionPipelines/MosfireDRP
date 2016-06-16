@@ -35,6 +35,15 @@ Install [ccdproc](http://ccdproc.readthedocs.io/en/latest/index.html) (an "astro
 
 You should now have all the requirements to run the 2016 version of the MOSFIRE DRP.
 
+## Using Other Python Install Methods
+
+The DRP support group recommends the anaconda python install and has tested the DRP using that installer, but if an appropriate version of python (e.g. python 2.7) is installed via some other package manager (e.g. apt-get, brew, yum, etc.), then you should be able to install the python package dependencies using either that package manager (if they are available via that package manager) or using `pip`.  For example:
+
+    pip install numpy
+    pip install astropy
+    pip install ccdproc
+
+
 # Download and Install the DRP
 
 Download the zip file of the released master branch from the [github page](https://github.com/Keck-DataReductionPipelines/MosfireDRP) for the DRP, or directly from [this link](https://github.com/Keck-DataReductionPipelines/MosfireDRP/archive/master.zip).

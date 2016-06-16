@@ -4,9 +4,9 @@ title: Changes in Version 2016
 permalink: /manual/changes
 ---
 
-### New features
-
 __Important Note__: The [Ureka package has been deprecated](http://ssb.stsci.edu/ureka/) as of April 26, 2016.  As a result, the MOSFIRE pipeline has migrated to a version which is not dependent on IRAF/PyRAF, but only on python packages.  It should work with any python install which provides the required packages and versions.
+
+### New features
 
 * DRP is no longer dependent on IRAF/PyRAF
     * The DRP should now work with any python install which has the [required python packages](/manual/installing#Requirements)
