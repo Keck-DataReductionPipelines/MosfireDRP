@@ -15,7 +15,8 @@ __Important Note__: The [Ureka package has been deprecated](http://ssb.stsci.edu
 
 ### Improvements and bug fixes
 
-* 
+* Changed dependence on `pylab` to `matplotlib.pyplot`
+* Uses `astropy.io.fits` instead of `pyfits` when available
 
 ## Changes in Version 2015A
 
