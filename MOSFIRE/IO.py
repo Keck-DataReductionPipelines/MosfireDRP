@@ -636,20 +636,50 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         ##      non-overlap,   then   the  fraction  of  the  remaining  pixels,
         ##      truncated to an integer, is used.
         ##
-        raise NotImplementedError('minmax rejection is not yet implemented')
         info('Combining files using ccdproc.combine task')
         info('  reject=iraf_minmax_clip')
         info('  nlow={}'.format(nlow))
         info('  nhigh={}'.format(nhigh))
         for file in filelist:
             info('  {}'.format(file))
-        ccdproc.combine(filelist, out, method=method,\
-                        minmax_clip=False,\
-                        iraf_minmax_clip=True,\
-                        nlow=nlow, nhigh=nhigh,\
-                        sigma_clip=False,\
-                        unit="adu")
-        info('  Done.')
+        ## Try to use ccdproc iraf_minmax_clip, may fail if ccdproc is not recent
+        try:
+            assert False
+            ccdproc.combine(filelist, out, method=method,\
+                            minmax_clip=False,\
+                            iraf_minmax_clip=True,\
+                            nlow=nlow, nhigh=nhigh,\
+                            sigma_clip=False,\
+                            unit="adu")
+            info('  Done.')
+        except:
+            ccdlist = []
+            for file in filelist:
+                ccdlist.append(ccdproc.CCDData.read(file, unit='adu'))
+            c = ccdproc.combiner.Combiner(ccdlist)
+            if nlow is None:
+                nlow = 0
+            if nhigh is None:
+                nhigh = 0
+            nimages, nx, ny = c.data_arr.mask.shape
+
+            argsorted = np.argsort(c.data_arr.data, axis=0)
+            mg = np.mgrid[0:nx,0:ny]
+            for i in range(-1*nhigh, nlow):
+                where = (argsorted[i,:,:].ravel(),
+                         mg[0].ravel(),
+                         mg[1].ravel())
+                c.data_arr.mask[where] = True
+            if method == 'average':
+                result = c.average_combine()
+            elif method == 'median':
+                result = c.median_combine()
+            for key in ccdlist[0].header.keys():
+                header_entry = ccdlist[0].header[key]
+                if key != 'COMMENT':
+                    result.header[key] = (header_entry,
+                                          ccdlist[0].header.comments[key])
+            result.write(out)
     elif reject == 'sigclip':
         info('Combining files using ccdproc.combine task')
         info('  reject=sigclip')
