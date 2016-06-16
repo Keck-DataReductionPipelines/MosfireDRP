@@ -11,13 +11,13 @@ This post is a quick instruction on how to install Anaconda and all required pac
 
 Install Anaconda as per the instructions on the [Anaconda web site](https://www.continuum.io/downloads).
 
-The pipeline should run via either python 2.7 or python 3.  We recommend python 3 as it will (in the very long term) be the only version supported by various community packages such as astropy (see this [discussion](https://github.com/astropy/astropy/issues/4454)).
+The pipeline currently only runs on python 2.7, so download and install that version, not the python 3.x version.
 
 Once anaconda is installed, you can use the `conda` command line tool to get the other packages you will need.  Begin by updating conda itself by running:
 
 `conda update conda`
 
-If you like you can now update all packages which are out of date by running:
+If you like, you can now update all packages which are out of date by running:
 
 `conda update --all`.
 
