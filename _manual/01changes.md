@@ -1,8 +1,22 @@
 ---
 layout: page
-title: Changes in Version 2015A
+title: Changes in Version 2016
 permalink: /manual/changes
 ---
+
+# 2016
+
+## New features
+* DRP is no longer dependent on IRAF/PyRAF
+    * The DRP should now work with any python install which has the [required python packages](/manual/installing#Requirements)
+* Updated instruction manual
+* The DRP now does optimal spectral extraction (Horne 1986) and outputs a 1D spectrum
+
+## Improvements and bug fixes
+
+* 
+
+# 2015A
 
 ## New features
 
