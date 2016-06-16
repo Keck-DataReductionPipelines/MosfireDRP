@@ -57,9 +57,9 @@ import time
 
 import numpy as np
 try:
-    import pyfits as pf
-except:
     from astropy.io import fits as pf
+except:
+    import pyfits as pf
 from matplotlib import pyplot as pl
 
 from scipy.interpolate import interp1d

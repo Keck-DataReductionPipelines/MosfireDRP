@@ -3,7 +3,11 @@
 Written March 3rd 2011 by npk
 '''
 
-import numpy as np, pyfits as pf
+import numpy as np
+try:
+    from astropy.io import fits as pf
+except:
+    import pyfits as pf
 from matplotlib import pyplot as pl
 from pyraf import iraf
 from MOSFIRE import CSU, Detector, IO, Fit

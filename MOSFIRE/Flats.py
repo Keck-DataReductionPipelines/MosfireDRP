@@ -40,9 +40,9 @@ import numpy as np
 from matplotlib import pyplot as pl
 import scipy, scipy.ndimage
 try:
-    import pyfits as pf
-except:
     from astropy.io import fits as pf
+except:
+    import pyfits as pf
 
 import pdb
 

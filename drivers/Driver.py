@@ -5,7 +5,10 @@ from MOSFIRE.MosfireDrpLog import info, debug, warning, error
 logger = logging.getLogger(__name__)
 import numpy as np
 from matplotlib import pyplot as pl
-import pyfits as pf
+try:
+    from astropy.io import fits as pf
+except:
+    import pyfits as pf
 np.seterr(all='ignore')
 flatops = Options.flat
 waveops = Options.wavelength

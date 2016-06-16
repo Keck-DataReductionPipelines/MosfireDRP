@@ -6,9 +6,9 @@ import time
 import numpy as np
 from matplotlib import pyplot as pl
 try:
-    import pyfits as pf
-except:
     from astropy.io import fits as pf
+except:
+    import pyfits as pf
 
 from multiprocessing import Pool
 import scipy as sp

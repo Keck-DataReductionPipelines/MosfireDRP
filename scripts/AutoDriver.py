@@ -4,8 +4,10 @@ import MOSFIRE
 from MOSFIRE import IO, Wavelength
 from MOSFIRE.IO import fname_to_path
 import os
-# import pyfits as pf
-from astropy.io import fits as pf
+try:
+    from astropy.io import fits as pf
+except:
+    import pyfits as pf
 import time
 import sys
 import glob

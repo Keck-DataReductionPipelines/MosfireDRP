@@ -6,9 +6,9 @@ Provides tools to read fits files and parse their headers.
 '''
 
 try:
-    import pyfits as pf
-except:
     from astropy.io import fits as pf
+except:
+    import pyfits as pf
 import numpy as np
 import unittest
 import warnings

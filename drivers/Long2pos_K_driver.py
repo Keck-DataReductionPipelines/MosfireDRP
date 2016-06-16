@@ -19,7 +19,10 @@ from MOSFIRE import Wavelength, Longslit
 
 import numpy as np
 from matplotlib import pyplot as pl
-import pyfits as pf
+try:
+    from astropy.io import fits as pf
+except:
+    import pyfits as pf
 
 np.seterr(all="ignore")
 
