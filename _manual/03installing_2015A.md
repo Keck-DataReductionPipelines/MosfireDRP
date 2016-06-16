@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Installing the Data Reduction Pipeline
-permalink: /manual/installing
+permalink: /manual/installing2015A
 ---
 
 As of version 2015A, the pipeline can be installed as Ureka package. If you prefer to use this installation procedure, download the pipeline tar file and unpack it. Then execute:
