@@ -1,6 +1,7 @@
 
 from MOSFIRE import CSU
-import pylab as pl, numpy as np
+from matplotlib import pyplot as pl
+import numpy as np
 from numpy import sin, cos
 
 reload(CSU)

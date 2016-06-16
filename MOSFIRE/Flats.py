@@ -37,7 +37,7 @@ import time
 import unittest
 
 import numpy as np
-import pylab as pl
+from matplotlib import pyplot as pl
 import scipy, scipy.ndimage
 try:
     import pyfits as pf

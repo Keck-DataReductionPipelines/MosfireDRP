@@ -5,7 +5,7 @@ import time
 import warnings
 
 import numpy as np
-import pylab as pl
+from matplotlib import pyplot as pl
 try:
     import pyfits as pf
 except:

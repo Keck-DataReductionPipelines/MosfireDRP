@@ -4,7 +4,7 @@
 
 if ($#argv == 0) then
         echo "Starting MOSFIRE Python"
-        ipython --pylab --colors Linux
+        ipython --colors Linux
 else
     switch ( $argv[1] )
         case "libs":

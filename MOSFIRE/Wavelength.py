@@ -60,7 +60,7 @@ try:
     import pyfits as pf
 except:
     from astropy.io import fits as pf
-import pylab as pl
+from matplotlib import pyplot as pl
 
 from scipy.interpolate import interp1d
 from scipy import signal 

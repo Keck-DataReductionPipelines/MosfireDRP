@@ -228,7 +228,9 @@ import MOSFIRE
 from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify
 from MOSFIRE import Wavelength, Longslit
 
-import numpy as np, pylab as pl, pyfits as pf
+import numpy as np
+from matplotlib import pyplot as pl
+import pyfits as pf
 
 np.seterr(all="ignore")
 
@@ -269,7 +271,9 @@ import MOSFIRE
 from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify
 from MOSFIRE import Wavelength
 
-import numpy as np, pylab as pl, pyfits as pf
+import numpy as np
+from matplotlib import pyplot as pl
+import pyfits as pf
 
 np.seterr(all="ignore")
 

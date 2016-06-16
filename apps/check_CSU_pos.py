@@ -7,7 +7,7 @@ Written March 18th 2011 by npk
 
 import sys, datetime, getpass, os
 import numpy as np, pyfits as pf
-import pylab as pl
+from matplotlib import pyplot as pl
 import scipy.ndimage.filters, scipy.io
 from pyraf import iraf
 from MOSFIRE import CSU, Detector, IO, Fit
