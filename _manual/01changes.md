@@ -4,21 +4,22 @@ title: Changes in Version 2016
 permalink: /manual/changes
 ---
 
-# 2016
+### New features
 
-## New features
+__Important Note__: The [Ureka package has been deprecated](http://ssb.stsci.edu/ureka/) as of April 26, 2016.  As a result, the MOSFIRE pipeline has migrated to a version which is not dependent on IRAF/PyRAF, but only on python packages.  It should work with any python install which provides the required packages and versions.
+
 * DRP is no longer dependent on IRAF/PyRAF
     * The DRP should now work with any python install which has the [required python packages](/manual/installing#Requirements)
 * Updated instruction manual
-* The DRP now does optimal spectral extraction (Horne 1986) and outputs a 1D spectrum
+* The DRP now performs optimal spectral extraction (Horne 1986) and outputs a 1D spectrum
 
-## Improvements and bug fixes
+### Improvements and bug fixes
 
 * 
 
-# 2015A
+## Changes in Version 2015A
 
-## New features
+### New features
 
 * Reduction of long2pos and long2pos_specphot
 * Reduction of longslit data
@@ -27,7 +28,7 @@ permalink: /manual/changes
 * Package-style installation as a Ureka sub-package
 * Support for Ureka 1.5.1
 
-## Improvements and bug fixes
+### Improvements and bug fixes
 
 * Fix incorrect determination of the slit parameters which prevented the use of large slits
 * Fix incorrect determination of the average wavelength dispersion for the long2pos mode
