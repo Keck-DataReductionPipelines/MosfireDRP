@@ -4,40 +4,7 @@ title: Installing the Data Reduction Pipeline
 permalink: /manual/installing
 ---
 
-
-# Requirements
-
-The 2016 version of the pipeline no longer requires IRAF/PyRAF, so the installation should be simpler than previous versions.
-
-The pipeline requires the following python modules:
-
-* numpy >= v?.?
-* astropy >= ?.?
-* ccdproc >= v?.?
-
-# Download and Install the DRP
-
-Download the zip file of the released master branch from the [github page](https://github.com/Keck-DataReductionPipelines/MosfireDRP) for the DRP, or directly from [this link](https://github.com/Keck-DataReductionPipelines/MosfireDRP/archive/master.zip).
-
-Move the zip file to a location on your computer where you want the source code to reside, then unzip the file:
-
-    unzip MosfireDRP-master.zip
-
-Change in to the resulting ```MosfireDRP-master/``` directory:
-
-    cd MosfireDRP-master
-
-Run the install program:
-
-    python setup.py install
-
-
-
-<hr>
-
-# 2015A
-
-As of version 2016, the pipeline can be installed as Ureka package. If you prefer to use this installation procedure, download the pipeline tar file and unpack it. Then execute:
+As of version 2015A, the pipeline can be installed as Ureka package. If you prefer to use this installation procedure, download the pipeline tar file and unpack it. Then execute:
 
     ur_setup
 
