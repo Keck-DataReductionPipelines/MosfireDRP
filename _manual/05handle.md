@@ -4,13 +4,16 @@ title: Handle
 permalink: /manual/handle
 ---
 
-Now that you have data to reduce, we need to set up the pipeline with the appropriate files so that the drp knows what files to use in the reduction. The handle step will parses the FITS header information and determine what files are associated with each of your masks. Because the DRP no longer has a designated output directory, you will need to run handle in your designated reduction sub-directory (REDUX in our example).
+Now that you have data to reduce, we need to set up the pipeline with the appropriate files so that the drp knows what files to use in the reduction. The handle step will parses the FITS header information and determine what files are associated with each of your masks. 
 
-Steps to perform:
+Because the DRP no longer has a designated output directory, you will need to run handle in your designated reduction sub-directory (`reduced` in our example).
 
-    cd ~/MOSFIRE/DRP_CODE/REDUX # Go to your output directory
-    mospy handle /home/yourhomedir/MOSFIRE/DRP_CODE/2014may08*fits 
-    
+    mkdir reduced
+    cd reduced
+    mospy handle /home/[yourhomedir]/Data/DRP_Test_Case_Hband/2012sep10/*fits
+
+Please use the full path to the raw data when invoking `mospy handle`.
+
 A lot of data summarizing the observations is output. This includes a table of the observations:
 
     m130514_0132        Flat:mos Y mosmaskA     16.0 s      mosmaskA   Y      YJ

@@ -13,13 +13,9 @@ A useful tool is the file translator script that will convert your KOA file name
 If you do not have data of your own and wish to download the example:
 Grab the data from: [http://mosfire.googlecode.com/files/DRP_Test_Case_Hband.zip](http://mosfire.googlecode.com/files/DRP_Test_Case_Hband.zip).
 
-Move the test case data to the newly created data dir 
-
-    mv ~/Downloads/DRP_Test_Case_Hband.zip ~/MOSFIRE/DRP_CODE/DATA/. 
-
-unzip the DRP test case file:
+Move the test case zip file to a directory of your choice (we will assume `~/Data` for the examples in this manual) and unzip the DRP test case file:
 
     unzip DRP_Test_Case_Hband.zip
 
-Again, although any data directory is valid, for the purposes of this document, we will assume you have put it in the DATA sub-directory.
+This will create a `DRP_Test_Case_Hband` subdirectory under your current directory which will contain the raw data which you can use to follow along in subsequent steps of the DRP manual.
 

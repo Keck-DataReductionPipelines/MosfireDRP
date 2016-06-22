@@ -7,7 +7,7 @@ permalink: /manual/longslit
 The longslit reductions require transferring the Longslit_Driver.py file into the reduction directory. A few key parameters have to be adjusted in Longslit_Driver.py to help the pipeline figure out where to extract the longslit from. 
 
 * `cd /path/to/LONGSLIT/`
-* `cp ~/mosdrp/drivers/Longslit_driver.py .`
+* `cp ~/MosfireDRP-master/drivers/Longslit_driver.py .`
 * Check all the .txt files to make sure your observations are included. You may have to merge files from various LONGSLIT* directories. This happens when your observations use a shorter longslit than the calibrations. 
 * Note that mospy handle generates separate offset files for each of your targets, using the target name, but does NOT separate repeated observations of the same targets at different times of the night.
 * edit `Driver_Longslit.py`
