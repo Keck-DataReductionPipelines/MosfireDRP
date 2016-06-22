@@ -636,15 +636,14 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         ##      non-overlap,   then   the  fraction  of  the  remaining  pixels,
         ##      truncated to an integer, is used.
         ##
-        info('Combining files using ccdproc.combine task')
-        info('  reject=iraf_minmax_clip')
-        info('  nlow={}'.format(nlow))
-        info('  nhigh={}'.format(nhigh))
-        for file in filelist:
-            info('  {}'.format(file))
-        ## Try to use ccdproc iraf_minmax_clip, may fail if ccdproc is not recent
-        try:
-            assert False
+        if ccdproc.version.major >= 1 and ccdproc.version.minor >= 1\
+           and ccdproc.version.release:
+            info('Combining files using ccdproc.combine task')
+            info('  reject=iraf_minmax_clip')
+            info('  nlow={}'.format(nlow))
+            info('  nhigh={}'.format(nhigh))
+            for file in filelist:
+                info('  {}'.format(file))
             ccdproc.combine(filelist, out, method=method,\
                             minmax_clip=False,\
                             iraf_minmax_clip=True,\
@@ -652,7 +651,16 @@ def imcombine(filelist, out, options, method="average", reject="none",\
                             sigma_clip=False,\
                             unit="adu")
             info('  Done.')
-        except:
+        else:
+            ## ccdproc does not have new rejection algorithm in:
+            ##  https://github.com/astropy/ccdproc/pull/358
+            ## Manually perform rejection using ccdproc.combiner.Combiner object
+            info('Combining files using modified ccdproc.combine task')
+            info('  reject=iraf_minmax_clip')
+            info('  nlow={}'.format(nlow))
+            info('  nhigh={}'.format(nhigh))
+            for file in filelist:
+                info('  {}'.format(file))
             ccdlist = []
             for file in filelist:
                 ccdlist.append(ccdproc.CCDData.read(file, unit='adu'))
@@ -662,7 +670,6 @@ def imcombine(filelist, out, options, method="average", reject="none",\
             if nhigh is None:
                 nhigh = 0
             nimages, nx, ny = c.data_arr.mask.shape
-
             argsorted = np.argsort(c.data_arr.data, axis=0)
             mg = np.mgrid[0:nx,0:ny]
             for i in range(-1*nhigh, nlow):
@@ -680,6 +687,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
                     result.header[key] = (header_entry,
                                           ccdlist[0].header.comments[key])
             result.write(out)
+            info('  Done.')
     elif reject == 'sigclip':
         info('Combining files using ccdproc.combine task')
         info('  reject=sigclip')
