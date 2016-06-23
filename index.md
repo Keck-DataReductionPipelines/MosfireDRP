@@ -4,6 +4,8 @@ title: Home
 permalink: /
 ---
 
+NOTE: This is a __beta__ version of the manual being developed for the 2016 release of the MOSFIRE Data Reduction Pipeline.  The actual, released manual can be found at the official [MOSFIRE DRP github page](http://keck-datareductionpipelines.github.io/MosfireDRP/).
+
 This is the central repository for the MOSFIRE DRP developed by N. Konidaris and C. Steidel at Caltech, and currently hosted at the WMK Observatory.
 
 If you need help with the pipeline or to report a problem, please visit our [issue tracking page](https://github.com/Keck-DataReductionPipelines/MosfireDRP/issues) hosted at GitHub. Please note that you need a free GitHub account to submit a ticket.

@@ -4,6 +4,8 @@ title: MOSFIRE DRP Manual
 permalink: /manual/
 ---
 
+NOTE: This is a __beta__ version of the manual being developed for the 2016 release of the MOSFIRE Data Reduction Pipeline.  The actual, released manual can be found at the official [MOSFIRE DRP github page](http://keck-datareductionpipelines.github.io/MosfireDRP/).
+
 # Table of Contents
 
 1. [Changes in Version 2016](changes)
