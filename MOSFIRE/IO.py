@@ -394,7 +394,7 @@ def fix_long2pos_headers(filelist):
                 errstr = "Error in generating original file:  '%s' does not exist"\
                          "(could not be created)." % newname
                 error(errstr)
-                raise Exception(errstr_
+                raise Exception(errstr)
 
             #updating header
             # assign FRAMEID to narrow slits
@@ -691,7 +691,6 @@ def imcombine(filelist, out, options, method="average", reject="none",\
                 if key != 'COMMENT':
                     result.header[key] = (header_entry,
                                           ccdlist[0].header.comments[key])
-            print(type(result))
             result.write(out)
             info('  Done.')
     elif reject == 'sigclip':
