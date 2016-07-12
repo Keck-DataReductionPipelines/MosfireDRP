@@ -19,14 +19,14 @@ waveops = Options.wavelength
 maskname = 'maskname'
 band = 'band'
 
-#Set bypass to True to autofit wavelenth solution instead of manually fitting.
-bypassflag=False
+#Set noplots to True to autofit wavelenth solution instead of manually fitting.
+noplotsflag=False
 obsfiles=['Offset_1.25.txt','Offset_-1.25.txt']
 
 Flats.handle_flats('Flat.txt', maskname, band, flatops)
 
 Wavelength.imcombine(obsfiles, maskname, band, waveops)
-Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops, bypass=bypassflag)
+Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops, noplots=noplotsflag)
 Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles,waveops)
 Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops)
 

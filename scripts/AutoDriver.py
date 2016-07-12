@@ -55,9 +55,9 @@ class Driver:
             self.addLine(obsfile)
         self.addLine("")
 
-    def printBypass(self,bypass=False):
-        self.addLine("#Set bypass to True to autofit wavelenth solution instead of manually fitting.")
-        self.addLine("bypassflag="+str(bypass))
+    def printnoplots(self,noplots=False):
+        self.addLine("#Set noplots to True to autofit wavelenth solution instead of manually fitting.")
+        self.addLine("noplotsflag="+str(noplots))
 
     def printMaskAndBand(self):
         offsetfile = self.offsetFiles[0]
@@ -140,7 +140,7 @@ class Driver:
             if self.useNeon:
                 self.addLine("Wavelength.imcombine('Ne.txt', maskname, band, waveops)")
 
-            self.addLine("Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops"+addLongSlit+", bypass=bypassflag)")
+            self.addLine("Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops"+addLongSlit+", noplots=noplotsflag)")
 
             if self.useArgon:
                 self.addLine("Wavelength.apply_interactive(maskname, band, waveops, apply=obsfiles, to='Ar.txt', argon=True)")
@@ -195,7 +195,7 @@ class Driver:
             if calibWith:
                 # we have either Argon, or Neon, or both, so we can use arcs for the reduction
                 self.addLine("Wavelength.imcombine("+str(calibWith)+", maskname, band, waveops)")
-                self.addLine("Wavelength.fit_lambda_interactively(maskname, band, "+str(calibWith)+",waveops,longslit=longslit, "+str(calibWith)+"=True, bypass=bypassflag)")
+                self.addLine("Wavelength.fit_lambda_interactively(maskname, band, "+str(calibWith)+",waveops,longslit=longslit, "+str(calibWith)+"=True, noplots=noplotsflag)")
                 self.addLine("Wavelength.fit_lambda(maskname, band, "+str(calibWith)+","+str(calibWith)+",waveops,longslit=longslit)")
                 self.addLine("Wavelength.apply_lambda_simple(maskname, band, "+str(calibWith)+", waveops, longslit=longslit, smooth=True)")            
                 self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(waveFiles, self.band, self.maskName,""))
@@ -209,7 +209,7 @@ class Driver:
                 print "#####################################################################################################" 
                 self.addLine("obsfiles = obsfiles_posAnarrow + obsfiles_posCnarrow")
                 self.addLine("Wavelength.imcombine(obsfiles, maskname, band, waveops)")
-                self.addLine("Wavelength.fit_lambda_interactively(maskname, band, obsfiles ,waveops,longslit=longslit, bypass=bypassflag)")
+                self.addLine("Wavelength.fit_lambda_interactively(maskname, band, obsfiles ,waveops,longslit=longslit, noplots=noplotsflag)")
                 self.addLine("Wavelength.fit_lambda(maskname, band, obsfiles,obsfiles ,waveops,longslit=longslit)")
                 self.addLine("Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops, longslit=longslit, smooth=True)")            
                 files = IO.list_file_to_strings(self.offsetFiles)
@@ -382,17 +382,17 @@ def SetupFiles(target=None, offsets=None, type=None):
 
 
 
-#set bypass variable
+#set noplots variable
 if len(sys.argv) > 3:
     print "Usage: mospy AutoDriver [True|False]"
     sys.exit()
 
-bypassval=False
+noplotsval=False
 if len(sys.argv) == 3: 
     if str(sys.argv[2]) in ("t", "T" "true", "True"):
-        bypassval=True
+        noplotsval=True
     elif str(sys.argv[2]) in ("f", "F" "false", "False"):
-        bypassval=False
+        noplotsval=False
     else:
         print "Usage: mospy AutoDriver [True|False]"
         sys.exit()
@@ -409,7 +409,7 @@ if 'slitmask' in targets_and_offsets:
     obsLines,obsFiles,specphot = SetupFiles('slitmask',targets_and_offsets['slitmask'],type)   
     mydriver.addOffsetFiles(obsFiles)
     mydriver.printMaskAndBand()
-    mydriver.printBypass(bypass=bypassval)
+    mydriver.printnoplots(noplots=noplotsval)
     mydriver.printObsfiles(obsLines)
     mydriver.printFlat()
     mydriver.printWavelengthFit()
@@ -431,7 +431,7 @@ elif type is 'long2pos' or type is 'longslit':
         mydriver.printHeader()
         mydriver.addOffsetFiles(obsFiles)
         mydriver.printMaskAndBand()
-        mydriver.printBypass(bypass=bypassval)
+        mydriver.printnoplots(noplots=noplotsval)
         mydriver.printObsfiles(obsLines)
         mydriver.addLongslit()        
         mydriver.printFlat()
