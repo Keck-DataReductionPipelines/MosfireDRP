@@ -67,6 +67,7 @@ from scipy import optimize
 # from matplotlib.widgets import Button
 from numpy.polynomial import chebyshev as CV
 
+from matplotlib import pyplot as pl
 
 from MOSFIRE import CSU, Fit, IO, Options, Filters, Detector
 from MosfireDrpLog import debug, info, warning, error
@@ -492,7 +493,6 @@ def check_wavelength_roi(maskname, band, skyfiles, arcfiles, LROI, options, no_c
     '''The purpose of this function is to help the user selection a wavelength
         range of interest over which to normalize the arcs versus sky solutions.
         '''
-    from matplotlib import pyplot as pl
     skyfiles = IO.list_file_to_strings(skyfiles)
     skyfilename = filelist_to_path(skyfiles, band, maskname, options)
     fn = "lambda_center_coeffs_{0}.npy".format(skyfilename.rstrip(".fits"))
@@ -604,7 +604,10 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     tock = time.time()
     
     outfilename = fn
-    fig = pl.figure(1,figsize=(16,8))
+    if noplots is False:
+        fig = pl.figure(1,figsize=(16,8))
+    else:
+        fig = None
     info("Started interactive solution")
     if longslit is not None and longslit['mode'] is "longslit":
         starting_pos = longslit["row_position"]
@@ -1659,15 +1662,12 @@ class InteractiveSolution:
                 self.fit_event(0,0)
                 self.nextobject(0,0)
         else:
-            self.cid = self.fig.canvas.mpl_connect('key_press_event', self)
-            self.setup()
-            self.fit_event(0,0)
-
-        if not noplots:
-            from matplotlib import pyplot as pl
             # follow line prevents window from going full screen when the
             # 'f'it button is pressed.
             pl.rcParams['keymap.fullscreen'] = ''
+            self.cid = self.fig.canvas.mpl_connect('key_press_event', self)
+            self.setup()
+            self.fit_event(0,0)
 
     
     def setup(self):
@@ -1913,7 +1913,8 @@ class InteractiveSolution:
     def quit(self, x, y):
         """Quit and save the results """
         info("Closing figure")
-        pl.close(self.fig)
+        if self.fig is not None:
+            pl.close(self.fig)
 
 
     def reset(self, x, y):
