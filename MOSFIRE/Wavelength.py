@@ -2289,7 +2289,7 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
                                                          linelist, options)
 
         #if np.std(delt) < .01: pdb.set_trace()
-        info("resid ang S%2.2i @ p%4.0i: %1.2f rms %1.2f mad [shift%2.0f]" % \
+        debug("resid ang S%2.2i @ p%4.0i: %1.2f rms %1.2f mad [shift%2.0f]" % \
                 (slitno+1, yhere, np.std(delt), np.median(np.abs(delt)),
                     shift))
 
