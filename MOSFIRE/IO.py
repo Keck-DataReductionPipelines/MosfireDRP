@@ -668,7 +668,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
                 info('  {}'.format(file))
             ccdlist = []
             for file in filelist:
-                ccdlist.append(ccdproc.CCDData.read(file, unit='adu'))
+                ccdlist.append(ccdproc.CCDData.read(file, unit='adu', hdu=0))
             c = ccdproc.combiner.Combiner(ccdlist)
             if nlow is None:
                 nlow = 0
@@ -691,7 +691,12 @@ def imcombine(filelist, out, options, method="average", reject="none",\
                 if key != 'COMMENT':
                     result.header[key] = (header_entry,
                                           ccdlist[0].header.comments[key])
-            result.write(out)
+            hdul = result.to_hdu()
+#             print(hdul)
+#             for hdu in hdul:
+#                 print(type(hdu.data))
+            hdul[0].writeto(out)
+#             result.write(out)
             info('  Done.')
     elif reject == 'sigclip':
         info('Combining files using ccdproc.combine task')
