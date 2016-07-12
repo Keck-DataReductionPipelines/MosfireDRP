@@ -60,12 +60,11 @@ try:
     from astropy.io import fits as pf
 except:
     import pyfits as pf
-from matplotlib import pyplot as pl
 
 from scipy.interpolate import interp1d
 from scipy import signal 
 from scipy import optimize
-from matplotlib.widgets import Button
+# from matplotlib.widgets import Button
 from numpy.polynomial import chebyshev as CV
 
 
@@ -493,6 +492,7 @@ def check_wavelength_roi(maskname, band, skyfiles, arcfiles, LROI, options, no_c
     '''The purpose of this function is to help the user selection a wavelength
         range of interest over which to normalize the arcs versus sky solutions.
         '''
+    from matplotlib import pyplot as pl
     skyfiles = IO.list_file_to_strings(skyfiles)
     skyfilename = filelist_to_path(skyfiles, band, maskname, options)
     fn = "lambda_center_coeffs_{0}.npy".format(skyfilename.rstrip(".fits"))
@@ -1663,9 +1663,11 @@ class InteractiveSolution:
             self.setup()
             self.fit_event(0,0)
 
-        # follow line prevents window from going full screen when the
-        # 'f'it button is pressed.
-        pl.rcParams['keymap.fullscreen'] = ''
+        if not noplots:
+            from matplotlib import pyplot as pl
+            # follow line prevents window from going full screen when the
+            # 'f'it button is pressed.
+            pl.rcParams['keymap.fullscreen'] = ''
 
     
     def setup(self):
