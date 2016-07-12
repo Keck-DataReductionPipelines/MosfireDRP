@@ -639,24 +639,25 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         if ccdproc.version.major >= 1 and ccdproc.version.minor >= 1\
            and ccdproc.version.release:
             info('Combining files using ccdproc.combine task')
-            info('  reject=iraf_minmax_clip')
+            info('  reject=clip_extrema')
             info('  nlow={}'.format(nlow))
             info('  nhigh={}'.format(nhigh))
             for file in filelist:
                 info('  {}'.format(file))
             ccdproc.combine(filelist, out, method=method,\
                             minmax_clip=False,\
-                            iraf_minmax_clip=True,\
+                            clip_extrema=True,\
                             nlow=nlow, nhigh=nhigh,\
                             sigma_clip=False,\
                             unit="adu")
             info('  Done.')
         else:
-            ## ccdproc does not have new rejection algorithm in:
-            ##  https://github.com/astropy/ccdproc/pull/358
+            ## If ccdproc does not have new rejection algorithm in:
+            ## https://github.com/astropy/ccdproc/pull/358
             ## Manually perform rejection using ccdproc.combiner.Combiner object
-            info('Combining files using modified ccdproc.combine task')
-            info('  reject=iraf_minmax_clip')
+            info('Combining files using local clip_extrema rejection algorithm')
+            info('and the ccdproc.combiner.Combiner object.')
+            info('  reject=clip_extrema')
             info('  nlow={}'.format(nlow))
             info('  nhigh={}'.format(nhigh))
             for file in filelist:
@@ -686,6 +687,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
                 if key != 'COMMENT':
                     result.header[key] = (header_entry,
                                           ccdlist[0].header.comments[key])
+            print(type(result))
             result.write(out)
             info('  Done.')
     elif reject == 'sigclip':
@@ -697,7 +699,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         baseline_func = {False: np.mean, True: np.median}
         ccdproc.combine(filelist, out, method=method,\
                         minmax_clip=False,\
-                        iraf_minmax_clip=True,\
+                        clip_extrema=False,\
                         sigma_clip=True,\
                         sigma_clip_low_thresh=lsigma,\
                         sigma_clip_high_thresh=hsigma,\
