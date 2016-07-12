@@ -379,8 +379,10 @@ def fix_long2pos_headers(filelist):
         hdulist = pf.open(path, mode='update')
         header = hdulist[0].header
 
-        #determine if this file really needs to be updated (for example, prevents a second update of an already updated file
-        if 'long2pos' in header['MASKNAME'] and header['FRAMEID']=='object' and (header['PATTERN']=='long2pos' or header['PATTERN']=='Stare'):
+        # determine if this file really needs to be updated (for example,
+        # prevents a second update of an already updated file
+        if 'long2pos' in header['MASKNAME'] and header['FRAMEID']=='object'\
+            and (header['PATTERN']=='long2pos' or header['PATTERN']=='Stare'):
             info( "File "+str(fname)+" will be updated")
 
             # make a copy of the original file
@@ -389,8 +391,10 @@ def fix_long2pos_headers(filelist):
             info("into ...... "+str(newname))
             shutil.copyfile(path,newname)
             if not os.path.exists(newname):
-                error("Error in generating original file:  '%s' does not exist (could not be created)." % newname)
-                raise Exception("Error in generating original file:  '%s' does not exist (could not be created)." % newname)            
+                errstr = "Error in generating original file:  '%s' does not exist"\
+                         "(could not be created)." % newname
+                error(errstr)
+                raise Exception(errstr_
 
             #updating header
             # assign FRAMEID to narrow slits
