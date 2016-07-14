@@ -9,14 +9,21 @@ __Important Note__: The [Ureka package has been deprecated](http://ssb.stsci.edu
 ### New features
 
 * DRP is no longer dependent on IRAF/PyRAF
+    * The use of IRAF's `geoxytran` and `imcombine` tasks have been replaced with python equivalents.
     * The DRP should now work with any python install which has the [required python packages](/manual/installing#Requirements)
-* Updated instruction manual
-* The DRP now performs optimal spectral extraction (Horne 1986) and outputs a 1D spectrum
+* Improved slit tracing using a better thresholding algorithm
+* An updated (and now web based) [instruction manual](http://keck-datareductionpipelines.github.io/MosfireDRP/)
+* The DRP now performs optimal spectral extraction [Horne 1986](http://adsabs.harvard.edu/abs/1986PASP...98..609H) and outputs a 1D spectrum
 
 ### Improvements and bug fixes
 
 * Changed dependence on `pylab` to `matplotlib.pyplot`
 * Uses `astropy.io.fits` instead of `pyfits` when available
+
+
+
+
+
 
 ## Changes in Version 2015A
 
