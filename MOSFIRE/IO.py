@@ -351,7 +351,7 @@ returns ['file1', 'file2', 'file3']
     output = []
 
     for fname in filelist:
-        info( "Loading: %s" % fname)
+        debug( "Loading: %s" % fname)
         inputs = np.loadtxt(fname, dtype= [("f", "S100")])
         path = ""
         start_index = 0
@@ -609,7 +609,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         info('Combining files using ccdproc.combine task')
         info('  reject=none')
         for file in filelist:
-            info('  {}'.format(file))
+            debug('  Combining: {}'.format(file))
         ccdproc.combine(filelist, out, method=method,\
                         minmax_clip=False,\
                         iraf_minmax_clip=True,\
