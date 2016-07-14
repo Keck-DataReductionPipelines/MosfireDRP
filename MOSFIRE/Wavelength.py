@@ -145,8 +145,8 @@ def imcombine(files, maskname, bandname, options, extension=None):
 
     info("combining Wavelength files")
     for file in files:
-        info(str(file))
-    info("list complete")
+        debug(str(file))
+    debug("list complete")
 
     ADUs = np.zeros((len(files), 2048, 2048))
     prevssl = None
@@ -156,6 +156,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
 
 
     for i in xrange(len(files)):
+        info("Checking maskname and filter for {} {}/{}".format(fname, maskname, thishdr['filter']))
         fname = files[i]
         thishdr, data, bs = IO.readmosfits(fname, options, extension=extension)
         ADUs[i,:,:] = data.filled(0)
@@ -229,9 +230,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
                 warning("File %s uses mask '%s' but the stack is of '%s'" %
                     (fname, thishdr["maskname"], maskname))
 
-        ''' Error checking is complete'''
-        info("Checking maskname and filter")
-        info("%s %s/%s" % (fname, maskname, thishdr['filter']))
+        info('Done.')
 
     header.set("frameid", "median")
     electrons = np.median(np.array(ADUs) * Detector.gain, axis=0)
