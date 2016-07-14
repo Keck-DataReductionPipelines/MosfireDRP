@@ -82,7 +82,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     flatlist = IO.list_file_to_strings(flatlist)
     # Print the filenames to Standard-out
     for flat in flatlist:
-        info(str(flat))
+        debug(str(flat))
 
     #Determine if flat files headers are in agreement
     for fname in flatlist:
@@ -114,18 +114,17 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     bs = bs0
 
     # Imcombine the lamps ON flats
-    info("Attempting to combine previous files")
+    info("Attempting to combine files in {}".format(flatlist))
     out = os.path.join("combflat_2d_{:s}.fits".format(band))
     IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
 
     # Imcombine the lamps OFF flats and subtract the off from the On sets
     if lampOffList != None: 
         #Retrieve the list of files to use for flat creation. 
+        info("Attempting to combine Lamps off files in {}".format(lampOffList))
         lampOffList = IO.list_file_to_strings(lampOffList)
-        # Print the filenames to Standard-out
         for flat in lampOffList:
-            info(str(flat))
-        print "Attempting to combine Lamps off data"
+            debug(str(flat))
         out = os.path.join("combflat_lamps_off_2d_{:s}.fits".format(band))
         IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
         file_on = os.path.join("combflat_2d_{:s}.fits".format(band))
@@ -134,10 +133,9 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         IO.imarith(file_on, '-', file_off, file_on_save)
 
     debug("Combined '%s' to '%s'" % (flatlist, maskname))
-    info("Combined to '%s'" % (maskname))
+#     info("Combined flats for '%s'" % (maskname))
     path = "combflat_2d_%s.fits" % band
     (header, data) = IO.readfits(path, use_bpm=True)
-
     info("Flat written to %s" % path)
 
     # Edge Trace
@@ -150,6 +148,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         info( "Long2pos mode recognized")
         results = find_long2pos_edges(data,header, bs, options, edgeThreshold=edgeThreshold, longslit=longslit)
     else:
+        info('Finding slit edges in {}'.format(path))
         results = find_and_fit_edges(data, header, bs, options,edgeThreshold=edgeThreshold)
     results[-1]["maskname"] = maskname
     results[-1]["band"] = band
@@ -225,7 +224,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
         for i in np.arange(bottom-1, top+1):
             flat[i,hpps[0]:hpps[1]] = v
 
-    info( "Producing Pixel Flat...")
+    info("Producing Pixel Flat...")
     for r in range(len(results)-1):
         theslit = results[r]
 
@@ -248,6 +247,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
     if os.path.exists(outfile):
             os.remove(outfile)
     hdu.writeto(outfile)
+    info("Done.")
 
 
 def save_ds9_edges(results, options):
