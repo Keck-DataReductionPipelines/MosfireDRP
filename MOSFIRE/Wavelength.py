@@ -1912,8 +1912,8 @@ class InteractiveSolution:
 
     def quit(self, x, y):
         """Quit and save the results """
-        info("Closing figure")
         if self.fig is not None:
+            info("Closing figure")
             pl.close(self.fig)
 
 
