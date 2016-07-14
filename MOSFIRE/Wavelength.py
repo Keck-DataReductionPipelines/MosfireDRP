@@ -137,8 +137,8 @@ def imcombine(files, maskname, bandname, options, extension=None):
         writes a median combined image in electron. It is called
             wave_stack_[bandname]_[filename range].fits'''
     
-    Flat = IO.load_flat(maskname, bandname, options)
-    flat = Flat[1]
+    pixelflat_file = "pixelflat_2d_{0}.fits".format(bandname)
+    flat = readfits(pixelflat_file, use_bpm=True)[1]
     flat = flat.filled(1.0)
 
     files = IO.list_file_to_strings(files)

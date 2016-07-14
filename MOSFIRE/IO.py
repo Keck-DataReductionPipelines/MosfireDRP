@@ -108,15 +108,6 @@ def load_lambdamodel(fnum, maskname, band, options):
     ld = np.load(fn)
     return ld
 
-def load_flat(maskname, band, options):
-    if False:
-        path = os.path.join(options["outdir"], maskname)
-        fn = os.path.join(path, "pixelflat_2d_{0}.fits".format(band))
-
-    fn = "pixelflat_2d_{0}.fits".format(band)
-
-    return readfits(fn, use_bpm=True)
-
 
 def load_lambdaslit(fnum, maskname, band, options):
     ''' Load the wavelength coefficient functions '''
