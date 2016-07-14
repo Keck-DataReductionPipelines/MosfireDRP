@@ -640,6 +640,17 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         ##      non-overlap,   then   the  fraction  of  the  remaining  pixels,
         ##      truncated to an integer, is used.
         ##
+
+        ## Check that minmax rejection is possible given the number of images
+        if nlow is None:
+            nlow = 0
+        if nhigh is None:
+            nhigh = 0
+        if nlow + nhigh >= len(filelist):
+            warning('nlow + nhigh >= number of input images.  Combining without rejection')
+            nlow = 0
+            nhigh = 0
+        
         if ccdproc.version.major >= 1 and ccdproc.version.minor >= 1\
            and ccdproc.version.release:
             info('Combining files using ccdproc.combine task')
@@ -670,10 +681,6 @@ def imcombine(filelist, out, options, method="average", reject="none",\
             for file in filelist:
                 ccdlist.append(ccdproc.CCDData.read(file, unit='adu', hdu=0))
             c = ccdproc.combiner.Combiner(ccdlist)
-            if nlow is None:
-                nlow = 0
-            if nhigh is None:
-                nhigh = 0
             nimages, nx, ny = c.data_arr.mask.shape
             argsorted = np.argsort(c.data_arr.data, axis=0)
             mg = np.mgrid[0:nx,0:ny]
