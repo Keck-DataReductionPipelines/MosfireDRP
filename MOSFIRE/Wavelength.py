@@ -232,14 +232,13 @@ def imcombine(files, maskname, bandname, options, extension=None):
 
         info('Done.')
 
+    wavename = filelist_to_wavename(files, bandname, maskname, options)
+    info('Combining images to make {}'.format(wavename))
     header.set("frameid", "median")
     electrons = np.median(np.array(ADUs) * Detector.gain, axis=0)
-
-    wavename = filelist_to_wavename(files, bandname, maskname, options)
-
     IO.writefits(electrons, maskname, wavename, options, overwrite=True,
             header=header)
-    info("Imcombine done")
+    info("Done")
     
 def fit_lambda(maskname, 
         bandname, 
@@ -610,11 +609,11 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
         info("*** LONGSLIT MODE *** Extract position set to %i" % starting_pos)
     else:
         starting_pos = None
-    print("using line list")
-    print(linelist)
+    debug("using line list")
+    debug(linelist)
     II = InteractiveSolution(fig, mfits, linelist, options, 1,
         outfilename, solutions=solutions, bypass=bypass, starting_pos=starting_pos)
-    info( "Waiting")
+    info("Waiting")
 
     if bypass is False:
         pl.ioff()
@@ -1679,7 +1678,8 @@ class InteractiveSolution:
             csuslit = csuslits
 
 
-        info(str(csuslits)+" "+str(csuslit))
+#         info(str(csuslits)+" "+str(csuslit))
+        info('CSU slits {} acting as slit number {}'.format(str(csuslits), str(csuslit)))
         self.linelist = self.linelist0
         if self.starting_pos is None:
             self.extract_pos = self.bs.science_slit_to_pixel(self.slitno)
@@ -1955,14 +1955,14 @@ class InteractiveSolution:
             tolerance = 3
             # if the std error is > 0.10, iteratively reject lines
             while error>0.10:
-                info("#####################################################")
-                info("Large error detected. Iterating with sigma clipping")
-                info("Current error is "+str(error))
-                info("Current tolerance is "+str(tolerance)+" sigmas")
-                info("Number of lines used for fit: "+str(len(xs)))
-                info("Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)])))
+#                 info("#####################################################")
+                warning("Large error detected. Iterating with sigma clipping")
+                warning("Current error is "+str(error))
+                warning("Current tolerance is "+str(tolerance)+" sigmas")
+                warning("Number of lines used for fit: "+str(len(xs)))
+                warning("Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)])))
                 mask = (abs(deltas)<tolerance*np.std(deltas[np.isfinite(deltas)]))
-                info("Number of rejected lines: "+str(len(xs)-len(xs[mask])))
+                warning("Number of rejected lines: "+str(len(xs)-len(xs[mask])))
                 local_linelist = local_linelist[mask]
                 xs=xs[mask]
                 sxs=sxs[mask]
@@ -1970,9 +1970,11 @@ class InteractiveSolution:
                 [deltas, cfit, perror] = fit_chebyshev_to_lines(xs, sxs,
                                                                 local_linelist, self.options)
                 error = np.std(deltas[np.isfinite(deltas)])
-                info("Error is now "+str(error))
-                if error<=0.10: info("The error is acceptable, continuing...")
-                info("#####################################################")
+                if error<=0.10:
+                    info("The error is now {}.  The error is acceptable, continuing...".format(error))
+                else:
+                    info("The error is now {}".format(error))
+#                 info("#####################################################")
                 self.cfit = cfit
                 self.ll = CV.chebval(self.pix, self.cfit)
                 tolerance = tolerance - 0.2
@@ -1983,7 +1985,7 @@ class InteractiveSolution:
         self.STD = np.std(deltas[ok])
         self.MAD = np.median(np.abs(deltas[ok]))
 
-        info("STD: %1.2f MAD: %1.2f" % (self.STD, self.MAD))
+        debug("STD: %1.2f MAD: %1.2f" % (self.STD, self.MAD))
         debug(str(self.cfit))
 
 
@@ -1993,7 +1995,7 @@ class InteractiveSolution:
                 self.STD, "slitno": self.slitno, "extract_pos":
                 self.extract_pos}
 
-        info('Stored: '+str(self.solutions[self.slitno-1]['slitno']))
+        info('Stored slit number: {}'.format(str(self.solutions[self.slitno-1]['slitno'])))
 
         if self.bypass is False:
             self.redraw()
