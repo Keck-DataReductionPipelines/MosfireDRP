@@ -115,7 +115,8 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
 
     # Imcombine the lamps ON flats
     info("Attempting to combine previous files")
-    combine(flatlist, maskname, band, options)
+    out = os.path.join("combflat_lamps_off_2d_{:s}.fits".format(band))
+    IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
 
     # Imcombine the lamps OFF flats and subtract the off from the On sets
     if lampOffList != None: 
@@ -125,7 +126,8 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         for flat in lampOffList:
             info(str(flat))
         print "Attempting to combine Lamps off data"
-        combine(lampOffList, maskname, band, options, lampsOff=True)
+        out = os.path.join("combflat_2d_{:s}.fits".format(band))
+        IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
         combine_off_on( maskname, band, options)
 
     debug("Combined '%s' to '%s'" % (flatlist, maskname))
@@ -325,24 +327,6 @@ def save_ds9_edges(results, options):
             raise
     except:
             raise
-
-def combine(flatlist, maskname, band, options, lampsOff=False):
-    '''
-    combine list of flats into a flat file'''
-
-    if lampsOff:
-        out = os.path.join("combflat_lamps_off_2d_%s.fits" 
-                    % (band))
-    else:
-        out = os.path.join("combflat_2d_%s.fits" 
-                    % (band))
-    if os.path.exists(out):
-            os.remove(out)
-
-    if len(flatlist)>1:
-        IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
-    else:
-        IO.imcombine(flatlist, out, options, reject="none", nlow=1, nhigh=1)
 
 def combine_off_on(maskname, band, options, lampsOff=False):
     '''
