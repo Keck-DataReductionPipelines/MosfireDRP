@@ -128,7 +128,10 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         print "Attempting to combine Lamps off data"
         out = os.path.join("combflat_2d_{:s}.fits".format(band))
         IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
-        combine_off_on( maskname, band, options)
+        file_on = os.path.join("combflat_2d_{:s}.fits".format(band))
+        file_off = os.path.join("combflat_lamps_off_2d_{:s}.fits".format(band))
+        file_on_save = os.path.join("combflat_lamps_on_2d_{:s}.fits".format(band))
+        IO.imarith(file_on, '-', file_off, file_on_save)
 
     debug("Combined '%s' to '%s'" % (flatlist, maskname))
     info("Combined to '%s'" % (maskname))
@@ -327,34 +330,6 @@ def save_ds9_edges(results, options):
             raise
     except:
             raise
-
-def combine_off_on(maskname, band, options, lampsOff=False):
-    '''
-    combine list of flats into a flat file'''
-
-
-    file_off = os.path.join("combflat_lamps_off_2d_%s.fits" 
-                    % (band))
-
-    file_on = os.path.join("combflat_2d_%s.fits" 
-                    % (band))
-
-    file_on_save = os.path.join("combflat_lamps_on_2d_%s.fits" 
-                    % (band))
-
-    hdu_off  = pf.open(file_off)
-    hdu_on   = pf.open(file_on)
-
-    #save lamps On data set to new name
-    hdu_on.writeto(file_on_save, clobber=True)
-
-    hdu_on[0].data = hdu_on[0].data - hdu_off[0].data
-
-    #Add comment that the difference was completed
-    hdu_on[0].header.add_history("Differenced the Lamps on and Lamps off images ")
-    #save lamps On data set to new name
-    hdu_on.writeto(file_on, clobber=True)
-    
 
 def find_edge_pair(data, y, roi_width, edgeThreshold=450):
     '''
