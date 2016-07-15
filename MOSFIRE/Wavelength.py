@@ -909,7 +909,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
         lp = Ld[i]["2d"]["positions"].astype(np.int)
         lc = Ld[i]["2d"]["coeffs"]
         lm = Ld[i]["2d"]["lambdaMAD"]
-        info("2d wavelengths: Slit %i/%i" % (i+1, len(Ld)))
+        info("Creating 2d wavelength map: Slit %i/%i" % (i+1, len(Ld)))
 
         prev = 0
         for j in xrange(len(lp)):
@@ -948,8 +948,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
 #             M = lams[lp,:] = np.polyval(polyy, yy) + np.polyval(polyx, xx)
 
 
-    info(("{0}: writing lambda".format(maskname)))
-
+    info("writing {} for {}".format("lambda_solution_{0}.fits".format(wavename), maskname))
     header = pf.Header()
     header.set("maskname", maskname)
     header.set("filter", bandname)
@@ -960,12 +959,12 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
             options, overwrite=True, header=header)
                 
 
-    info("{0}: writing sigs".format(maskname))
+    info("writing {} for {}".format("sigs_solution_{0}.fits".format(wavename), maskname))
     header.set("object", "Sigmas {0}/{1}".format(maskname, bandname))
     IO.writefits(sigs, maskname, "sigs_solution_{0}.fits".format(wavename), 
             options, overwrite=True, header=header, lossy_compress=True)
 
-    info("{0}: rectifying".format(maskname))
+    info("writing {} for {}".format("rectified_{0}.fits".format(wavename), maskname))
     dlam = 0
     central_line = 1024
     step = 0
