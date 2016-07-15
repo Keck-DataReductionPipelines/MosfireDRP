@@ -933,19 +933,19 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
                 lams[lp, i] = ff(xr)
 
 
-        if False == True:
-            xs,ys,zs = map(np.array, [xs,ys,zs])
-            info("smoothing")
-
-            polyx, polyy, cov = polyfit2d(np.array(zs,dtype=np.double),
-                    np.array(ys, dtype=np.double),
-                    np.array(xs, dtype=np.double),
-                    orderx=3,ordery=3)
-
-            xx, yy = np.array(np.meshgrid(np.arange(2048), lp),
-                    dtype=np.double)
-
-            M = lams[lp,:] = np.polyval(polyy, yy) + np.polyval(polyx, xx)
+#         if False == True:
+#             xs,ys,zs = map(np.array, [xs,ys,zs])
+#             info("smoothing")
+# 
+#             polyx, polyy, cov = polyfit2d(np.array(zs,dtype=np.double),
+#                     np.array(ys, dtype=np.double),
+#                     np.array(xs, dtype=np.double),
+#                     orderx=3,ordery=3)
+# 
+#             xx, yy = np.array(np.meshgrid(np.arange(2048), lp),
+#                     dtype=np.double)
+# 
+#             M = lams[lp,:] = np.polyval(polyy, yy) + np.polyval(polyx, xx)
 
 
     info(("{0}: writing lambda".format(maskname)))
