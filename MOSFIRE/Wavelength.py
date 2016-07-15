@@ -138,7 +138,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
             wave_stack_[bandname]_[filename range].fits'''
     
     pixelflat_file = "pixelflat_2d_{0}.fits".format(bandname)
-    flat = readfits(pixelflat_file, use_bpm=True)[1]
+    flat = IO.readfits(pixelflat_file, use_bpm=True)[1]
     flat = flat.filled(1.0)
 
     files = IO.list_file_to_strings(files)
