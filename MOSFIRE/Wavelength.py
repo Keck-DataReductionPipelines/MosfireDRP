@@ -156,9 +156,9 @@ def imcombine(files, maskname, bandname, options, extension=None):
 
 
     for i in xrange(len(files)):
-        info("Checking maskname and filter for {} {}/{}".format(fname, maskname, thishdr['filter']))
         fname = files[i]
         thishdr, data, bs = IO.readmosfits(fname, options, extension=extension)
+        info("Checking maskname and filter for {} {}/{}".format(fname, maskname, thishdr['filter']))
         ADUs[i,:,:] = data.filled(0)
 
         if thishdr["aborted"]:
