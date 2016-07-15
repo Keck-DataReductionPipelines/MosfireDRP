@@ -203,7 +203,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
                     "'%s'." % (fname, thishdr["BUNIT"]))
 
         ''' Error checking is complete'''
-        info("%s %s[%s]/%s: %5.1f s,  Shift: %i px" % (fname, maskname, patternid,
+        debug("%s %s[%s]/%s: %5.1f s,  Shift: %i px" % (fname, maskname, patternid,
             header['filter'], np.mean(itimes[i]), shifts[i]))
 
     warnings.filterwarnings('always')
@@ -457,7 +457,7 @@ def handle_background(filelist, wavename, maskname, band_name, options, shifts=N
     for i in xrange(len(filelist)):
         fl = filelist[i]
         files = IO.list_file_to_strings(fl)
-        info("Combining")
+        info("Combining observation files listed in {}".format(fl))
         if shifts is None: shift = None
         else: shift = shifts[i]
         hdr, electron, var, bs, time, Nframe = imcombine(files, maskname,
