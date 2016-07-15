@@ -613,7 +613,7 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     debug(linelist)
     II = InteractiveSolution(fig, mfits, linelist, options, 1,
         outfilename, solutions=solutions, bypass=bypass, starting_pos=starting_pos)
-    info("Waiting")
+    info("Waiting for user input")
 
     if bypass is False:
         pl.ioff()
