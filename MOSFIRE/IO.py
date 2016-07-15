@@ -596,6 +596,9 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         Creates the imcombined file at location `out'
     '''
     assert method in ['average', 'median']
+    if os.path.exists(out):
+        os.remove(out)
+
     if reject == 'none':
         info('Combining files using ccdproc.combine task')
         info('  reject=none')
