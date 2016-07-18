@@ -19,8 +19,8 @@ waveops = Options.wavelength
 maskname = 'maskname'
 band = 'band'
 
-#Set noplots to True to autofit wavelenth solution instead of manually fitting.
-noplotsflag=False
+#Set noninteractive to True to autofit wavelenth solution instead of manually fitting.
+noninteractiveflag=False
 obsfiles=['Offset_1.25.txt','Offset_-1.25.txt']
 
 Flats.handle_flats('Flat.txt', maskname, band, flatops,lampOffList='FlatThermal.txt')
@@ -30,7 +30,7 @@ Wavelength.imcombine(obsfiles, maskname, band, waveops)
 Wavelength.imcombine('Ar.txt', maskname, band, waveops)
 # if you have Ne
 Wavelength.imcombine('Ne.txt', maskname, band, waveops)
-Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops, noplots=noplotsflag)
+Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops, noninteractive=noninteractiveflag)
 
 Wavelength.apply_interactive(maskname, band, waveops, apply=obsfiles, to='Ar.txt', argon=True)
 Wavelength.apply_interactive(maskname, band, waveops, apply=obsfiles, to='Ne.txt', neon=True)

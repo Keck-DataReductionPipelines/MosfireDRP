@@ -23,8 +23,8 @@ waveops = Options.wavelength
 maskname = 'long2pos_specphot (align)'
 band = 'H'
 
-#Set noplots to True to autofit wavelenth solution instead of manually fitting.
-noplotsflag=False
+#Set noninteractive to True to autofit wavelenth solution instead of manually fitting.
+noninteractiveflag=False
 
 # these are the narrow slits
 obsfiles_posCnarrow = ['Offset_-21_HIP85871_7.25_PosC.txt', 'Offset_-7_HIP85871_7.25_PosC.txt']
@@ -49,7 +49,7 @@ Flats.handle_flats('Flat.txt', maskname, band, flatops,longslit=longslit)
 # replace this with neon=['Ne.txt'] if you prefer to use Ne, and edit the following lines accordingly
 argon = ['Ar.txt']
 Wavelength.imcombine(argon, maskname, band, waveops)
-Wavelength.fit_lambda_interactively(maskname, band, argon,waveops,longslit=longslit, argon=True, noplots=noplotsflag)
+Wavelength.fit_lambda_interactively(maskname, band, argon,waveops,longslit=longslit, argon=True, noninteractive=noninteractiveflag)
 Wavelength.fit_lambda(maskname, band, argon,argon,waveops,longslit=longslit)
 Wavelength.apply_lambda_simple(maskname, band, argon, waveops, longslit=longslit, smooth=True)
 
