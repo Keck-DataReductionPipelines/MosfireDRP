@@ -14,6 +14,7 @@ The pipeline requires the following python modules:
 * numpy >= v?.?
 * astropy >= v?.?
 * ccdproc >= v?.?
+* scipy >= v?.?
 
 # Installing python
 
