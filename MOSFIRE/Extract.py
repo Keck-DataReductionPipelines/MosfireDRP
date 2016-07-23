@@ -17,9 +17,10 @@ import scipy.signal as signal
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from pylab import connect
+from matplotlib.pylab import connect
 
 from MOSFIRE import Detector
+from MOSFIRE.MosfireDrpLog import info, debug, warning, error
 
 RN = Detector.RN * u.electron
 Gain = Detector.gain * u.electron/u.adu
@@ -212,7 +213,7 @@ class TraceFitter(object):
         if event.inaxes:
             clickX = event.xdata
             clickY = event.ydata
-            print('Clicked at: {:.1f}, {:.2f}'.format(event.xdata, event.ydata))
+            info('Clicked at: {:.1f}, {:.2f}'.format(event.xdata, event.ydata))
 
     def keypress(self, event):
         '''Based on which key is presses on a key press event, call the
@@ -259,7 +260,7 @@ class TraceFitter(object):
         self.fig.savefig(plotfile, bbox_inches='tight')
 
     def quit(self, event):
-        print('quitting')
+        info('quitting')
         self.disconnect()
 
 
@@ -345,20 +346,20 @@ def iterate_spatial_profile(P, DmS, V, f,\
             nrej_after = np.sum(srow.mask)
             if nrej_after > nrej_before:
                 if verbose:\
-                    print('Row {:3d}: Rejected {:d} pixels on clipping '+\
+                    info('Row {:3d}: Rejected {:d} pixels on clipping '+\
                           'iteration {:d}'.format(\
                            i, nrej_after-nrej_before, iter))
         
         ## Reject row if too few pixels are availabel for the fit
         if (srow.shape[0] - nrej_after) < minpixels:
             if verbose:
-                print('Row {:3d}: WARNING! Only {:d} pixels remain after '+\
-                      'clipping and masking'.format(\
+                warning('Row {:3d}: WARNING! Only {:d} pixels remain after '+\
+                        'clipping and masking'.format(\
                       i, srow.shape[0] - nrej_after))
             fit = np.zeros(fit.shape)
         ## Set negative values to zero
         if np.sum((fit<0)) > 0 and verbose:
-            print('Row {:3d}: Reset {:d} negative pixels in fit to 0'.format(\
+            info('Row {:3d}: Reset {:d} negative pixels in fit to 0'.format(\
                   i, np.sum((fit<0))))
         fit[(fit < 0)] = 0
         Pnew[i] = fit
@@ -369,9 +370,11 @@ def iterate_spatial_profile(P, DmS, V, f,\
 ##-------------------------------------------------------------------------
 ## Optimal Spectral Extraction
 ##-------------------------------------------------------------------------
-def optimal_extraction(image, variance_image, trace_table,\
-                       fitsfileout=None,\
-                       combine=False):
+def optimal_extraction(image, variance_image, trace_table,
+                       fitsfileout=None,
+                       plotfileout=None,
+                       combine=True,
+                       plot=None):
     '''Given a 2D spectrum image, a 2D variance image, and a table of trace
     lines (e.g. as output by find_traces() above), this function will optimally
     extract a 1D spectrum for each entry in the table of traces.
@@ -383,7 +386,7 @@ def optimal_extraction(image, variance_image, trace_table,\
     elif type(image) == fits.PrimaryHDU:
         hdu = image
     else:
-        print('Input to standard_extraction should be an HDUList or an HDU')
+        error('Input to standard_extraction should be an HDUList or an HDU')
         raise TypeError
 
     if type(variance_image) == fits.HDUList:
@@ -391,7 +394,7 @@ def optimal_extraction(image, variance_image, trace_table,\
     elif type(image) == fits.PrimaryHDU:
         vhdu = variance_image
     else:
-        print('Input to standard_extraction should be an HDUList or an HDU')
+        error('Input to standard_extraction should be an HDUList or an HDU')
         raise TypeError
 
     spectra2D = hdu.data
@@ -421,20 +424,20 @@ def optimal_extraction(image, variance_image, trace_table,\
         pos = row['position']
         width = 5.*row['sigma']  # Hard coded factor defines with of extraction
         sign = row['sign']
-        print('Extracting data for trace {:d} at position {:.1f}'.format(i, pos))
-        DmS = np.ma.MaskedArray(data=sign*spectra2D[pos-width:pos+width,:],\
-                                mask=np.isnan(eps.data[pos-width:pos+width,:]))
-        V = np.ma.MaskedArray(data=variance2D[pos-width:pos+width,:],\
-                              mask=np.isnan(eps.data[pos-width:pos+width,:]))
-        print('  Performing standard extraction')
+        info('Extracting data for trace {:d} at position {:.1f}'.format(i, pos))
+        DmS = np.ma.MaskedArray(data=sign*spectra2D[int(pos-width):int(pos+width),:],\
+                                mask=np.isnan(spectra2D[int(pos-width):int(pos+width),:]))
+        V = np.ma.MaskedArray(data=variance2D[int(pos-width):int(pos+width),:],\
+                              mask=np.isnan(spectra2D[int(pos-width):int(pos+width),:]))
+        info('  Performing standard extraction')
         f_std, V_std = standard_extraction(DmS, V)
-        print('  Forming initial spatial profile')
+        info('  Forming initial spatial profile')
         P_init_data = np.array([row/f_std for row in DmS])
         P_init = np.ma.MaskedArray(data=P_init_data,\
                                    mask=np.isnan(P_init_data))
-        print('  Fitting spatial profile')
+        info('  Fitting spatial profile')
         P = iterate_spatial_profile(P_init, DmS, V, f_std, verbose=False)
-        print('  Calculating optimally extracted spectrum')
+        info('  Calculating optimally extracted spectrum')
         f_new_denom = np.ma.MaskedArray(data=np.sum(P**2/V, axis=0),\
                                         mask=(np.sum(P**2/V, axis=0)==0))
         f_opt = np.sum(P*DmS/V, axis=0)/f_new_denom
@@ -442,94 +445,108 @@ def optimal_extraction(image, variance_image, trace_table,\
         sig_fopt = np.sqrt(var_fopt)
         spectra.append(f_opt)
         variances.append(var_fopt)
-        print('  Typical level = {:.1f}'.format(np.mean(f_opt)))
-        print('  Typical sigma = {:.1f}'.format(np.mean(sig_fopt[~np.isnan(sig_fopt)])))
+        info('  Typical level = {:.1f}'.format(np.mean(f_opt)))
+        info('  Typical sigma = {:.1f}'.format(np.mean(sig_fopt[~np.isnan(sig_fopt)])))
 
     mask = np.isnan(np.array(spectra)) | np.isnan(np.array(variances))
     spectra = np.ma.MaskedArray(data=np.array(spectra), mask=mask)
     variances = np.ma.MaskedArray(data=np.array(variances), mask=mask)
 
+    w = wcs.WCS(header).dropaxis(1)
+    wh = w.to_header()
+    for key in wh.keys():
+        header[key] = wh[key]
+
+    if plotfileout:
+        fig = plt.figure(figsize=(16,6))
+        wavelength_units = getattr(u, w.to_header()['CUNIT1'])
+
     if not combine:
         hdulist = []
-        for i,sp in enumerate(spectra):
+        for i,row in enumerate(trace_table):
+            sp = spectra[i]
             if i == 0:
-                ## To do: populate header with target information
-                ##   How do we handle different targets in same slit?
-                ##   Will this need ability to name traces in interactive trace
-                ##   fitting process?
                 hdulist.append(fits.PrimaryHDU(data=sp, header=header))
             else:
-                ## To do: populate header with an indication that this is a
-                ##   variance image for a particular target.
                 hdulist.append(fits.ImageHDU(data=sp, header=header))
-        for i,var in enumerate(variances):
+            hdulist[-1].header['TRACEPOS'] = row['position']
+            if plotfileout:
+                sigma = 1./variances[i]
+                pix = np.arange(0,sp.shape[0],1)
+                wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron) * u.micron
+                plt.subplot(len(trace_table), 1, i+1)
+                plt.fill_between(wavelengths, sp-sigma, sp+sigma,\
+                                 label='uncertainty',\
+                                 facecolor='black', alpha=0.2,\
+                                 linewidth=0,\
+                                 interpolate=True)
+                plt.plot(wavelengths, sp, 'k-',
+                         label='Spectrum for Trace at {}'.format(row['position']))
+                plt.xlabel('Wavelength (microns)')
+                plt.ylabel('Flux (e-/sec)')
+                plt.xlim(wavelengths.value.min(),wavelengths.value.max())
+                plt.ylim(0,1.05*sp.max())
+                plt.legend(loc='best')
+        if plotfileout:
+            plt.savefig(plotfileout, bbox_inches='tight')
+        for i,row in enumerate(trace_table):
+            var = variances[i]
             hdulist.append(fits.ImageHDU(data=var, header=header))
-        if fitsfileout: hdulist.writeto(fitsfileout, clobber=True)
-        return hdulist
+            hdulist[-1].header['TRACEPOS'] = row['position']
+            hdulist[-1].header['COMMENT'] = 'VARIANCE DATA'
     else:
-        print('Combining individual trace spectra in to final spectrum')
+        info('Combining individual trace spectra in to final spectrum')
         spectrum = np.average(spectra, axis=0, weights=1./variances)
         sigma = np.average(1./variances, axis=0)
         variance = sigma**2
+        pix = np.arange(0,spectrum.shape[0],1)
+        wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron) * u.micron
         hdulist = fits.HDUList([fits.PrimaryHDU(data=spectrum, header=header),\
                                 fits.ImageHDU(data=variance, header=header)])
-        if fitsfileout: hdulist.writeto(fitsfileout, clobber=True)
-        return hdulist
+        if plotfileout:
+            plt.fill_between(wavelengths, spectrum-sigma, spectrum+sigma,\
+                             label='uncertainty',\
+                             facecolor='black', alpha=0.2,\
+                             linewidth=0,\
+                             interpolate=True)
+            plt.plot(wavelengths, spectrum, 'k-', label='Spectrum')
+            plt.title('Final Averaged Spectrum')
+            plt.xlabel('Wavelength (microns)')
+            plt.ylabel('Flux (e-/sec)')
+            plt.xlim(wavelengths.value.min(),wavelengths.value.max())
+            plt.ylim(0,1.05*spectrum.max())
+            plt.legend(loc='best')
+            plt.savefig(plotfileout, bbox_inches='tight')
+
+    if fitsfileout:
+        hdulist.writeto(fitsfileout, clobber=True)
+    return hdulist
+
+
+##-------------------------------------------------------------------------
+## Process some test data if called directly
+##-------------------------------------------------------------------------
+def extract_spectra(maskname, band, objectname,
+                    guesses=None, interactive=True, combine=False):
+    eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
+    sig_file = '{}_{}_{}_sig.fits'.format(maskname, band, objectname)
+    eps = fits.open(eps_file, 'readonly')[0]
+    sig = fits.open(sig_file, 'readonly')[0]
+    trace_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
+    trace_table = find_traces(eps.data, guesses=guesses,
+                              interactive=interactive,
+                              plotfile=trace_plot_file)
+    spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
+    fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
+    hdulist = optimal_extraction(eps, sig, trace_table,
+                                 fitsfileout=fits_file,
+                                 plotfileout=spectrum_plot_file,
+                                 combine=combine)
 
 
 ##-------------------------------------------------------------------------
 ## Process some test data if called directly
 ##-------------------------------------------------------------------------
 if __name__ == '__main__':
-    ## Load MOSFIRE Data
-    ## This assume you are running from within the folder which contrains the
-    ## MOSFIRE_DRP_MASK/ directory which was generated by running the DRP on the
-    ## "test case" data.
-    path = 'MOSFIRE_DRP_MASK/2012sep10/H'
-    eps_file = 'MOSFIRE_DRP_MASK_H_TARG2_eps.fits'
-    sig_file = 'MOSFIRE_DRP_MASK_H_TARG2_sig.fits'
-    snr_file = 'MOSFIRE_DRP_MASK_H_TARG2_snrs.fits'
-    itime_file = 'MOSFIRE_DRP_MASK_H_TARG2_itime.fits'
-
-    eps = fits.open(os.path.join(path, eps_file), 'readonly')[0]
-    sig = fits.open(os.path.join(path, sig_file), 'readonly')[0]
-#     snr = fits.open(os.path.join(path, snr_file), 'readonly')[0]
-#     itime = fits.open(os.path.join(path, itime_file), 'readonly')[0]
-
-    guesses = [(96, -1),\
-               (124, +1),\
-               (152, -1)
-              ]
-    guesses = [(124, +1)]
-    guesses = None
-
-    trace_table = find_traces(eps.data, guesses=guesses,\
-                              interactive=True,
-                              plotfile='Traces.png')
-    hdulist = optimal_extraction(eps, sig, trace_table,\
-                                 fitsfileout='1Dspectrum.fits',\
-                                 combine=True)
-
-    spectrum = hdulist[0].data * u.electron / u.second
-    w = wcs.WCS(hdulist[0].header).dropaxis(1)
-    sigma = np.sqrt(hdulist[1].data) * u.electron / u.second
-    pix = np.arange(0,spectrum.shape[0],1)
-    wavelength_units = getattr(u, w.to_header()['CUNIT1'])
-    wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron) * u.micron
-
-    plt.figure(figsize=(16,6))
-
-    plt.fill_between(wavelengths, spectrum-sigma, spectrum+sigma,\
-                     label='uncertainty',\
-                     facecolor='black', alpha=0.2,\
-                     linewidth=0,\
-                     interpolate=True)
-    plt.plot(wavelengths, spectrum, 'k-', label='Final Spectrum')
-
-    plt.title('Final Averaged Spectrum')
-    plt.xlabel('Wavelength (microns)')
-    plt.ylabel('Flux (e-/sec)')
-    plt.xlim(wavelengths.value.min(),wavelengths.value.max())
-    plt.ylim(0,1.05*spectrum.value.max())
-    plt.legend(loc='best')
-    plt.savefig('1Dspectrum.png', bbox_inches='tight')
+    extract_spectra('MOSFIRE_DRP_MASK', 'H', 'TARG2',
+                    guesses=None, interactive=True, combine=True)
