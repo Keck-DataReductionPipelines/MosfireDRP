@@ -1,6 +1,6 @@
 
 import numpy as np
-import pylab as pl
+from matplotlib import pyplot as pl
 import scipy as sp
 import scipy.io
 import os

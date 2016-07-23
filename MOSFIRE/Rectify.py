@@ -4,11 +4,11 @@ import sys
 import time
 
 import numpy as np
-import pylab as pl
+from matplotlib import pyplot as pl
 try:
-    import pyfits as pf
-except:
     from astropy.io import fits as pf
+except:
+    import pyfits as pf
 
 from multiprocessing import Pool
 import scipy as sp

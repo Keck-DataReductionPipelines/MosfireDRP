@@ -3,7 +3,12 @@ import MOSFIRE
 from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify, Wavelength
 from MOSFIRE.MosfireDrpLog import info, debug, warning, error
 logger = logging.getLogger(__name__)
-import numpy as np, pylab as pl, pyfits as pf
+import numpy as np
+from matplotlib import pyplot as pl
+try:
+    from astropy.io import fits as pf
+except:
+    import pyfits as pf
 np.seterr(all='ignore')
 flatops = Options.flat
 waveops = Options.wavelength

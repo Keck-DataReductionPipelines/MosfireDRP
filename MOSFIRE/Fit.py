@@ -6,7 +6,7 @@ Written in March 2011 by npk
 from scipy.special import erf
 import scipy.optimize as optimize
 import numpy as np
-import pylab as pl
+from matplotlib import pyplot as pl
 import nmpfit_mos as mpfit
 
 # Following is to correct for old/new version of stsci python

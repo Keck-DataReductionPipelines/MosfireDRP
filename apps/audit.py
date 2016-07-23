@@ -12,7 +12,7 @@ import sys
 import textwrap
 
 import numpy as np
-import pylab as pl
+from matplotlib import pyplot as pl
 
 from operator import itemgetter
 from itertools import groupby
