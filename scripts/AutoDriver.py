@@ -245,6 +245,10 @@ class Driver:
                 self.addLine('Rectify.handle_rectification(maskname, redfiles,Wavelength_file,band,obsfiles_'+str(slit)+',waveops, target=target_'+str(slit)+')')
         self.addLine("")
 
+    def printExtraction(self):
+        self.addLine('Extract.extract_spectra(maskname, band, interactive=True, combine=True)')
+
+
     def printHeader(self):
         now = time.strftime("%c")
         self.addLine("#Driver file automatically generated on "+str(now))
@@ -409,6 +413,7 @@ if 'slitmask' in targets_and_offsets:
     mydriver.printWavelengthFit()
     mydriver.printBackground()
     mydriver.printRectification()
+    mydriver.printExtraction()
     mydriver.CloseFile()
 
 elif type is 'long2pos' or type is 'longslit':
