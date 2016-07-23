@@ -81,6 +81,7 @@ class TraceFitter(object):
         self.xdata = xdata
         self.ydata = ydata
         self.traces = traces
+        self.star_index = []
         self.title = title
         self.fitter = fitting.LevMarLSQFitter()
         if self.traces:
@@ -114,7 +115,7 @@ class TraceFitter(object):
 
         ('To add a gaussian profile, to the model which will be fit to the '
         'data, put the mouse near the apex (+ sign) of that profile '
-        'and press the "a" key.'
+        'and press the "a" key (for "add").'
         ),
 
         ('To delete a gaussian profile, put the mouse near the apex (+ sign) '
@@ -124,7 +125,8 @@ class TraceFitter(object):
 
         ('When you are done adding or removing traces, close the interactive '
         'plot window by clicking the red close button in the upper right corner'
-        ' (or by whatever method is typical for your OS or windowing system).'
+        ' (or by whatever method is typical for your OS or windowing system) '
+        'or press the "q" or "n" keys (for "quit" or "next" respectively).'
         ),
         ]
 
@@ -186,26 +188,27 @@ class TraceFitter(object):
             self.traces = self.fitter(self.traces, self.xdata, self.ydata)
             params = self.traces.param_sets
             ntraces = int(len(params)/3)
-            table_data = {'position': [params[3*i+1][0]\
-                                       for i in range(ntraces)],\
-                          'amplitude': [params[3*i][0]\
-                                        for i in range(ntraces)],\
-                          'sign': [int(params[3*i][0]/abs(params[3*i][0]))\
-                                   for i in range(ntraces)],\
-                          'sigma': [params[3*i+2][0]\
-                                    for i in range(ntraces)],\
-                          'FWHM': [2.355*params[3*i+2][0]\
-                                   for i in range(ntraces)],\
+            table_data = {'position': [params[3*i+1][0]
+                                       for i in range(ntraces)],
+                          'amplitude': [params[3*i][0]
+                                        for i in range(ntraces)],
+                          'sign': [int(params[3*i][0]/abs(params[3*i][0]))
+                                   for i in range(ntraces)],
+                          'sigma': [params[3*i+2][0]
+                                    for i in range(ntraces)],
+                          'FWHM': [2.355*params[3*i+2][0]
+                                   for i in range(ntraces)],
+                          'StarID': self.star_index,
                          }
             self.trace_table = table.Table(table_data)
 
     def connect(self):
         '''Connect keypresses to matplotlib for interactivity.
         '''
-        self.cid_key = self.fig.canvas.mpl_connect('key_press_event',\
+        self.cid_key = self.fig.canvas.mpl_connect('key_press_event',
                                                    self.keypress)
-        self.cid_click = self.fig.canvas.mpl_connect('button_press_event',\
-                                                     self.click)
+#         self.cid_click = self.fig.canvas.mpl_connect('button_press_event',
+#                                                      self.click)
 
     def disconnect(self):
         self.fig.canvas.mpl_disconnect(self.cid_click)
@@ -225,18 +228,24 @@ class TraceFitter(object):
         '''
         if event.key == 'a':
             self.add_trace(event.ydata/abs(event.ydata), event.xdata)
+        elif event.key in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
+            self.add_trace(event.ydata/abs(event.ydata), event.xdata,
+                           id=int(event.key))
         elif event.key == 'd':
             self.delete_trace(event)
+        elif event.key == 'n':
+            self.quit(event)
         elif event.key == 'q':
             self.quit(event)
 
-    def add_trace(self, amp, pos):
+    def add_trace(self, amp, pos, id=1):
         '''Add an additional gaussian to the tracel model.
         '''
         if not self.traces:
             self.traces = models.Gaussian1D(mean=pos, amplitude=amp)
         else:
             self.traces += models.Gaussian1D(mean=pos, amplitude=amp)
+        self.star_index.append(id)
         self.fit_traces()
         self.plot_traces()
 
@@ -253,6 +262,7 @@ class TraceFitter(object):
             self.trace_table.remove_row(i)
             ## Rebuild model with only remaining traces
             self.traces = None
+            self.star_index = []
             for row in self.trace_table:
                 self.add_trace(row['amplitude'], row['position'])
                 self.fit_traces()
@@ -264,8 +274,7 @@ class TraceFitter(object):
         self.fig.savefig(plotfile, bbox_inches='tight')
 
     def quit(self, event):
-        info('quitting')
-        self.disconnect()
+        plt.close(self.fig)
 
 
 ##-------------------------------------------------------------------------
@@ -493,7 +502,7 @@ def optimal_extraction(image, variance_image, trace_table,
                 plt.legend(loc='best')
         if plotfileout:
             plt.savefig(plotfileout, bbox_inches='tight')
-            fig.close()
+            plt.close(fig)
         for i,row in enumerate(trace_table):
             var = variances[i]
             hdulist.append(fits.ImageHDU(data=var, header=header))
@@ -522,7 +531,7 @@ def optimal_extraction(image, variance_image, trace_table,
             plt.ylim(0,1.05*spectrum.max())
             plt.legend(loc='best')
             plt.savefig(plotfileout, bbox_inches='tight')
-            fig.close()
+            plt.close(fig)
     if fitsfileout:
         hdulist.writeto(fitsfileout, clobber=True)
     return hdulist
@@ -554,6 +563,7 @@ def extract_spectra(maskname, band,
         sig = fits.open(sig_file, 'readonly')[0]
         spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
         fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
+        info('Extracting traces for {}'.format(objectname))
         hdulist = optimal_extraction(eps, sig, trace_tables[objectname],
                                      fitsfileout=fits_file,
                                      plotfileout=spectrum_plot_file,
