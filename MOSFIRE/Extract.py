@@ -75,12 +75,13 @@ class TraceFitter(object):
     simply close the plot window when done.  The trace_table will be populated
     as in the non-interactive case.
     '''
-    def __init__(self, xdata, ydata, traces=None):
+    def __init__(self, xdata, ydata, title=None, traces=None):
         self.fig = plt.figure()
         self.ax = self.fig.gca()
         self.xdata = xdata
         self.ydata = ydata
         self.traces = traces
+        self.title = title
         self.fitter = fitting.LevMarLSQFitter()
         if self.traces:
             self.fit = [self.traces(x) for x in self.xdata]
@@ -142,7 +143,10 @@ class TraceFitter(object):
         plt.xlim(min(self.xdata), max(self.xdata))
         plt.xlabel('Pixel Position')
         plt.ylabel('Flux (e-/sec)')
-        plt.title('Simple Spatial Profile')
+        if self.title:
+            plt.title(self.title)
+        else:
+            plt.title('Simple Spatial Profile')
 
     def plot_traces(self):
         '''Plot the trace fit on the raw data.
@@ -207,13 +211,13 @@ class TraceFitter(object):
         self.fig.canvas.mpl_disconnect(self.cid_click)
         self.fig.canvas.mpl_disconnect(self.cid_key)
 
-    def click(self, event):
-        '''Print out coordinates of mouse click.  Primarily for testing.
-        '''
-        if event.inaxes:
-            clickX = event.xdata
-            clickY = event.ydata
-            info('Clicked at: {:.1f}, {:.2f}'.format(event.xdata, event.ydata))
+#     def click(self, event):
+#         '''Print out coordinates of mouse click.  Primarily for testing.
+#         '''
+#         if event.inaxes:
+#             clickX = event.xdata
+#             clickY = event.ydata
+#             info('Clicked at: {:.1f}, {:.2f}'.format(event.xdata, event.ydata))
 
     def keypress(self, event):
         '''Based on which key is presses on a key press event, call the
@@ -267,7 +271,7 @@ class TraceFitter(object):
 ##-------------------------------------------------------------------------
 ## Find Stellar Traces
 ##-------------------------------------------------------------------------
-def find_traces(data, guesses=[], interactive=True, plotfile=None):
+def find_traces(data, guesses=[], title=None, interactive=True, plotfile=None):
     '''Finds targets in spectra by simply collapsing the 2D spectra in the
     wavelength direction and fitting Gaussian profiles to positions provided.
     '''
@@ -286,7 +290,7 @@ def find_traces(data, guesses=[], interactive=True, plotfile=None):
                 traces0 += models.Gaussian1D(mean=guesses[i][0],\
                                              amplitude=guesses[i][1])
 
-    tf = TraceFitter(xpoints, vert_profile, traces=traces0)
+    tf = TraceFitter(xpoints, vert_profile, traces=traces0, title=title)
     tf.plot_data()
     tf.fit_traces()
     tf.plot_traces()
@@ -489,6 +493,7 @@ def optimal_extraction(image, variance_image, trace_table,
                 plt.legend(loc='best')
         if plotfileout:
             plt.savefig(plotfileout, bbox_inches='tight')
+            fig.close()
         for i,row in enumerate(trace_table):
             var = variances[i]
             hdulist.append(fits.ImageHDU(data=var, header=header))
@@ -517,7 +522,7 @@ def optimal_extraction(image, variance_image, trace_table,
             plt.ylim(0,1.05*spectrum.max())
             plt.legend(loc='best')
             plt.savefig(plotfileout, bbox_inches='tight')
-
+            fig.close()
     if fitsfileout:
         hdulist.writeto(fitsfileout, clobber=True)
     return hdulist
@@ -526,27 +531,38 @@ def optimal_extraction(image, variance_image, trace_table,
 ##-------------------------------------------------------------------------
 ## Process some test data if called directly
 ##-------------------------------------------------------------------------
-def extract_spectra(maskname, band, objectname,
-                    guesses=None, interactive=True, combine=False):
-    eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
-    sig_file = '{}_{}_{}_sig.fits'.format(maskname, band, objectname)
-    eps = fits.open(eps_file, 'readonly')[0]
-    sig = fits.open(sig_file, 'readonly')[0]
-    trace_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
-    trace_table = find_traces(eps.data, guesses=guesses,
-                              interactive=interactive,
-                              plotfile=trace_plot_file)
-    spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
-    fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
-    hdulist = optimal_extraction(eps, sig, trace_table,
-                                 fitsfileout=fits_file,
-                                 plotfileout=spectrum_plot_file,
-                                 combine=combine)
+def extract_spectra(maskname, band,
+                    interactive=True, combine=False):
+
+    ## Get objectnames from slit edges
+    edges = np.load('slit-edges_{}.npy'.format(band))
+    objectnames = [edge['Target_Name'] for edge in edges[:-1]]
+
+    trace_tables = {}
+    for objectname in objectnames:
+        eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
+        eps = fits.open(eps_file, 'readonly')[0]
+        trace_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
+        trace_tables[objectname] = find_traces(eps.data, title=objectname,
+                                               interactive=interactive,
+                                               plotfile=trace_plot_file)
+
+    for objectname in objectnames:
+        eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
+        sig_file = '{}_{}_{}_sig.fits'.format(maskname, band, objectname)
+        eps = fits.open(eps_file, 'readonly')[0]
+        sig = fits.open(sig_file, 'readonly')[0]
+        spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
+        fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
+        hdulist = optimal_extraction(eps, sig, trace_tables[objectname],
+                                     fitsfileout=fits_file,
+                                     plotfileout=spectrum_plot_file,
+                                     combine=combine)
 
 
 ##-------------------------------------------------------------------------
 ## Process some test data if called directly
 ##-------------------------------------------------------------------------
 if __name__ == '__main__':
-    extract_spectra('MOSFIRE_DRP_MASK', 'H', 'TARG2',
-                    guesses=None, interactive=True, combine=True)
+    extract_spectra('MOSFIRE_DRP_MASK', 'H',
+                    interactive=True, combine=True)
