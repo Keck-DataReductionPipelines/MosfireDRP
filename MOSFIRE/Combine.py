@@ -4,9 +4,9 @@ import pdb
 
 import numpy as np
 try:
-    import pyfits as pf
-except:
     from astropy.io import fits as pf
+except:
+    import pyfits as pf
 
 
 import MOSFIRE

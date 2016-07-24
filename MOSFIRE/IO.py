@@ -6,18 +6,20 @@ Provides tools to read fits files and parse their headers.
 '''
 
 try:
-    import pyfits as pf
-except:
     from astropy.io import fits as pf
+except:
+    import pyfits as pf
 import numpy as np
 import unittest
 import warnings
 
-
+import re
 
 import os
 import pdb
 import shutil
+
+import ccdproc
 
 import MOSFIRE
 import CSU
@@ -105,15 +107,6 @@ def load_lambdamodel(fnum, maskname, band, options):
 
     ld = np.load(fn)
     return ld
-
-def load_flat(maskname, band, options):
-    if False:
-        path = os.path.join(options["outdir"], maskname)
-        fn = os.path.join(path, "pixelflat_2d_{0}.fits".format(band))
-
-    fn = "pixelflat_2d_{0}.fits".format(band)
-
-    return readfits(fn, use_bpm=True)
 
 
 def load_lambdaslit(fnum, maskname, band, options):
@@ -349,7 +342,7 @@ returns ['file1', 'file2', 'file3']
     output = []
 
     for fname in filelist:
-        info( "Loading: %s" % fname)
+        debug( "Loading: %s" % fname)
         inputs = np.loadtxt(fname, dtype= [("f", "S100")])
         path = ""
         start_index = 0
@@ -377,8 +370,10 @@ def fix_long2pos_headers(filelist):
         hdulist = pf.open(path, mode='update')
         header = hdulist[0].header
 
-        #determine if this file really needs to be updated (for example, prevents a second update of an already updated file
-        if 'long2pos' in header['MASKNAME'] and header['FRAMEID']=='object' and (header['PATTERN']=='long2pos' or header['PATTERN']=='Stare'):
+        # determine if this file really needs to be updated (for example,
+        # prevents a second update of an already updated file
+        if 'long2pos' in header['MASKNAME'] and header['FRAMEID']=='object'\
+            and (header['PATTERN']=='long2pos' or header['PATTERN']=='Stare'):
             info( "File "+str(fname)+" will be updated")
 
             # make a copy of the original file
@@ -387,8 +382,10 @@ def fix_long2pos_headers(filelist):
             info("into ...... "+str(newname))
             shutil.copyfile(path,newname)
             if not os.path.exists(newname):
-                error("Error in generating original file:  '%s' does not exist (could not be created)." % newname)
-                raise Exception("Error in generating original file:  '%s' does not exist (could not be created)." % newname)            
+                errstr = "Error in generating original file:  '%s' does not exist"\
+                         "(could not be created)." % newname
+                error(errstr)
+                raise Exception(errstr)
 
             #updating header
             # assign FRAMEID to narrow slits
@@ -539,29 +536,58 @@ def floatcompress(data, ndig=14):
     return out
 
 def imarith(operand1, op, operand2, result):
-    from pyraf import iraf
-    iraf.images()
-
-    pars = iraf.imarith.getParList()
-    iraf.imcombine.unlearn()
-
     info( "%s %s %s -> %s" % (operand1, op, operand2, result))
-    iraf.imarith(operand1=operand1, op=op, operand2=operand2, result=result)
+    assert type(operand1) == str
+    assert type(operand2) == str
+    assert os.path.exists(operand1)
+    assert os.path.exists(operand2)
+    assert op in ['+', '-']
 
-    iraf.imarith.setParList(pars)
+    ## Strip off the [0] part of the operand as we are assuming that we are
+    ## operating on the 0th FITS HDU.
+    if re.match('(\w+\.fits)\[0\]', operand1):
+        operand1 = operand1[:-3]
+    if re.match('(\w+\.fits)\[0\]', operand2):
+        operand2 = operand2[:-3]
 
-def imcombine(filelist, out, options, bpmask=None, reject="none", nlow=None,
-        nhigh=None):
+    import operator
+    operation = { "+": operator.add, "-": operator.sub,\
+                  "*": operator.mul, "/": operator.truediv}
 
-    '''Convenience wrapper around IRAF task imcombine
+    hdulist1 = fits.open(operand1, 'readonly')
+    hdulist2 = fits.open(operand2, 'readonly')
+    data = operation[op](hdulist1[0].data, hdulist2[0].data)
+    header = hdulist1[0].header
+    header['history'] = 'imarith {} {} {}'.format(operand1, op, operand2)
+    header['history'] = 'Header values copied from {}'.format(operand1)
+    if 'EXPTIME' in hdulist1[0].header and\
+       'EXPTIME' in hdulist2[0].header and\
+       operation in ['+', '-']:
+        exptime = operation[op](float(hdulist1[0].header['EXPTIME']),\
+                                float(hdulist2[0].header['EXPTIME']))
+        header['history'] = 'Other than exposure time which was edited'
+        header['EXPTIME'] = exptime
+
+    hdu = fits.PrimaryHDU(data=data, header=header)
+    hdu.writeto(result)
+
+
+def imcombine(filelist, out, options, method="average", reject="none",\
+              lsigma=3, hsigma=3, mclip=False,\
+              nlow=None, nhigh=None):
+    '''Combines images in input list with optional rejection algorithms.
 
     Args:
         filelist: The list of files to imcombine
         out: The full path to the output file
+        method: either "average" or "median" combine
         options: Options dictionary
         bpmask: The full path to the bad pixel mask
-        reject: none, minmax, sigclip, avsigclip, pclip
+        reject: none, minmax, sigclip
         nlow,nhigh: Parameters for minmax rejection, see iraf docs
+        mclip: use median as the function to calculate the baseline values for
+               sigclip rejection?
+        lsigma, hsigma: low and high sigma rejection thresholds.
     
     Returns:
         None
@@ -569,43 +595,132 @@ def imcombine(filelist, out, options, bpmask=None, reject="none", nlow=None,
     Side effects:
         Creates the imcombined file at location `out'
     '''
+    assert method in ['average', 'median']
+    if os.path.exists(out):
+        os.remove(out)
 
-    #TODO: REMOVE Iraf and use python instead. STSCI Python has
-    # A builtin routine.
-    from pyraf import iraf
-    iraf.images()
+    if reject == 'none':
+        info('Combining files using ccdproc.combine task')
+        info('  reject=none')
+        for file in filelist:
+            debug('  Combining: {}'.format(file))
+        ccdproc.combine(filelist, out, method=method,\
+                        minmax_clip=False,\
+                        iraf_minmax_clip=True,\
+                        sigma_clip=False,\
+                        unit="adu")
+        info('  Done.')
+    elif reject == 'minmax':
+        ## The IRAF imcombine minmax rejection behavior is different than the
+        ## ccdproc minmax rejection behavior.  We are using the IRAF like
+        ## behavior here.  To support this a pull request for the ccdproc
+        ## package has been made:
+        ##    https://github.com/astropy/ccdproc/pull/358
+        ##
+        ## Note that the ccdproc behavior still differs slightly from the
+        ## nominal IRAF behavior in that the rejection does not consider whether
+        ## any of the rejected pixels have been rejected for other reasons, so
+        ## if nhigh=1 and that pixel was masked for some other reason, the
+        ## new ccdproc algorithm, will not mask the next highest pixel, it will
+        ## still just mask the highest pixel even if it is already masked.
+        ##
+        ## From IRAF (help imcombine):
+        ##  nlow = 1,  nhigh = 1 (minmax)
+        ##      The number of  low  and  high  pixels  to  be  rejected  by  the
+        ##      "minmax"  algorithm.   These  numbers are converted to fractions
+        ##      of the total number of input images so  that  if  no  rejections
+        ##      have  taken  place  the  specified number of pixels are rejected
+        ##      while if pixels have been rejected by masking, thresholding,  or
+        ##      non-overlap,   then   the  fraction  of  the  remaining  pixels,
+        ##      truncated to an integer, is used.
+        ##
 
-
-    filelist = [("%s[0]" % f) for f in filelist]
-    pars = iraf.imcombine.getParList()
-    iraf.imcombine.unlearn()
-
-    path = "flatcombine.lst"
-    f = open(path, "w")
-    for file in filelist:
-        f.write(file + "\n")
-    f.close()
-
-    s = ("%s," * len(filelist))[0:-1]
-    s = s % tuple(filelist)
-
-    f = open("flatcombinelog.txt", "w")
-    if reject == 'minmax':
-        t = iraf.imcombine("@%s" % path, out, Stdout=f,
-            reject=reject, nlow=nlow, nhigh=nhigh)
+        ## Check that minmax rejection is possible given the number of images
+        if nlow is None:
+            nlow = 0
+        if nhigh is None:
+            nhigh = 0
+        if nlow + nhigh >= len(filelist):
+            warning('nlow + nhigh >= number of input images.  Combining without rejection')
+            nlow = 0
+            nhigh = 0
+        
+        if ccdproc.version.major >= 1 and ccdproc.version.minor >= 1\
+           and ccdproc.version.release:
+            info('Combining files using ccdproc.combine task')
+            info('  reject=clip_extrema')
+            info('  nlow={}'.format(nlow))
+            info('  nhigh={}'.format(nhigh))
+            for file in filelist:
+                info('  {}'.format(file))
+            ccdproc.combine(filelist, out, method=method,\
+                            minmax_clip=False,\
+                            clip_extrema=True,\
+                            nlow=nlow, nhigh=nhigh,\
+                            sigma_clip=False,\
+                            unit="adu")
+            info('  Done.')
+        else:
+            ## If ccdproc does not have new rejection algorithm in:
+            ## https://github.com/astropy/ccdproc/pull/358
+            ## Manually perform rejection using ccdproc.combiner.Combiner object
+            info('Combining files using local clip_extrema rejection algorithm')
+            info('and the ccdproc.combiner.Combiner object.')
+            info('  reject=clip_extrema')
+            info('  nlow={}'.format(nlow))
+            info('  nhigh={}'.format(nhigh))
+            for file in filelist:
+                info('  {}'.format(file))
+            ccdlist = []
+            for file in filelist:
+                ccdlist.append(ccdproc.CCDData.read(file, unit='adu', hdu=0))
+            c = ccdproc.combiner.Combiner(ccdlist)
+            nimages, nx, ny = c.data_arr.mask.shape
+            argsorted = np.argsort(c.data_arr.data, axis=0)
+            mg = np.mgrid[0:nx,0:ny]
+            for i in range(-1*nhigh, nlow):
+                where = (argsorted[i,:,:].ravel(),
+                         mg[0].ravel(),
+                         mg[1].ravel())
+                c.data_arr.mask[where] = True
+            if method == 'average':
+                result = c.average_combine()
+            elif method == 'median':
+                result = c.median_combine()
+            for key in ccdlist[0].header.keys():
+                header_entry = ccdlist[0].header[key]
+                if key != 'COMMENT':
+                    result.header[key] = (header_entry,
+                                          ccdlist[0].header.comments[key])
+            hdul = result.to_hdu()
+#             print(hdul)
+#             for hdu in hdul:
+#                 print(type(hdu.data))
+            hdul[0].writeto(out)
+#             result.write(out)
+            info('  Done.')
+    elif reject == 'sigclip':
+        info('Combining files using ccdproc.combine task')
+        info('  reject=sigclip')
+        info('  mclip={}'.format(mclip))
+        info('  lsigma={}'.format(lsigma))
+        info('  hsigma={}'.format(hsigma))
+        baseline_func = {False: np.mean, True: np.median}
+        ccdproc.combine(filelist, out, method=method,\
+                        minmax_clip=False,\
+                        clip_extrema=False,\
+                        sigma_clip=True,\
+                        sigma_clip_low_thresh=lsigma,\
+                        sigma_clip_high_thresh=hsigma,\
+                        sigma_clip_func=baseline_func[mclip],\
+                        sigma_clip_dev_func=np.std,\
+                        )
+        info('  Done.')
     else:
-        t = iraf.imcombine(s, out, Stdin=filelist, Stdout=f,
-            reject=reject)
-    f.close()
-    f=open("flatcombinelog.txt")
-    for line in f:
-        info(line.rstrip("\n"))
-    f.close()
-
-    iraf.imcombine.setParList(pars)
+        raise NotImplementedError('{} rejection unrecognized by MOSFIRE DRP'.format(reject))
 
 
-    
+
 
 class TestIOFunctions(unittest.TestCase):
 

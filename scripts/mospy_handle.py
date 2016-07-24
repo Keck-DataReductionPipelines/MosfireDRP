@@ -9,7 +9,6 @@ import MOSFIRE
 import MOSFIRE.IO as IO
 import os
 import numpy as np
-import pyfits as pf
 import sys
 import glob
 

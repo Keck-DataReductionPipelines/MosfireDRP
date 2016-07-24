@@ -121,7 +121,8 @@ def apply_flat(scifilename, maskname, band):
     '''
 
     
-    flat = IO.load_flat(maskname, band, {})
+    pixelflat_file = "pixelflat_2d_{0}.fits".format(band)
+    flat = readfits(pixelflat_file, use_bpm=True)
     flat_data = flat[1].filled(1.0)
 
     header, data = IO.readfits(scifilename)

@@ -37,12 +37,12 @@ import time
 import unittest
 
 import numpy as np
-import pylab as pl
+from matplotlib import pyplot as pl
 import scipy, scipy.ndimage
 try:
-    import pyfits as pf
-except:
     from astropy.io import fits as pf
+except:
+    import pyfits as pf
 
 import pdb
 
@@ -82,7 +82,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     flatlist = IO.list_file_to_strings(flatlist)
     # Print the filenames to Standard-out
     for flat in flatlist:
-        info(str(flat))
+        debug(str(flat))
 
     #Determine if flat files headers are in agreement
     for fname in flatlist:
@@ -114,25 +114,28 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     bs = bs0
 
     # Imcombine the lamps ON flats
-    info("Attempting to combine previous files")
-    combine(flatlist, maskname, band, options)
+    info("Attempting to combine files in {}".format(flatlist))
+    out = os.path.join("combflat_2d_{:s}.fits".format(band))
+    IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
 
     # Imcombine the lamps OFF flats and subtract the off from the On sets
     if lampOffList != None: 
         #Retrieve the list of files to use for flat creation. 
+        info("Attempting to combine Lamps off files in {}".format(lampOffList))
         lampOffList = IO.list_file_to_strings(lampOffList)
-        # Print the filenames to Standard-out
         for flat in lampOffList:
-            info(str(flat))
-        print "Attempting to combine Lamps off data"
-        combine(lampOffList, maskname, band, options, lampsOff=True)
-        combine_off_on( maskname, band, options)
+            debug(str(flat))
+        out = os.path.join("combflat_lamps_off_2d_{:s}.fits".format(band))
+        IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
+        file_on = os.path.join("combflat_2d_{:s}.fits".format(band))
+        file_off = os.path.join("combflat_lamps_off_2d_{:s}.fits".format(band))
+        file_on_save = os.path.join("combflat_lamps_on_2d_{:s}.fits".format(band))
+        IO.imarith(file_on, '-', file_off, file_on_save)
 
     debug("Combined '%s' to '%s'" % (flatlist, maskname))
-    info("Comgined to '%s'" % (maskname))
+#     info("Combined flats for '%s'" % (maskname))
     path = "combflat_2d_%s.fits" % band
     (header, data) = IO.readfits(path, use_bpm=True)
-
     info("Flat written to %s" % path)
 
     # Edge Trace
@@ -145,6 +148,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         info( "Long2pos mode recognized")
         results = find_long2pos_edges(data,header, bs, options, edgeThreshold=edgeThreshold, longslit=longslit)
     else:
+        info('Finding slit edges in {}'.format(path))
         results = find_and_fit_edges(data, header, bs, options,edgeThreshold=edgeThreshold)
     results[-1]["maskname"] = maskname
     results[-1]["band"] = band
@@ -220,7 +224,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
         for i in np.arange(bottom-1, top+1):
             flat[i,hpps[0]:hpps[1]] = v
 
-    info( "Producing Pixel Flat...")
+    info("Producing Pixel Flat...")
     for r in range(len(results)-1):
         theslit = results[r]
 
@@ -243,6 +247,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
     if os.path.exists(outfile):
             os.remove(outfile)
     hdu.writeto(outfile)
+    info("Done.")
 
 
 def save_ds9_edges(results, options):
@@ -325,52 +330,6 @@ def save_ds9_edges(results, options):
             raise
     except:
             raise
-
-def combine(flatlist, maskname, band, options, lampsOff=False):
-    '''
-    combine list of flats into a flat file'''
-
-    if lampsOff:
-        out = os.path.join("combflat_lamps_off_2d_%s.fits" 
-                    % (band))
-    else:
-        out = os.path.join("combflat_2d_%s.fits" 
-                    % (band))
-    if os.path.exists(out):
-            os.remove(out)
-
-    if len(flatlist)>1:
-        IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
-    else:
-        IO.imcombine(flatlist, out, options, reject="none", nlow=1, nhigh=1)
-
-def combine_off_on(maskname, band, options, lampsOff=False):
-    '''
-    combine list of flats into a flat file'''
-
-
-    file_off = os.path.join("combflat_lamps_off_2d_%s.fits" 
-                    % (band))
-
-    file_on = os.path.join("combflat_2d_%s.fits" 
-                    % (band))
-
-    file_on_save = os.path.join("combflat_lamps_on_2d_%s.fits" 
-                    % (band))
-
-    hdu_off  = pf.open(file_off)
-    hdu_on   = pf.open(file_on)
-
-    #save lamps On data set to new name
-    hdu_on.writeto(file_on_save, clobber=True)
-
-    hdu_on[0].data = hdu_on[0].data - hdu_off[0].data
-
-    #Add comment that the difference was completed
-    hdu_on[0].header.add_history("Differenced the Lamps on and Lamps off images ")
-    #save lamps On data set to new name
-    hdu_on.writeto(file_on, clobber=True)
-    
 
 def find_edge_pair(data, y, roi_width, edgeThreshold=450):
     '''
