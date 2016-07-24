@@ -32,7 +32,7 @@ class Driver:
     def import_section(self):
         self.addLine("import os, time, logging")
         self.addLine("import MOSFIRE")
-        self.addLine("from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify, Wavelength")
+        self.addLine("from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify, Wavelength, Extract")
         self.addLine("from MOSFIRE.MosfireDrpLog import info, debug, warning, error")
         self.addLine("logger = logging.getLogger(__name__)")
         self.addLine("import numpy as np")

@@ -602,7 +602,7 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     tock = time.time()
     
     outfilename = fn
-    fig = plt.figure(1,figsize=(16,8))
+    fig = pl.figure(1,figsize=(16,8))
     info("Started interactive solution")
     if longslit is not None and longslit['mode'] is "longslit":
         starting_pos = longslit["row_position"]
