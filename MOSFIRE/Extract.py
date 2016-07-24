@@ -486,7 +486,7 @@ def optimal_extraction(image, variance_image, trace_table,
             if plotfileout:
                 sigma = 1./variances[i]
                 pix = np.arange(0,sp.shape[0],1)
-                wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron) * u.micron
+                wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron)*u.micron
                 plt.subplot(len(trace_table), 1, i+1)
                 plt.fill_between(wavelengths, sp-sigma, sp+sigma,\
                                  label='uncertainty',\
@@ -514,7 +514,7 @@ def optimal_extraction(image, variance_image, trace_table,
         sigma = np.average(1./variances, axis=0)
         variance = sigma**2
         pix = np.arange(0,spectrum.shape[0],1)
-        wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron) * u.micron
+        wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron)*u.micron
         hdulist = fits.HDUList([fits.PrimaryHDU(data=spectrum, header=header),\
                                 fits.ImageHDU(data=variance, header=header)])
         if plotfileout:
