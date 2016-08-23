@@ -32,7 +32,7 @@ class Driver:
     def import_section(self):
         self.addLine("import os, time, logging")
         self.addLine("import MOSFIRE")
-        self.addLine("from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify, Wavelength")
+        self.addLine("from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify, Wavelength, Extract")
         self.addLine("from MOSFIRE.MosfireDrpLog import info, debug, warning, error")
         self.addLine("logger = logging.getLogger(__name__)")
         self.addLine("import numpy as np")
@@ -251,6 +251,10 @@ class Driver:
                 self.addLine('Rectify.handle_rectification(maskname, redfiles,Wavelength_file,band,obsfiles_'+str(slit)+',waveops, target=target_'+str(slit)+')')
         self.addLine("")
 
+    def printExtraction(self):
+        self.addLine('Extract.extract_spectra(maskname, band, interactive=True, combine=True)')
+
+
     def printHeader(self):
         now = time.strftime("%c")
         self.addLine("#Driver file automatically generated on "+str(now))
@@ -415,6 +419,7 @@ if 'slitmask' in targets_and_offsets:
     mydriver.printWavelengthFit()
     mydriver.printBackground()
     mydriver.printRectification()
+    mydriver.printExtraction()
     mydriver.CloseFile()
 
 elif type is 'long2pos' or type is 'longslit':
