@@ -91,9 +91,9 @@ class TraceFitter(object):
         self.fit_line = None
         self.fit_markers = None
         self.text = None
-        self.trace_table = table.Table(names=('position', 'amplitude', 'sign',\
+        self.trace_table = table.Table(names=('position', 'amplitude',\
                                               'sigma', 'FWHM'),\
-                                       dtype=('f4', 'f4', 'i1', 'f4', 'f4'))
+                                       dtype=('f4', 'f4', 'f4', 'f4'))
 
     def print_instructions(self):
         '''Print instructions for interactive fit to screen.
@@ -192,14 +192,12 @@ class TraceFitter(object):
                                        for i in range(ntraces)],
                           'amplitude': [params[3*i][0]
                                         for i in range(ntraces)],
-                          'sign': [int(params[3*i][0]/abs(params[3*i][0]))
-                                   for i in range(ntraces)],
                           'sigma': [params[3*i+2][0]
                                     for i in range(ntraces)],
                           'FWHM': [2.355*params[3*i+2][0]
                                    for i in range(ntraces)],
-                          'StarID': self.star_index,
                          }
+            print(table_data)
             self.trace_table = table.Table(table_data)
 
     def connect(self):
@@ -242,9 +240,11 @@ class TraceFitter(object):
         '''Add an additional gaussian to the tracel model.
         '''
         if not self.traces:
-            self.traces = models.Gaussian1D(mean=pos, amplitude=amp)
+            self.traces = models.Gaussian1D(mean=pos, amplitude=amp,
+                                 bounds={'amplitude': [0, float('+Inf')]})
         else:
-            self.traces += models.Gaussian1D(mean=pos, amplitude=amp)
+            self.traces += models.Gaussian1D(mean=pos, amplitude=amp,
+                                  bounds={'amplitude': [0, float('+Inf')]})
         self.star_index.append(id)
         self.fit_traces()
         self.plot_traces()
@@ -288,10 +288,14 @@ def find_traces(data, guesses=[], title=None, interactive=True, plotfile=None):
     vert_profile = np.mean(mdata, axis=1)
     xpoints = range(0,len(vert_profile), 1)
 
-    if guesses == []:
-        traces0 = None
-    elif guesses == None:
-        traces0 = None
+    if (guesses == []) or (guesses is None):
+        ## Try to guess at trace positions if no information given
+        ## Start with maximum pixel value, but only accept it if the
+        ## neighboring pixels are also high
+        valid_profile = list(vert_profile[~vert_profile.mask])
+        maxval = max(valid_profile)
+        maxind = valid_profile.index(maxval)
+        traces0 = models.Gaussian1D(mean=maxind, amplitude=maxval)
     else:
         traces0 = models.Gaussian1D(mean=guesses[0][0], amplitude=guesses[0][1])
         if len(guesses) > 1:
@@ -436,9 +440,8 @@ def optimal_extraction(image, variance_image, trace_table,
     for i,row in enumerate(trace_table):
         pos = row['position']
         width = 5.*row['sigma']  # Hard coded factor defines with of extraction
-        sign = row['sign']
         info('Extracting data for trace {:d} at position {:.1f}'.format(i, pos))
-        DmS = np.ma.MaskedArray(data=sign*spectra2D[int(pos-width):int(pos+width),:],\
+        DmS = np.ma.MaskedArray(data=spectra2D[int(pos-width):int(pos+width),:],\
                                 mask=np.isnan(spectra2D[int(pos-width):int(pos+width),:]))
         V = np.ma.MaskedArray(data=variance2D[int(pos-width):int(pos+width),:],\
                               mask=np.isnan(spectra2D[int(pos-width):int(pos+width),:]))
@@ -538,7 +541,7 @@ def optimal_extraction(image, variance_image, trace_table,
 
 
 ##-------------------------------------------------------------------------
-## Process some test data if called directly
+## Extract Spectra Function
 ##-------------------------------------------------------------------------
 def extract_spectra(maskname, band,
                     interactive=True, combine=False):
