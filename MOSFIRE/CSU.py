@@ -28,7 +28,6 @@ import Detector, IO
 import numpy as np
 import unittest
 import os
-#from pyraf import iraf
 
 import pdb
 from MosfireDrpLog import debug, info, warning, error
@@ -66,7 +65,6 @@ def in_field(px, py):
     return False
 
 def csu_pix_to_mm_poly(x_pix, y_pix):
-    #(x_kfp, y_kfp) = mosfire_geoxytran(x_pix, y_pix, direction="backward")
     (x_kfp, y_kfp) = python_geoxytran(x_pix, y_pix, direction="backward")
     centerx = 137.400
 
@@ -83,52 +81,8 @@ def csu_mm_to_pix_poly(x_mm, slitno):
     y_kfp = 5.8 * (numslits/2. - slitno + 0.35)  * tempscale
 
 
-    #return mosfire_geoxytran(x_kfp, y_kfp)
     return python_geoxytran(x_kfp, y_kfp)
 
-
-# def csu_mm_to_pix(x_mm, slitno, Please_Use=False):
-#     '''Convert a slit's position into a pixel value. This is a linear approximation to a sixth order polynomial fit by ccs.
-#     Positions are index from 1: 1 .. 2048
-#     '''
-
-#     if Please_Use==False:
-#         error("Use csu_mm_to_pix_poly (a polynomial fit) rather than csu_mm_to_pix (a linear fit)")
-#         raise Exception("Use csu_mm_to_pix_poly (a polynomial fit) rather than csu_mm_to_pix (a linear fit)")
-#         return
-
-#     # _kfp is keck focal plane
-#     centerx = 137.400
-#     x_kfp = (centerx - x_mm) * tempscale
-#     y_kfp = 5.8*mm * (numslits/2. - slitno + 0.35) * tempscale
-
-#     path = os.path.join(os.path.dirname(__file__), "data", 
-#             "linear_pix2mm_120k.db") 
-#     #
-#     return  mosfire_geoxytran(x_kfp, y_kfp,
-#             database=path, transform="linear_pix2mm_120k")
-
-
-def mosfire_geoxytran(x_kfp, y_kfp, transform="final.pix2mm.4.972.120k",
-        database="/platescale/10March2011.4.972.db", direction="forward"):
-    '''Conveninece wrapper around IRAF geoxytran'''
-    iraf.images()
-
-
-    path = os.path.join(os.path.dirname(__file__), "data", 
-            "10March2011.4.972.db")
-    database = path
-    pars = iraf.geoxytran.getParList()
-    iraf.geoxytran.unlearn()
-    t = iraf.geoxytran("STDIN", "STDOUT", Stdin=["%f %f" % (x_kfp, y_kfp)], Stdout=1,
-            database=database,
-            transform=transform,
-            direction=direction)
-
-    iraf.geoxytran.setParList(pars) 
-    (x,y) = np.array(t[0].split(), dtype=np.float64)
-
-    return (x,y)
 
 def python_geoxytran(x_kfp, y_kfp, direction="forward"):
     if direction=="backward":
@@ -194,32 +148,6 @@ def python_geoxytran(x_kfp, y_kfp, direction="forward"):
     return (x,y)
 
 
-def mosfire_geoxytrans(x_kfp, y_kfp, transform="final.pix2mm.4.972.120k",
-        database="ale/10March2011.4.972.db", direction="forward"):
-    '''Conveninece wrapper around IRAF geoxytran'''
-    iraf.images()
-    path = os.path.join(os.path.dirname(__file__), "data", 
-            "10March2011.4.972.db")
-    database = path
-    pars = iraf.geoxytran.getParList()
-    iraf.geoxytran.unlearn()
-    ins = []
-    for i in range(len(x_kfp)):
-        ins.append("%f %f" % (x_kfp[i], y_kfp[i]))
-    results = iraf.geoxytran("STDIN", "STDOUT", Stdin=ins, Stdout=1,
-            database=database,
-            transform=transform,
-            direction=direction)
-
-    iraf.geoxytran.setParList(pars) 
-
-    poss = []
-    for result in results:
-        poss.append(np.array(result.split(), dtype=np.float64))
-
-    return np.array(poss)
-
-    
 def bar_to_slit(x):
     '''Convert a bar #(1-92) to a slit(1-46) number'''
     if (x < 1) or (x > numbars):
@@ -387,8 +315,6 @@ class Barset:
         slitno = np.ceil(np.arange(1, numbars+1)/2.)
         y_kfp = 5.8 * (numslits/2. - slitno + 0.35)  * tempscale
 
-        #self.pos_pix = mosfire_geoxytrans(x_kfp, y_kfp)
-        #self.pos_pix = python_geoxytran(x_kfp, y_kfp)
         tmp_results = python_geoxytran(x_kfp, y_kfp)
         self.pos_pix = np.asarray([list(p) for p in zip(tmp_results[0],tmp_results[1])])
 
@@ -427,7 +353,6 @@ class TestCSUFunctions(unittest.TestCase):
 
 
         # Values are taken from ccs
-        #p0 = mosfire_geoxytran(0,0)
         p0 = python_geoxytran(0,0)
         sa(np.abs(p0[0] - center_pix[0]) < 1e-6)
         sa(np.abs(p0[1] - center_pix[1]) < 1e-6)

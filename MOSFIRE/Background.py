@@ -40,7 +40,8 @@ def guess_plan_from_positions(posnames):
     elif posnames == set(["A'", "B'", "A", "B"]): 
         return [["A", "B"], ["A'", "B'"]]
     else:
-        raise Exception("Could not get observing plan from positions %s. You must use the plan keyword" % posnames)
+        raise Exception("Could not get observing plan from positions %s. "
+                        "You must use the plan keyword" % posnames)
 
 
 def imcombine(files, maskname, options, flat, outname=None, shifts=None,
@@ -203,7 +204,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
                     "'%s'." % (fname, thishdr["BUNIT"]))
 
         ''' Error checking is complete'''
-        info("%s %s[%s]/%s: %5.1f s,  Shift: %i px" % (fname, maskname, patternid,
+        debug("%s %s[%s]/%s: %5.1f s,  Shift: %i px" % (fname, maskname, patternid,
             header['filter'], np.mean(itimes[i]), shifts[i]))
 
     warnings.filterwarnings('always')
@@ -417,7 +418,8 @@ def merge_headers(h1, h2):
     return h
 
 
-def handle_background(filelist, wavename, maskname, band_name, options, shifts=None, plan=None, extension=None, target='default'): 
+def handle_background(filelist, wavename, maskname, band_name, options,
+                      shifts=None, plan=None, extension=None, target='default'): 
     '''
     Perform difference imaging and subtract residual background.
 
@@ -457,7 +459,7 @@ def handle_background(filelist, wavename, maskname, band_name, options, shifts=N
     for i in xrange(len(filelist)):
         fl = filelist[i]
         files = IO.list_file_to_strings(fl)
-        info("Combining")
+        info("Combining observation files listed in {}".format(fl))
         if shifts is None: shift = None
         else: shift = shifts[i]
         hdr, electron, var, bs, time, Nframe = imcombine(files, maskname,

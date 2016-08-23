@@ -108,15 +108,6 @@ def load_lambdamodel(fnum, maskname, band, options):
     ld = np.load(fn)
     return ld
 
-def load_flat(maskname, band, options):
-    if False:
-        path = os.path.join(options["outdir"], maskname)
-        fn = os.path.join(path, "pixelflat_2d_{0}.fits".format(band))
-
-    fn = "pixelflat_2d_{0}.fits".format(band)
-
-    return readfits(fn, use_bpm=True)
-
 
 def load_lambdaslit(fnum, maskname, band, options):
     ''' Load the wavelength coefficient functions '''
@@ -351,7 +342,7 @@ returns ['file1', 'file2', 'file3']
     output = []
 
     for fname in filelist:
-        info( "Loading: %s" % fname)
+        debug( "Loading: %s" % fname)
         inputs = np.loadtxt(fname, dtype= [("f", "S100")])
         path = ""
         start_index = 0
@@ -605,11 +596,14 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         Creates the imcombined file at location `out'
     '''
     assert method in ['average', 'median']
+    if os.path.exists(out):
+        os.remove(out)
+
     if reject == 'none':
         info('Combining files using ccdproc.combine task')
         info('  reject=none')
         for file in filelist:
-            info('  {}'.format(file))
+            debug('  Combining: {}'.format(file))
         ccdproc.combine(filelist, out, method=method,\
                         minmax_clip=False,\
                         iraf_minmax_clip=True,\
@@ -640,6 +634,17 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         ##      non-overlap,   then   the  fraction  of  the  remaining  pixels,
         ##      truncated to an integer, is used.
         ##
+
+        ## Check that minmax rejection is possible given the number of images
+        if nlow is None:
+            nlow = 0
+        if nhigh is None:
+            nhigh = 0
+        if nlow + nhigh >= len(filelist):
+            warning('nlow + nhigh >= number of input images.  Combining without rejection')
+            nlow = 0
+            nhigh = 0
+        
         if ccdproc.version.major >= 1 and ccdproc.version.minor >= 1\
            and ccdproc.version.release:
             info('Combining files using ccdproc.combine task')
@@ -670,10 +675,6 @@ def imcombine(filelist, out, options, method="average", reject="none",\
             for file in filelist:
                 ccdlist.append(ccdproc.CCDData.read(file, unit='adu', hdu=0))
             c = ccdproc.combiner.Combiner(ccdlist)
-            if nlow is None:
-                nlow = 0
-            if nhigh is None:
-                nhigh = 0
             nimages, nx, ny = c.data_arr.mask.shape
             argsorted = np.argsort(c.data_arr.data, axis=0)
             mg = np.mgrid[0:nx,0:ny]

@@ -137,16 +137,16 @@ def imcombine(files, maskname, bandname, options, extension=None):
         writes a median combined image in electron. It is called
             wave_stack_[bandname]_[filename range].fits'''
     
-    Flat = IO.load_flat(maskname, bandname, options)
-    flat = Flat[1]
+    pixelflat_file = "pixelflat_2d_{0}.fits".format(bandname)
+    flat = IO.readfits(pixelflat_file, use_bpm=True)[1]
     flat = flat.filled(1.0)
 
     files = IO.list_file_to_strings(files)
 
     info("combining Wavelength files")
     for file in files:
-        info(str(file))
-    info("list complete")
+        debug(str(file))
+    debug("list complete")
 
     ADUs = np.zeros((len(files), 2048, 2048))
     prevssl = None
@@ -158,6 +158,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
     for i in xrange(len(files)):
         fname = files[i]
         thishdr, data, bs = IO.readmosfits(fname, options, extension=extension)
+        info("Checking maskname and filter for {} {}/{}".format(fname, maskname, thishdr['filter']))
         ADUs[i,:,:] = data.filled(0)
 
         if thishdr["aborted"]:
@@ -229,18 +230,15 @@ def imcombine(files, maskname, bandname, options, extension=None):
                 warning("File %s uses mask '%s' but the stack is of '%s'" %
                     (fname, thishdr["maskname"], maskname))
 
-        ''' Error checking is complete'''
-        info("Checking maskname and filter")
-        info("%s %s/%s" % (fname, maskname, thishdr['filter']))
-
-    header.set("frameid", "median")
-    electrons = np.median(np.array(ADUs) * Detector.gain, axis=0)
+        info('Done.')
 
     wavename = filelist_to_wavename(files, bandname, maskname, options)
-
+    info('Combining images to make {}'.format(wavename))
+    header.set("frameid", "median")
+    electrons = np.median(np.array(ADUs) * Detector.gain, axis=0)
     IO.writefits(electrons, maskname, wavename, options, overwrite=True,
             header=header)
-    info("Imcombine done")
+    info("Done")
     
 def fit_lambda(maskname, 
         bandname, 
@@ -620,8 +618,8 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None,
         info("*** LONGSLIT MODE *** Extract position set to %i" % starting_pos)
     else:
         starting_pos = None
-    print("using line list")
-    print(linelist)
+    debug("using line list")
+    debug(linelist)
     II = InteractiveSolution(fig, mfits, linelist, options, 1,
         outfilename, solutions=solutions, noninteractive=noninteractive, starting_pos=starting_pos)
     info( "Waiting")
@@ -920,7 +918,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
         lp = Ld[i]["2d"]["positions"].astype(np.int)
         lc = Ld[i]["2d"]["coeffs"]
         lm = Ld[i]["2d"]["lambdaMAD"]
-        info("2d wavelengths: Slit %i/%i" % (i+1, len(Ld)))
+        info("Creating 2d wavelength map: Slit %i/%i" % (i+1, len(Ld)))
 
         prev = 0
         for j in xrange(len(lp)):
@@ -944,23 +942,22 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
                 lams[lp, i] = ff(xr)
 
 
-        if False == True:
-            xs,ys,zs = map(np.array, [xs,ys,zs])
-            info("smoothing")
+#         if False == True:
+#             xs,ys,zs = map(np.array, [xs,ys,zs])
+#             info("smoothing")
+# 
+#             polyx, polyy, cov = polyfit2d(np.array(zs,dtype=np.double),
+#                     np.array(ys, dtype=np.double),
+#                     np.array(xs, dtype=np.double),
+#                     orderx=3,ordery=3)
+# 
+#             xx, yy = np.array(np.meshgrid(np.arange(2048), lp),
+#                     dtype=np.double)
+# 
+#             M = lams[lp,:] = np.polyval(polyy, yy) + np.polyval(polyx, xx)
 
-            polyx, polyy, cov = polyfit2d(np.array(zs,dtype=np.double),
-                    np.array(ys, dtype=np.double),
-                    np.array(xs, dtype=np.double),
-                    orderx=3,ordery=3)
 
-            xx, yy = np.array(np.meshgrid(np.arange(2048), lp),
-                    dtype=np.double)
-
-            M = lams[lp,:] = np.polyval(polyy, yy) + np.polyval(polyx, xx)
-
-
-    info(("{0}: writing lambda".format(maskname)))
-
+    info("writing {} for {}".format("lambda_solution_{0}.fits".format(wavename), maskname))
     header = pf.Header()
     header.set("maskname", maskname)
     header.set("filter", bandname)
@@ -971,12 +968,12 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
             options, overwrite=True, header=header)
                 
 
-    info("{0}: writing sigs".format(maskname))
+    info("writing {} for {}".format("sigs_solution_{0}.fits".format(wavename), maskname))
     header.set("object", "Sigmas {0}/{1}".format(maskname, bandname))
     IO.writefits(sigs, maskname, "sigs_solution_{0}.fits".format(wavename), 
             options, overwrite=True, header=header, lossy_compress=True)
 
-    info("{0}: rectifying".format(maskname))
+    info("writing {} for {}".format("rectified_{0}.fits".format(wavename), maskname))
     dlam = 0
     central_line = 1024
     step = 0
@@ -1688,7 +1685,8 @@ class InteractiveSolution:
             csuslit = csuslits
 
 
-        info(str(csuslits)+" "+str(csuslit))
+#         info(str(csuslits)+" "+str(csuslit))
+        info('CSU slits {} acting as slit number {}'.format(str(csuslits), str(csuslit)))
         self.linelist = self.linelist0
         if self.starting_pos is None:
             self.extract_pos = self.bs.science_slit_to_pixel(self.slitno)
@@ -1965,14 +1963,14 @@ class InteractiveSolution:
             tolerance = 3
             # if the std error is > 0.10, iteratively reject lines
             while error>0.10:
-                info("#####################################################")
-                info("Large error detected. Iterating with sigma clipping")
-                info("Current error is "+str(error))
-                info("Current tolerance is "+str(tolerance)+" sigmas")
-                info("Number of lines used for fit: "+str(len(xs)))
-                info("Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)])))
+#                 info("#####################################################")
+                warning("Large error detected. Iterating with sigma clipping")
+                warning("Current error is "+str(error))
+                warning("Current tolerance is "+str(tolerance)+" sigmas")
+                warning("Number of lines used for fit: "+str(len(xs)))
+                warning("Filtering with rms = "+str(np.std(deltas[np.isfinite(deltas)])))
                 mask = (abs(deltas)<tolerance*np.std(deltas[np.isfinite(deltas)]))
-                info("Number of rejected lines: "+str(len(xs)-len(xs[mask])))
+                warning("Number of rejected lines: "+str(len(xs)-len(xs[mask])))
                 local_linelist = local_linelist[mask]
                 xs=xs[mask]
                 sxs=sxs[mask]
@@ -1980,9 +1978,11 @@ class InteractiveSolution:
                 [deltas, cfit, perror] = fit_chebyshev_to_lines(xs, sxs,
                                                                 local_linelist, self.options)
                 error = np.std(deltas[np.isfinite(deltas)])
-                info("Error is now "+str(error))
-                if error<=0.10: info("The error is acceptable, continuing...")
-                info("#####################################################")
+                if error<=0.10:
+                    info("The error is now {}.  The error is acceptable, continuing...".format(error))
+                else:
+                    info("The error is now {}".format(error))
+#                 info("#####################################################")
                 self.cfit = cfit
                 self.ll = CV.chebval(self.pix, self.cfit)
                 tolerance = tolerance - 0.2
@@ -1993,7 +1993,7 @@ class InteractiveSolution:
         self.STD = np.std(deltas[ok])
         self.MAD = np.median(np.abs(deltas[ok]))
 
-        info("STD: %1.2f MAD: %1.2f" % (self.STD, self.MAD))
+        debug("STD: %1.2f MAD: %1.2f" % (self.STD, self.MAD))
         debug(str(self.cfit))
 
 
@@ -2003,7 +2003,7 @@ class InteractiveSolution:
                 self.STD, "slitno": self.slitno, "extract_pos":
                 self.extract_pos}
 
-        info('Stored: '+str(self.solutions[self.slitno-1]['slitno']))
+        info('Stored slit number: {}'.format(str(self.solutions[self.slitno-1]['slitno'])))
 
         if self.noninteractive is False:
             self.redraw()
