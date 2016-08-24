@@ -44,11 +44,11 @@ for fname in files:
     except KeyError:
         lamps = "???"
         
-    header.update("lamps", lamps)
+    header['lamps'] = lamps
 
     try:
         if header["aborted"]:
-            header.update("object", "ABORTED")
+            header['object' ] = 'ABORTED'
     except:
         print "Missing header file in: %s" % fname
 
@@ -113,7 +113,7 @@ for fname in files:
         # if the target name contains a /, replace it with _
         target_name = target.replace("/","_")
         # if the target name contains a space, remove it
-        target_name = target.replace(" ","")
+        target_name = target_name.replace(" ","")
         # add a posC and posA to the offset names
         position = ''
         if header['XOFFSET']>0:
@@ -178,7 +178,7 @@ def handle_file_list(output_file, files):
 
     if os.path.isfile(output_file):
         print "%s: already exists, skipping" % output_file 
-        pass
+#         pass
 
     print "\t", output_file
     f = open(output_file, "w")
@@ -214,8 +214,10 @@ def handle_file_list(output_file, files):
 def handle_date_and_filter(mask, date, filter, mask_info):
 
     path = os.path.join(mask,date,filter)
-    try: os.makedirs(path)
-    except OSError: pass
+    try:
+        os.makedirs(path)
+    except OSError:
+        pass
 
     for type in mask_info.keys():
         handle_file_list(os.path.join(path, type + ".txt"), mask_info[type])
