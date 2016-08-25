@@ -80,6 +80,9 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
 
     #Retrieve the list of files to use for flat creation.
     flatlist = IO.list_file_to_strings(flatlist)
+    if len(flatlist) == 0:
+        print('WARNING: No flat files found.')
+        raise IOError('No flat files found')
     # Print the filenames to Standard-out
     for flat in flatlist:
         debug(str(flat))
