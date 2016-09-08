@@ -567,11 +567,13 @@ def extract_spectra(maskname, band,
         spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
         fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
         info('Extracting traces for {}'.format(objectname))
-        hdulist = optimal_extraction(eps, sig, trace_tables[objectname],
-                                     fitsfileout=fits_file,
-                                     plotfileout=spectrum_plot_file,
-                                     combine=combine)
-
+        try:
+            hdulist = optimal_extraction(eps, sig, trace_tables[objectname],
+                                         fitsfileout=fits_file,
+                                         plotfileout=spectrum_plot_file,
+                                         combine=combine)
+        except:
+            warning('Failed to extract trace for {}'.format(objectname))
 
 ##-------------------------------------------------------------------------
 ## Process some test data if called directly
