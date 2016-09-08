@@ -257,10 +257,12 @@ class Driver:
 
     def printHeader(self):
         now = time.strftime("%c")
-        self.addLine("#Driver file automatically generated on "+str(now))
-        self.addLine("#For questions and comments, email mosfiredrp@gmail.com, submit a ticket on the ticketing system, or contact Luca Rizzi @ WMKO")
+        self.addLine("# Driver file automatically generated on "+str(now))
         self.addLine("")
-                     
+        self.addLine("# If you have questions, please submit a ticket on the github issue page:")
+        self.addLine("# https://github.com/Keck-DataReductionPipelines/MosfireDRP/issues")
+        self.addLine("# Alternatively, email the developers at mosfiredrp@gmail.com")
+        self.addLine("")
         
         
     def CloseFile(self):
