@@ -114,7 +114,7 @@ class TraceFitter(object):
         ),
 
         ('To add a gaussian profile, to the model which will be fit to the '
-        'data, put the mouse near the apex (+ sign) of that profile '
+        'data, put the mouse near the apex of that profile '
         'and press the "a" key (for "add").'
         ),
 
