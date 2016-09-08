@@ -179,7 +179,7 @@ def writefits(img, maskname, fname, options, header=None, bs=None,
     if overwrite:
         try: 
             os.remove(fn)
-            info("Removed old file '{0}'%".format(fn))
+            info("Removed old file '{0}'".format(fn))
         except: pass
 
     info("Wrote to '%s'" % (fn))
