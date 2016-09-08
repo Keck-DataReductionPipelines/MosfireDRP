@@ -197,7 +197,6 @@ class TraceFitter(object):
                           'FWHM': [2.355*params[3*i+2][0]
                                    for i in range(ntraces)],
                          }
-            print(table_data)
             self.trace_table = table.Table(table_data)
 
     def connect(self):
@@ -265,8 +264,7 @@ class TraceFitter(object):
             self.star_index = []
             for row in self.trace_table:
                 self.add_trace(row['amplitude'], row['position'])
-                self.fit_traces()
-                self.plot_traces()
+            self.plot_traces()
 
     def savefig(self, plotfile):
         '''Save the figure to a png file.
@@ -554,7 +552,8 @@ def extract_spectra(maskname, band,
     for objectname in objectnames:
         eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
         eps = fits.open(eps_file, 'readonly')[0]
-        trace_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
+#         trace_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
+        trace_plot_file = None
         trace_tables[objectname] = find_traces(eps.data, title=objectname,
                                                interactive=interactive,
                                                plotfile=trace_plot_file)
