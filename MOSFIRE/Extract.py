@@ -29,6 +29,49 @@ Gain = Detector.gain * u.electron/u.adu
 ##-------------------------------------------------------------------------
 ## Find Stellar Traces
 ##-------------------------------------------------------------------------
+def print_instructions():
+    '''Print instructions for interactive fit to screen.
+    '''
+
+
+    text = [
+    ('The figure shows the raw spectrum collapsed in the wavelength'
+    ' direction as black points.  If there are one or more object traces '
+    'with reasonable '
+    'signal to noise, you should see one or more signals (e.g. a positive '
+    'gaussian profile).'
+    ),
+
+    ('The model trace profile is a sum of '
+    'gaussians and (if it exists) it is shown as a blue line.  The peak of '
+    'each gaussian is marked with a red + sign.'
+    ),
+
+    ('To add a gaussian profile, to the model which will be fit to the '
+    'data, put the mouse near the apex of that profile '
+    'and press the "a" key (for "add").'
+    ),
+
+    ('To delete a gaussian profile, put the mouse near the apex (+ sign) '
+    'of the profile you wish'
+    ' to delete and press the "d" key.'
+    ),
+
+    ('When you are done adding or removing traces, close the interactive '
+    'plot window by clicking the red close button in the upper right corner'
+    ' (or by whatever method is typical for your OS or windowing system) '
+    'or press the "q" or "n" keys (for "quit" or "next" respectively).'
+    ),
+    ]
+
+    print('#'*80)
+    print('                Interactive Trace Finder Instructions')
+    for paragraph in text:
+        print()
+        print(textwrap.fill(textwrap.dedent(paragraph).strip('\n'), width=80))
+    print('#'*80)
+    print()
+
 class TraceFitter(object):
     '''A callback object for matplotlib to make an interactive trace fitting
     window.  Contains funcationality for fitting gaussians to a 2D spectrum
@@ -95,48 +138,6 @@ class TraceFitter(object):
                                               'sigma', 'FWHM'),\
                                        dtype=('f4', 'f4', 'f4', 'f4'))
 
-    def print_instructions(self):
-        '''Print instructions for interactive fit to screen.
-        '''
-
-
-        text = [
-        ('The figure shows the raw spectrum collapsed in the wavelength'
-        ' direction as black points.  If there are one or more object traces '
-        'with reasonable '
-        'signal to noise, you should see one or more signals (e.g. a positive '
-        'gaussian profile).'
-        ),
-
-        ('The model trace profile is a sum of '
-        'gaussians and (if it exists) it is shown as a blue line.  The peak of '
-        'each gaussian is marked with a red + sign.'
-        ),
-
-        ('To add a gaussian profile, to the model which will be fit to the '
-        'data, put the mouse near the apex of that profile '
-        'and press the "a" key (for "add").'
-        ),
-
-        ('To delete a gaussian profile, put the mouse near the apex (+ sign) '
-        'of the profile you wish'
-        ' to delete and press the "d" key.'
-        ),
-
-        ('When you are done adding or removing traces, close the interactive '
-        'plot window by clicking the red close button in the upper right corner'
-        ' (or by whatever method is typical for your OS or windowing system) '
-        'or press the "q" or "n" keys (for "quit" or "next" respectively).'
-        ),
-        ]
-
-        print('#'*80)
-        print('                Interactive Trace Finder Instructions')
-        for paragraph in text:
-            print()
-            print(textwrap.fill(textwrap.dedent(paragraph).strip('\n'), width=80))
-        print('#'*80)
-        print()
 
     def plot_data(self):
         '''Plot the raw data without the fit to the traces.
@@ -306,7 +307,6 @@ def find_traces(data, guesses=[], title=None, interactive=True, plotfile=None):
     tf.fit_traces()
     tf.plot_traces()
     if interactive:
-        tf.print_instructions()
         tf.connect()
         plt.show()
     if plotfile:
@@ -388,7 +388,6 @@ def iterate_spatial_profile(P, DmS, V, f,\
 def optimal_extraction(image, variance_image, trace_table,
                        fitsfileout=None,
                        plotfileout=None,
-                       combine=True,
                        plot=None):
     '''Given a 2D spectrum image, a 2D variance image, and a table of trace
     lines (e.g. as output by find_traces() above), this function will optimally
@@ -471,84 +470,62 @@ def optimal_extraction(image, variance_image, trace_table,
     for key in wh.keys():
         header[key] = wh[key]
 
-    if plotfileout:
-        fig = plt.figure(figsize=(16,6))
-        wavelength_units = getattr(u, w.to_header()['CUNIT1'])
+    for i,row in enumerate(trace_table):
+        hdulist = fits.HDUList([])
+        if plotfileout:
+            fig = plt.figure(figsize=(16,6))
+            wavelength_units = getattr(u, w.to_header()['CUNIT1'])
 
-    if not combine:
-        hdulist = []
-        for i,row in enumerate(trace_table):
-            sp = spectra[i]
-            if i == 0:
-                hdulist.append(fits.PrimaryHDU(data=sp, header=header))
-            else:
-                hdulist.append(fits.ImageHDU(data=sp, header=header))
-            hdulist[-1].header['TRACEPOS'] = row['position']
-            if plotfileout:
-                sigma = 1./variances[i]
-                pix = np.arange(0,sp.shape[0],1)
-                wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron)*u.micron
-                plt.subplot(len(trace_table), 1, i+1)
-                plt.fill_between(wavelengths, sp-sigma, sp+sigma,\
-                                 label='uncertainty',\
-                                 facecolor='black', alpha=0.2,\
-                                 linewidth=0,\
-                                 interpolate=True)
-                plt.plot(wavelengths, sp, 'k-',
-                         label='Spectrum for Trace at {}'.format(row['position']))
-                plt.xlabel('Wavelength (microns)')
-                plt.ylabel('Flux (e-/sec)')
-                plt.xlim(wavelengths.value.min(),wavelengths.value.max())
-                plt.ylim(0,1.05*sp.max())
-                plt.legend(loc='best')
+        sp = spectra[i]
+        hdulist.append(fits.PrimaryHDU(data=sp.filled(0), header=header))
+        hdulist[0].header['TRACEPOS'] = row['position']
         if plotfileout:
-            plt.savefig(plotfileout, bbox_inches='tight')
-            plt.close(fig)
-        for i,row in enumerate(trace_table):
-            var = variances[i]
-            hdulist.append(fits.ImageHDU(data=var, header=header))
-            hdulist[-1].header['TRACEPOS'] = row['position']
-            hdulist[-1].header['COMMENT'] = 'VARIANCE DATA'
-    else:
-        info('Combining individual trace spectra in to final spectrum')
-        spectrum = np.average(spectra, axis=0, weights=1./variances)
-        sigma = np.average(1./variances, axis=0)
-        variance = sigma**2
-        pix = np.arange(0,spectrum.shape[0],1)
-        wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron)*u.micron
-        hdulist = fits.HDUList([fits.PrimaryHDU(data=spectrum, header=header),\
-                                fits.ImageHDU(data=variance, header=header)])
-        if plotfileout:
-            plt.fill_between(wavelengths, spectrum-sigma, spectrum+sigma,\
+            sigma = 1./variances[i]
+            pix = np.arange(0,sp.shape[0],1)
+            wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron)*u.micron
+            plt.subplot(len(trace_table), 1, i+1)
+            plt.fill_between(wavelengths, sp-sigma, sp+sigma,\
                              label='uncertainty',\
                              facecolor='black', alpha=0.2,\
                              linewidth=0,\
                              interpolate=True)
-            plt.plot(wavelengths, spectrum, 'k-', label='Spectrum')
-            plt.title('Final Averaged Spectrum')
+            plt.plot(wavelengths, sp, 'k-',
+                     label='Spectrum for Trace {} at {}'.format(i, row['position']))
             plt.xlabel('Wavelength (microns)')
             plt.ylabel('Flux (e-/sec)')
             plt.xlim(wavelengths.value.min(),wavelengths.value.max())
-            plt.ylim(0,1.05*spectrum.max())
+            plt.ylim(0,1.05*sp.max())
             plt.legend(loc='best')
-            plt.savefig(plotfileout, bbox_inches='tight')
+
+            bn, ext = os.path.splitext(plotfileout)
+            plotfilename = '{}_{:02d}{}'.format(bn, i, ext)
+            plt.savefig(plotfilename, bbox_inches='tight')
             plt.close(fig)
-    if fitsfileout:
-        hdulist.writeto(fitsfileout, clobber=True)
+
+        var = variances[i]
+        hdulist.append(fits.ImageHDU(data=var.filled(0), header=header))
+        hdulist[1].header['TRACEPOS'] = row['position']
+        hdulist[1].header['COMMENT'] = 'VARIANCE DATA'
+        if fitsfileout:
+            bn, ext = os.path.splitext(fitsfileout)
+            fitsfilename = '{}_{:02d}{}'.format(bn, i, ext)
+            hdulist.writeto(fitsfilename, clobber=True)
+
     return hdulist
 
 
 ##-------------------------------------------------------------------------
 ## Extract Spectra Function
 ##-------------------------------------------------------------------------
-def extract_spectra(maskname, band,
-                    interactive=True, combine=False):
+def extract_spectra(maskname, band, interactive=True):
 
     ## Get objectnames from slit edges
     edges = np.load('slit-edges_{}.npy'.format(band))
     objectnames = [edge['Target_Name'] for edge in edges[:-1]]
 
     trace_tables = {}
+    if interactive:
+        print_instructions()
     for objectname in objectnames:
         eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
         eps = fits.open(eps_file, 'readonly')[0]
@@ -558,6 +535,7 @@ def extract_spectra(maskname, band,
                                                interactive=interactive,
                                                plotfile=trace_plot_file)
 
+
     for objectname in objectnames:
         eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
         sig_file = '{}_{}_{}_sig.fits'.format(maskname, band, objectname)
@@ -566,17 +544,16 @@ def extract_spectra(maskname, band,
         spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
         fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
         info('Extracting traces for {}'.format(objectname))
-        try:
-            hdulist = optimal_extraction(eps, sig, trace_tables[objectname],
-                                         fitsfileout=fits_file,
-                                         plotfileout=spectrum_plot_file,
-                                         combine=combine)
-        except:
-            warning('Failed to extract trace for {}'.format(objectname))
+#         try:
+        hdulist = optimal_extraction(eps, sig, trace_tables[objectname],
+                                     fitsfileout=fits_file,
+                                     plotfileout=spectrum_plot_file,
+                                     )
+#         except:
+#             warning('Failed to extract trace for {}'.format(objectname))
 
 ##-------------------------------------------------------------------------
 ## Process some test data if called directly
 ##-------------------------------------------------------------------------
 if __name__ == '__main__':
-    extract_spectra('MOSFIRE_DRP_MASK', 'H',
-                    interactive=True, combine=True)
+    extract_spectra('MOSFIRE_DRP_MASK', 'H', interactive=True)
