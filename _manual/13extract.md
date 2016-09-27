@@ -4,6 +4,8 @@ title: Spectral Extraction
 permalink: /manual/extract
 ---
 
+## Interactive Spectral Extraction Instructions
+
 The final step is to extract a 1D spectrum for each object in each slit.  The final line of the `Driver.py` (or equivalent) file will looks something like this:
 
 ```
@@ -31,3 +33,18 @@ To modify the half width of an existing aperture: place the mouse near the cente
 To modify the center position of an existing aperture: place the mouse near the center of the aperture and press the "p" key.  Then type the position (in pixels) for that aperture in response to the query in the terminal.
 
 When you are done adding or removing apertures, close the interactive plot window by clicking the close button in the upper right corner (or by whatever method is typical for your OS or windowing system) or press the "q" or "n" keys (for "quit" or "next" respectively).
+
+## Spectral Extraction Results
+
+Whether you used the interactive tool for spectral extraction or allowed the software to automatically guess at the apertures to extract, the software will output both a FITS version of the resulting 1D spectrum and an PNG plot.
+
+These filenames will have the form:
+
+```
+[maskname]_[band]_[targetname]_[aperture].png
+[maskname]_[band]_[targetname]_1D_[aperture].fits
+```
+
+where `[aperture]` is a two digit integer indication which aperture for that slit this corresponds to (zero based).  If the apertures were determined automatically by the software, then only one aperture will have been generated for each slit, so all files will end in `_00.png` or `_1D_00.fits`.
+
+
