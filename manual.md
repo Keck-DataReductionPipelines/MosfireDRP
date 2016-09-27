@@ -20,10 +20,11 @@ NOTE: This is a __beta__ version of the manual being developed for the 2016 rele
 10. [Wavelength Calibration – K Band](wavelengthK)
 11. [Background Subtraction](background)
 12. [Rectify](rectify)
-13. [Long2pos Reductions](long2pos)
-14. [Longslit Reductions](longslit)
-15. [A Word About Header Comments](headercomments)
-16. [Some Hints](hints)
+13. [Spectral Extraction](extract)
+14. [Long2pos Reductions](long2pos)
+15. [Longslit Reductions](longslit)
+16. [A Word About Header Comments](headercomments)
+17. [Some Hints](hints)
 
 The manual is also available in pdf form: [MOSFIRE_DRP_Manual.pdf](MOSFIRE_DRP_Manual.pdf)
 
