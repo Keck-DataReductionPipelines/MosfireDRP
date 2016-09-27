@@ -50,7 +50,7 @@ def print_instructions():
     ),
     
     ('The apertures define the pixels which will be used as input to the '
-    'optimal spectral extraction (Horne 1986) alogorithm.  Having wide a '
+    'optimal spectral extraction (Horne 1986) algorithm.  Having wide a '
     'wide aperture should not add additional noise as that will be '
     'optimized during the spectral extraction step.  The apertures are shown '
     'here in order for the user to verify 1) that there is no overlap between '
