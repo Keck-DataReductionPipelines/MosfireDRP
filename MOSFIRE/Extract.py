@@ -24,7 +24,7 @@ from MOSFIRE.MosfireDrpLog import info, debug, warning, error
 
 RN = Detector.RN * u.electron
 Gain = Detector.gain * u.electron/u.adu
-
+py3 = sys.version_info[0] > 2 #creates boolean value for test that Python major version > 2
 
 ##-------------------------------------------------------------------------
 ## Find Stellar Traces
@@ -72,7 +72,186 @@ def print_instructions():
     print('#'*80)
     print()
 
-class TraceFitter(object):
+
+class ApertureEditor(object):
+    def __init__(self, xdata, ydata, title=None, traces=None):
+        self.fig = plt.figure()
+        self.ax = self.fig.gca()
+        self.title = title
+        self.xdata = xdata
+        self.ydata = ydata
+        self.apertures = table.Table(names=('id', 'position', 'width',\
+                                              'amplitude', 'sigma'),\
+                                       dtype=('i4', 'f4', 'f4', 'f4', 'f4'))
+
+
+    def add_aperture(self, pos, width):
+        id = len(self.apertures)
+        data = {'id': id,
+                'position': pos,
+                'width': width,
+                'amplitude': None,
+                'sigma': None,
+               }
+        self.apertures.add_row(data)
+        self.plot_apertures()
+
+    def delete_aperture(self, id):
+        self.apertures.remove_row(id)
+        self.plot_apertures()
+
+    def set_position(self, id=None, pos=None):
+        assert id is not None
+        print('Changing position for aperture {} at position {:.1f}'.format(id,
+              self.apertures[id]['position']))
+        if pos:
+            self.apertures[id]['position'] = pos
+        else:
+            if py3:
+                response = input("Please enter new position in pixels: ")
+            else:
+                response = raw_input("Please enter new position in pixels: ")
+            pos = int(response)
+            self.apertures[id]['position'] = pos
+        self.plot_apertures()
+
+
+    def set_width(self, id=None, width=None):
+        assert id is not None
+        print('Changing width for aperture {} at position {:.1f}'.format(id,
+              self.apertures[id]['position']))
+        if width:
+            self.apertures[id]['width'] = width
+        else:
+            if py3:
+                response = input("Please enter new half width in pixels: ")
+            else:
+                response = raw_input("Please enter new half width in pixels: ")
+            width = int(response)
+            self.apertures[id]['width'] = width
+        self.plot_apertures()
+
+
+    def fit_trace(self, pos, amp):
+        id = len(self.apertures)
+        g0 = models.Gaussian1D(mean=pos, amplitude=amp,
+                              bounds={'amplitude': [0, float('+Inf')]})
+        fitter = fitting.LevMarLSQFitter()
+        g = fitter(g0, self.xdata, self.ydata)
+        data = {'id': id,
+                'position': g.param_sets[1][0],
+                'width': np.ceil(5.*g.param_sets[2][0]),
+                'amplitude': g.param_sets[0][0],
+                'sigma': g.param_sets[2][0],
+               }
+        self.apertures.add_row(data)
+        self.plot_apertures()
+
+
+    def plot_data(self):
+        '''Plot the raw data without apertures.
+        '''
+        self.ax.plot(self.xdata, self.ydata, 'ko-', label='Spatial Profile')
+        plt.xlim(min(self.xdata), max(self.xdata))
+        yspan = self.ydata.max() - self.ydata.min()
+        plt.ylim(self.ydata.min()-0.02*yspan, self.ydata.max()+0.18*yspan)
+        plt.xlabel('Pixel Position')
+        plt.ylabel('Flux (e-/sec)')
+        if self.title is None:
+            plt.title('Spatial Profile')
+        else:
+            plt.title(self.title)
+
+
+    def plot_apertures(self):
+        plt.cla()
+        self.plot_data()
+        yspan = self.ydata.max() - self.ydata.min()
+        for ap in self.apertures:
+            if ap['sigma'] is not None and ap['amplitude'] is not None:
+                g = models.Gaussian1D(mean=ap['position'],
+                                      amplitude=ap['amplitude'],
+                                      stddev=ap['sigma'])
+                fit = [g(x) for x in self.xdata]
+                self.ax.plot(self.xdata, fit, 'b-', label='Fit', alpha=0.7)
+            self.ax.axvspan(ap['position']-ap['width'],
+                            ap['position']+ap['width'],
+                            ymin=self.ydata.min(),
+                            ymax=self.ydata.max(),
+                            facecolor='y', alpha=0.3,
+                            )
+            self.ax.text(ap['position']-ap['width']+1,
+                         self.ydata.max() + 0.05*yspan,
+                         'position={:.0f}\nwidth={:.0f}'.format(ap['position'],
+                                                                ap['width']),
+                         )
+        self.fig.canvas.draw()
+
+
+
+    def connect(self):
+        '''Connect keypresses to matplotlib for interactivity.
+        '''
+        self.cid_key = self.fig.canvas.mpl_connect('key_press_event',
+                                                   self.keypress)
+
+    def disconnect(self):
+        self.fig.canvas.mpl_disconnect(self.cid_click)
+        self.fig.canvas.mpl_disconnect(self.cid_key)
+
+
+    def determine_id(self, event):
+        x = event.xdata
+        closest = None
+        for i,ap in enumerate(self.apertures):
+            id = ap['id']
+            d = abs(ap['position'] - x)
+            if closest is None:
+                closest = (id, d)
+            elif d < closest[1]:
+                closest = (id, d)
+        return closest[0]
+
+
+    def keypress(self, event):
+        '''Based on which key is presses on a key press event, call the
+        appropriate method.
+        '''
+        if event.key == 'a':
+            if py3:
+                response = input("Please enter new half width in pixels: ")
+            else:
+                response = raw_input("Please enter new half width in pixels: ")
+            width = int(response)
+            self.add_aperture(event.xdata, width)
+            print('Adding aperture at position {}, width {}'.format(event.xdata, width))
+        if event.key == 'w':
+            id = self.determine_id(event)
+            self.set_width(id=id)
+        if event.key == 'p':
+            id = self.determine_id(event)
+            self.set_position(id=id)
+        if event.key == 'g':
+            self.fit_trace(event.xdata, event.ydata/abs(event.ydata))
+        elif event.key == 'd':
+            id = self.determine_id(event)
+            self.delete_aperture(id)
+        elif event.key == 'n':
+            self.quit(event)
+        elif event.key == 'q':
+            self.quit(event)
+
+    def savefig(self, plotfile):
+        '''Save the figure to a png file.
+        '''
+        self.fig.savefig(plotfile, bbox_inches='tight')
+
+    def quit(self, event):
+        plt.close(self.fig)
+
+
+
+class TraceFitter_orig(object):
     '''A callback object for matplotlib to make an interactive trace fitting
     window.  Contains funcationality for fitting gaussians to a 2D spectrum
     which has been collapsed in the wavelength direction.
@@ -133,10 +312,11 @@ class TraceFitter(object):
             self.fit = [0. for x in self.xdata]
         self.fit_line = None
         self.fit_markers = None
+        self.apertures = None
         self.text = None
         self.trace_table = table.Table(names=('position', 'amplitude',\
-                                              'sigma', 'FWHM'),\
-                                       dtype=('f4', 'f4', 'f4', 'f4'))
+                                              'sigma', 'width', 'FWHM'),\
+                                       dtype=('f4', 'f4', 'f4', 'f4', 'f4'))
 
 
     def plot_data(self):
@@ -160,6 +340,10 @@ class TraceFitter(object):
                       for i in range(int(len(self.traces.param_sets)/3))]
             ymarks = [self.traces.param_sets[3*i][0]\
                       for i in range(int(len(self.traces.param_sets)/3))]
+            xwidths = [3.*self.traces.param_sets[3*i+2][0]\
+                       for i in range(int(len(self.traces.param_sets)/3))]
+            xapertures = [[xmarks[i]-xwidths[i], xmarks[i]+xwidths[i] ]\
+                          for i in range(int(len(self.traces.param_sets)/3))]
         else:
             self.fit = [0. for x in self.xdata]
             xmarks = []
@@ -170,10 +354,16 @@ class TraceFitter(object):
                                           label='Fit',\
                                           alpha=0.7)
             self.fit_markers, = self.ax.plot(xmarks, ymarks, 'r+',\
-                                             label='Gaussian Model Peaks',\
+                                             label='Apertures',\
                                              markersize=20.0,\
                                              markeredgewidth=3,\
                                              alpha=0.7)
+            self.apertures = self.ax.axvspan(xapertures[0][0],
+                                              xapertures[0][1],
+                                              ymin=-200,
+                                              ymax=200,
+                                              facecolor='y', alpha=0.3
+                                              )
         else:
             self.fit_line.set_ydata(self.fit)
             self.fit_markers.set_xdata(xmarks)
@@ -195,6 +385,8 @@ class TraceFitter(object):
                                         for i in range(ntraces)],
                           'sigma': [params[3*i+2][0]
                                     for i in range(ntraces)],
+                          'width': [3.*params[3*i+2][0]
+                                    for i in range(ntraces)],
                           'FWHM': [2.355*params[3*i+2][0]
                                    for i in range(ntraces)],
                          }
@@ -205,20 +397,10 @@ class TraceFitter(object):
         '''
         self.cid_key = self.fig.canvas.mpl_connect('key_press_event',
                                                    self.keypress)
-#         self.cid_click = self.fig.canvas.mpl_connect('button_press_event',
-#                                                      self.click)
 
     def disconnect(self):
         self.fig.canvas.mpl_disconnect(self.cid_click)
         self.fig.canvas.mpl_disconnect(self.cid_key)
-
-#     def click(self, event):
-#         '''Print out coordinates of mouse click.  Primarily for testing.
-#         '''
-#         if event.inaxes:
-#             clickX = event.xdata
-#             clickY = event.ydata
-#             info('Clicked at: {:.1f}, {:.2f}'.format(event.xdata, event.ydata))
 
     def keypress(self, event):
         '''Based on which key is presses on a key press event, call the
@@ -226,9 +408,6 @@ class TraceFitter(object):
         '''
         if event.key == 'a':
             self.add_trace(event.ydata/abs(event.ydata), event.xdata)
-        elif event.key in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
-            self.add_trace(event.ydata/abs(event.ydata), event.xdata,
-                           id=int(event.key))
         elif event.key == 'd':
             self.delete_trace(event)
         elif event.key == 'n':
@@ -248,6 +427,22 @@ class TraceFitter(object):
         self.star_index.append(id)
         self.fit_traces()
         self.plot_traces()
+
+
+    def edit_width(self, amp, pos, id=1):
+        '''Edit the width of the aperture.
+        '''
+#         if not self.traces:
+#             self.traces = models.Gaussian1D(mean=pos, amplitude=amp,
+#                                  bounds={'amplitude': [0, float('+Inf')]})
+#         else:
+#             self.traces += models.Gaussian1D(mean=pos, amplitude=amp,
+#                                   bounds={'amplitude': [0, float('+Inf')]})
+#         self.star_index.append(id)
+        self.fit_traces()
+        self.plot_traces()
+
+
 
     def delete_trace(self, event):
         '''Delete one of the gaussians from the trace model.
@@ -280,6 +475,37 @@ class TraceFitter(object):
 ## Find Stellar Traces
 ##-------------------------------------------------------------------------
 def find_traces(data, guesses=[], title=None, interactive=True, plotfile=None):
+    '''Finds targets in spectra by simply collapsing the 2D spectra in the
+    wavelength direction and fitting Gaussian profiles to positions provided.
+    '''
+    mdata = np.ma.MaskedArray(data=data, mask=np.isnan(data))
+    vert_profile = np.mean(mdata, axis=1)
+    xpoints = range(0,len(vert_profile), 1)
+    ap = ApertureEditor(xpoints, vert_profile, title=title)
+
+    if (guesses == []) or (guesses is None):
+        ## Try to guess at trace positions if no information given
+        ## Start with maximum pixel value
+        valid_profile = list(vert_profile[~vert_profile.mask])
+        maxval = max(valid_profile)
+        maxind = valid_profile.index(maxval)
+        ap.fit_trace(maxind, maxval)
+    else:
+        for guess in guesses:
+            if len(guess) == 1:
+                ap.fit_trace(guess, 1)
+            else:
+                ap.add_aperture(guess[0], guess[1])
+    ap.plot_apertures()
+    if interactive:
+        ap.connect()
+        plt.show()
+    return ap.apertures
+
+
+
+
+def find_traces_orig(data, guesses=[], title=None, interactive=True, plotfile=None):
     '''Finds targets in spectra by simply collapsing the 2D spectra in the
     wavelength direction and fitting Gaussian profiles to positions provided.
     '''
@@ -436,7 +662,7 @@ def optimal_extraction(image, variance_image, trace_table,
     variances = []
     for i,row in enumerate(trace_table):
         pos = row['position']
-        width = 5.*row['sigma']  # Hard coded factor defines with of extraction
+        width = row['width']
         info('Extracting data for trace {:d} at position {:.1f}'.format(i, pos))
         DmS = np.ma.MaskedArray(data=spectra2D[int(pos-width):int(pos+width),:],\
                                 mask=np.isnan(spectra2D[int(pos-width):int(pos+width),:]))
@@ -531,10 +757,10 @@ def extract_spectra(maskname, band, interactive=True):
         eps = fits.open(eps_file, 'readonly')[0]
 #         trace_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
         trace_plot_file = None
+        print('Finding traces for {}'.format(objectname))
         trace_tables[objectname] = find_traces(eps.data, title=objectname,
                                                interactive=interactive,
                                                plotfile=trace_plot_file)
-
 
     for objectname in objectnames:
         eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
