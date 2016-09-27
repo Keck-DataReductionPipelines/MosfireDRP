@@ -42,30 +42,61 @@ def print_instructions():
     'gaussian profile).'
     ),
 
-    ('The model trace profile is a sum of '
-    'gaussians and (if it exists) it is shown as a blue line.  The peak of '
-    'each gaussian is marked with a red + sign.'
+    ('You can use this tool to add, modify, and delete apertures.  '
+    'The apertures are indicated by a yellow shaded region and their center '
+    'position and half width in pixels is annotated near the top of each '
+    'shaded region.  There may be automatically generated regions already '
+    'shown if that option was selected when the software was run.'
+    ),
+    
+    ('The apertures define the pixels which will be used as input to the '
+    'optimal spectral extraction (Horne 1986) alogorithm.  Having wide a '
+    'wide aperture should not add additional noise as that will be '
+    'optimized during the spectral extraction step.  The apertures are shown '
+    'here in order for the user to verify 1) that there is no overlap between '
+    'adjacent objects, 2) that the apertures are wide enough to reasonably '
+    'encompass all flux from the object, and 3) that all objects have '
+    'properly defined apertures.'
     ),
 
-    ('To add a gaussian profile, to the model which will be fit to the '
-    'data, put the mouse near the apex of that profile '
-    'and press the "a" key (for "add").'
+    ('To delete an existing aperture: place the mouse near the center of the '
+    'aperture and press the "d" key.'
+    ),
+    
+    ('To add an aperture by fitting a gaussian to the profile: place the mouse '
+    'near the peak of the profile and press the "g" key.  The half width of '
+    'the aperture will be set at 5 times the sigma of the fitted gaussian.  '
+    'If a gaussian fit has been used to definte an aperture, the fit will be '
+    'shown as a blue line.'
     ),
 
-    ('To delete a gaussian profile, put the mouse near the apex (+ sign) '
-    'of the profile you wish'
-    ' to delete and press the "d" key.'
+    ('To add an aperture manually: place the mouse in the X position where the '
+    'new aperture should be centered and press the "a" key.  Then type the half'
+    ' width (in pixels) for that aperture in response to the query in the '
+    'terminal.'
     ),
 
-    ('When you are done adding or removing traces, close the interactive '
-    'plot window by clicking the red close button in the upper right corner'
-    ' (or by whatever method is typical for your OS or windowing system) '
+    ('To modify the half width of an existing aperture: place the mouse near '
+    'the center of the aperture and press the "w" key.  Then type the half'
+    ' width (in pixels) for that aperture in response to the query in the '
+    'terminal.'
+    ),
+
+    ('To modify the center position of an existing aperture: place the mouse '
+    'near the center of the aperture and press the "p" key.  Then type the '
+    'position (in pixels) for that aperture in response to the query in the '
+    'terminal.'
+    ),
+
+    ('When you are done adding or removing apertures, close the interactive '
+    'plot window by clicking the close button in the upper right corner '
+    '(or by whatever method is typical for your OS or windowing system) '
     'or press the "q" or "n" keys (for "quit" or "next" respectively).'
     ),
     ]
 
     print('#'*80)
-    print('                Interactive Trace Finder Instructions')
+    print('                     Aperture Definition Tool Instructions')
     for paragraph in text:
         print()
         print(textwrap.fill(textwrap.dedent(paragraph).strip('\n'), width=80))
