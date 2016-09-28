@@ -32,8 +32,6 @@ py3 = sys.version_info[0] > 2 #creates boolean value for test that Python major 
 def print_instructions():
     '''Print instructions for interactive fit to screen.
     '''
-
-
     text = [
     ('The figure shows the raw spectrum collapsed in the wavelength'
     ' direction as black points.  If there are one or more object traces '
@@ -205,10 +203,12 @@ class ApertureEditor(object):
                                       stddev=ap['sigma'])
                 fit = [g(x) for x in self.xdata]
                 self.ax.plot(self.xdata, fit, 'b-', label='Fit', alpha=0.7)
+            shadeymin = np.floor(self.ydata.min())
+            shadeymax = np.ceil(self.ydata.max())
             self.ax.axvspan(ap['position']-ap['width'],
                             ap['position']+ap['width'],
-                            ymin=self.ydata.min(),
-                            ymax=self.ydata.max(),
+                            ymin=shadeymin,
+                            ymax=shadeymax,
                             facecolor='y', alpha=0.3,
                             )
             self.ax.text(ap['position']-ap['width']+1,
@@ -434,10 +434,14 @@ def optimal_extraction(image, variance_image, trace_table,
         pos = row['position']
         width = row['width']
         info('Extracting data for trace {:d} at position {:.1f}'.format(i, pos))
-        DmS = np.ma.MaskedArray(data=spectra2D[int(pos-width):int(pos+width),:],\
-                                mask=np.isnan(spectra2D[int(pos-width):int(pos+width),:]))
-        V = np.ma.MaskedArray(data=variance2D[int(pos-width):int(pos+width),:],\
-                              mask=np.isnan(spectra2D[int(pos-width):int(pos+width),:]))
+
+        ymin = max([int(np.floor(pos-width)), 0])
+        ymax = min([int(np.ceil(pos+width)), spectra2D.shape[0]])
+
+        DmS = np.ma.MaskedArray(data=spectra2D[ymin:ymax,:],\
+                                mask=np.isnan(spectra2D[ymin:ymax,:]))
+        V = np.ma.MaskedArray(data=variance2D[ymin:ymax,:],\
+                              mask=np.isnan(spectra2D[ymin:ymax,:]))
         info('  Performing standard extraction')
         f_std, V_std = standard_extraction(DmS, V)
         info('  Forming initial spatial profile')
@@ -540,13 +544,14 @@ def extract_spectra(maskname, band, interactive=True):
         spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
         fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
         info('Extracting traces for {}'.format(objectname))
-#         try:
-        hdulist = optimal_extraction(eps, sig, trace_tables[objectname],
-                                     fitsfileout=fits_file,
-                                     plotfileout=spectrum_plot_file,
-                                     )
-#         except:
-#             warning('Failed to extract trace for {}'.format(objectname))
+        try:
+            hdulist = optimal_extraction(eps, sig, trace_tables[objectname],
+                                         fitsfileout=fits_file,
+                                         plotfileout=spectrum_plot_file,
+                                         )
+        except Exception as e:
+            warning('Failed to extract trace for {}'.format(objectname))
+            warning(e)
 
 ##-------------------------------------------------------------------------
 ## Process some test data if called directly
