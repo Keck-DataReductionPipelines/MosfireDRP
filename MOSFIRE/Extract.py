@@ -180,7 +180,8 @@ class ApertureEditor(object):
     def plot_data(self):
         '''Plot the raw data without apertures.
         '''
-        self.ax.plot(self.xdata, self.ydata, 'ko-', label='Spatial Profile')
+        self.ax.plot(self.xdata, self.ydata, 'k-',
+                     label='Spatial Profile', drawstyle='steps-mid')
         plt.xlim(min(self.xdata), max(self.xdata))
         yspan = self.ydata.max() - self.ydata.min()
         plt.ylim(self.ydata.min()-0.02*yspan, self.ydata.max()+0.18*yspan)
