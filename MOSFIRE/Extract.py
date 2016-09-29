@@ -103,12 +103,14 @@ def print_instructions():
 
 
 class ApertureEditor(object):
-    def __init__(self, xdata, ydata, title=None, traces=None):
+    def __init__(self, hdu, title=None):
+        self.header = hdu.header
+        self.data = np.ma.MaskedArray(data=hdu.data, mask=np.isnan(hdu.data))
+        self.ydata = np.mean(self.data, axis=1)
+        self.xdata = range(0,len(self.ydata), 1)
         self.fig = plt.figure()
         self.ax = self.fig.gca()
         self.title = title
-        self.xdata = xdata
-        self.ydata = ydata
         self.apertures = table.Table(names=('id', 'position', 'width',\
                                               'amplitude', 'sigma'),\
                                        dtype=('i4', 'f4', 'f4', 'f4', 'f4'))
@@ -125,9 +127,11 @@ class ApertureEditor(object):
         self.apertures.add_row(data)
         self.plot_apertures()
 
+
     def delete_aperture(self, id):
         self.apertures.remove_row(id)
         self.plot_apertures()
+
 
     def set_position(self, id=None, pos=None):
         assert id is not None
@@ -161,15 +165,28 @@ class ApertureEditor(object):
         self.plot_apertures()
 
 
+    def guess(self):
+        ## Try to guess at trace positions if no information given
+        ## Start with maximum pixel value
+        valid_profile = list(self.ydata[~self.ydata.mask])
+        maxval = max(valid_profile)
+        maxind = valid_profile.index(maxval)
+        self.fit_trace(maxind, maxval)
+
+
     def fit_trace(self, pos, amp):
         id = len(self.apertures)
         g0 = models.Gaussian1D(mean=pos, amplitude=amp,
                               bounds={'amplitude': [0, float('+Inf')]})
         fitter = fitting.LevMarLSQFitter()
         g = fitter(g0, self.xdata, self.ydata)
+        try:
+            offset = np.floor(float(self.header['YOFFSET'])/0.1799)
+        except:
+            offset = self.data.shape[0]
         data = {'id': id,
                 'position': g.param_sets[1][0],
-                'width': np.ceil(5.*g.param_sets[2][0]),
+                'width': min([np.ceil(5.*g.param_sets[2][0]), offset]),
                 'amplitude': g.param_sets[0][0],
                 'sigma': g.param_sets[2][0],
                }
@@ -220,12 +237,12 @@ class ApertureEditor(object):
         self.fig.canvas.draw()
 
 
-
     def connect(self):
         '''Connect keypresses to matplotlib for interactivity.
         '''
         self.cid_key = self.fig.canvas.mpl_connect('key_press_event',
                                                    self.keypress)
+
 
     def disconnect(self):
         self.fig.canvas.mpl_disconnect(self.cid_click)
@@ -273,10 +290,12 @@ class ApertureEditor(object):
         elif event.key == 'q':
             self.quit(event)
 
+
     def savefig(self, plotfile):
         '''Save the figure to a png file.
         '''
         self.fig.savefig(plotfile, bbox_inches='tight')
+
 
     def quit(self, event):
         plt.close(self.fig)
@@ -285,22 +304,14 @@ class ApertureEditor(object):
 ##-------------------------------------------------------------------------
 ## Find Stellar Traces
 ##-------------------------------------------------------------------------
-def find_apertures(data, guesses=[], title=None, interactive=True, plotfile=None):
+def find_apertures(hdu, guesses=[], title=None, interactive=True, plotfile=None):
     '''Finds targets in spectra by simply collapsing the 2D spectra in the
     wavelength direction and fitting Gaussian profiles to positions provided.
     '''
-    mdata = np.ma.MaskedArray(data=data, mask=np.isnan(data))
-    vert_profile = np.mean(mdata, axis=1)
-    xpoints = range(0,len(vert_profile), 1)
-    ap = ApertureEditor(xpoints, vert_profile, title=title)
+    ap = ApertureEditor(hdu, title=title)
 
     if (guesses == []) or (guesses is None):
-        ## Try to guess at trace positions if no information given
-        ## Start with maximum pixel value
-        valid_profile = list(vert_profile[~vert_profile.mask])
-        maxval = max(valid_profile)
-        maxind = valid_profile.index(maxval)
-        ap.fit_trace(maxind, maxval)
+        ap.guess()
     else:
         for guess in guesses:
             if len(guess) == 1:
@@ -533,7 +544,7 @@ def extract_spectra(maskname, band, interactive=True):
 #         trace_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
         trace_plot_file = None
         print('Finding traces for {}'.format(objectname))
-        trace_tables[objectname] = find_apertures(eps.data, title=objectname,
+        trace_tables[objectname] = find_apertures(eps, title=objectname,
                                                   interactive=interactive,
                                                   plotfile=trace_plot_file)
 
