@@ -166,7 +166,7 @@ class ApertureEditor(object):
 
 
     def guess(self):
-        ## Try to guess at trace positions if no information given
+        ## Try to guess at aperture positions if no information given
         ## Start with maximum pixel value
         valid_profile = list(self.ydata[~self.ydata.mask])
         maxval = max(valid_profile)
@@ -306,7 +306,7 @@ class ApertureEditor(object):
 ##-------------------------------------------------------------------------
 def find_apertures(hdu, guesses=[], title=None, interactive=True, plotfile=None):
     '''Finds targets in spectra by simply collapsing the 2D spectra in the
-    wavelength direction and fitting Gaussian profiles to positions provided.
+    wavelength direction and fitting Gaussian profiles to the positional profile
     '''
     ap = ApertureEditor(hdu, title=title)
 
@@ -331,7 +331,6 @@ def find_apertures(hdu, guesses=[], title=None, interactive=True, plotfile=None)
 def standard_extraction(data, variance):
     spect_1D = np.sum(data, axis=0)
     variance_1D = np.sum(variance, axis=0)
-
     return spect_1D, variance_1D
 
 
@@ -393,7 +392,7 @@ def iterate_spatial_profile(P, DmS, V, f,\
 ##-------------------------------------------------------------------------
 ## Optimal Spectral Extraction
 ##-------------------------------------------------------------------------
-def optimal_extraction(image, variance_image, trace_table,
+def optimal_extraction(image, variance_image, aperture_table,
                        fitsfileout=None,
                        plotfileout=None,
                        plot=None):
@@ -442,7 +441,7 @@ def optimal_extraction(image, variance_image, trace_table,
 
     spectra = []
     variances = []
-    for i,row in enumerate(trace_table):
+    for i,row in enumerate(aperture_table):
         pos = row['position']
         width = row['width']
         info('Extracting data for trace {:d} at position {:.1f}'.format(i, pos))
@@ -482,7 +481,7 @@ def optimal_extraction(image, variance_image, trace_table,
     for key in wh.keys():
         header[key] = wh[key]
 
-    for i,row in enumerate(trace_table):
+    for i,row in enumerate(aperture_table):
         hdulist = fits.HDUList([])
         if plotfileout:
             fig = plt.figure(figsize=(16,6))
@@ -495,7 +494,7 @@ def optimal_extraction(image, variance_image, trace_table,
             sigma = 1./variances[i]
             pix = np.arange(0,sp.shape[0],1)
             wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron)*u.micron
-            plt.subplot(len(trace_table), 1, i+1)
+            plt.subplot(len(aperture_table), 1, i+1)
             plt.fill_between(wavelengths, sp-sigma, sp+sigma,\
                              label='uncertainty',\
                              facecolor='black', alpha=0.2,\
@@ -535,19 +534,21 @@ def extract_spectra(maskname, band, interactive=True):
     edges = np.load('slit-edges_{}.npy'.format(band))
     objectnames = [edge['Target_Name'] for edge in edges[:-1]]
 
-    trace_tables = {}
+    aperture_tables = {}
     if interactive:
         print_instructions()
+    # First, iterate through all slits and define the apertures to extract
     for objectname in objectnames:
         eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
         eps = fits.open(eps_file, 'readonly')[0]
-#         trace_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
-        trace_plot_file = None
-        print('Finding traces for {}'.format(objectname))
-        trace_tables[objectname] = find_apertures(eps, title=objectname,
-                                                  interactive=interactive,
-                                                  plotfile=trace_plot_file)
-
+#         aperture_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
+        aperture_plot_file = None
+        print('Finding apertures for {}'.format(objectname))
+        aperture_tables[objectname] = find_apertures(eps, title=objectname,
+                                                     interactive=interactive,
+                                                     plotfile=aperture_plot_file)
+    # Second, iterate through all slits again and perform spectral extraction
+    # using the apertures defined above
     for objectname in objectnames:
         eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
         sig_file = '{}_{}_{}_sig.fits'.format(maskname, band, objectname)
@@ -555,18 +556,12 @@ def extract_spectra(maskname, band, interactive=True):
         sig = fits.open(sig_file, 'readonly')[0]
         spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
         fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
-        info('Extracting traces for {}'.format(objectname))
+        info('Extracting specra for {}'.format(objectname))
         try:
-            hdulist = optimal_extraction(eps, sig, trace_tables[objectname],
+            hdulist = optimal_extraction(eps, sig, aperture_tables[objectname],
                                          fitsfileout=fits_file,
                                          plotfileout=spectrum_plot_file,
                                          )
         except Exception as e:
-            warning('Failed to extract trace for {}'.format(objectname))
+            warning('Failed to extract spectra for {}'.format(objectname))
             warning(e)
-
-##-------------------------------------------------------------------------
-## Process some test data if called directly
-##-------------------------------------------------------------------------
-if __name__ == '__main__':
-    extract_spectra('MOSFIRE_DRP_MASK', 'H', interactive=True)
