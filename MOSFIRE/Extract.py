@@ -112,13 +112,17 @@ class ApertureEditor(object):
         self.fig = pl.figure()
         self.ax = self.fig.gca()
         self.title = title
+        if title:
+            info('Editing apertures for {}'.format(title))
+        else:
+            info('Editing apertures')
         self.apertures = table.Table(names=('id', 'position', 'width',\
                                               'amplitude', 'sigma'),\
                                        dtype=('i4', 'f4', 'f4', 'f4', 'f4'))
 
 
     def add_aperture(self, pos, width):
-        info('Adding aperture at position {} of width {}'.format(pos, width))
+        info('  Adding aperture at position {} of width {}'.format(pos, width))
         id = len(self.apertures)
         data = {'id': id,
                 'position': pos,
@@ -132,14 +136,14 @@ class ApertureEditor(object):
 
     def delete_aperture(self, id):
         pos = self.apertures[id]['position']
-        info('Removing aperture at position {}'.format(pos))
+        info('  Removing aperture at position {}'.format(pos))
         self.apertures.remove_row(id)
         self.plot_apertures()
 
 
     def set_position(self, id=None, pos=None):
         assert id is not None
-        info('Changing position for aperture {} at position {:.1f}'.format(id,
+        info('  Changing position for aperture {} at position {:.1f}'.format(id,
              self.apertures[id]['position']))
         if pos:
             self.apertures[id]['position'] = pos
@@ -155,7 +159,7 @@ class ApertureEditor(object):
 
     def set_width(self, id=None, width=None):
         assert id is not None
-        info('Changing width for aperture {} at position {:.1f}'.format(id,
+        info('  Changing width for aperture {} at position {:.1f}'.format(id,
              self.apertures[id]['position']))
         if width:
             self.apertures[id]['width'] = width
@@ -175,12 +179,12 @@ class ApertureEditor(object):
         valid_profile = list(self.ydata[~self.ydata.mask])
         maxval = max(valid_profile)
         maxind = valid_profile.index(maxval)
-        info('Guessing at aperture near position {}'.format(maxind))
+        info('  Guessing at aperture near position {}'.format(maxind))
         self.fit_trace(maxind, maxval)
 
 
     def fit_trace(self, pos, amp):
-        info('Fitting gaussian profile near position {}'.format(pos))
+        info('  Fitting gaussian profile near position {}'.format(pos))
         id = len(self.apertures)
         g0 = models.Gaussian1D(mean=pos, amplitude=amp,
                               bounds={'amplitude': [0, float('+Inf')]})
@@ -203,7 +207,7 @@ class ApertureEditor(object):
     def plot_data(self):
         '''Plot the raw data without apertures.
         '''
-        info('Plotting profile data')
+        debug('  Plotting profile data')
         pl.plot(self.xdata, self.ydata, 'k-',
                 label='Spatial Profile', drawstyle='steps-mid')
         pl.xlim(min(self.xdata), max(self.xdata))
@@ -218,14 +222,13 @@ class ApertureEditor(object):
 
 
     def plot_apertures(self):
-        info('Clearing figure axes')
         pl.cla()
         self.plot_data()
         yspan = self.ydata.max() - self.ydata.min()
         if len(self.apertures) == 0:
             pl.draw()
         for ap in self.apertures:
-            info('Plotting aperture at position {}'.format(ap['position']))
+            debug('  Plotting aperture at position {}'.format(ap['position']))
             if ap['sigma'] is not None and ap['amplitude'] is not None:
                 g = models.Gaussian1D(mean=ap['position'],
                                       amplitude=ap['amplitude'],
@@ -269,7 +272,7 @@ class ApertureEditor(object):
                 closest = (id, d)
             elif d < closest[1]:
                 closest = (id, d)
-        info('ID of aerture nearest to keypress is {}'.format(closest[0]))
+        debug('  ID of aerture nearest to keypress is {}'.format(closest[0]))
         return closest[0]
 
 
@@ -303,8 +306,7 @@ class ApertureEditor(object):
         elif event.key == 's':
             print(self.apertures)
         elif event.key == 'r':
-            info('Plotting apertures')
-            info(self.apertures)
+            info('  Plotting apertures')
             self.plot_apertures()
 
 
@@ -315,7 +317,7 @@ class ApertureEditor(object):
 
 
     def quit(self, event):
-        info('Done with aperture edits for this slit')
+        info('  Done with aperture edits for this slit')
         self.disconnect()
         pl.close(self.fig)
 
@@ -462,7 +464,7 @@ def optimal_extraction(image, variance_image, aperture_table,
     for i,row in enumerate(aperture_table):
         pos = row['position']
         width = int(row['width'])
-        info('Extracting data for aperture {:d} at position {:.1f}'.format(i, pos))
+        info('Extracting aperture {:d} at position {:.1f}'.format(i, pos))
 
         ymin = max([int(np.floor(pos-width)), 0])
         ymax = min([int(np.ceil(pos+width)), spectra2D.shape[0]])
@@ -574,7 +576,7 @@ def extract_spectra(maskname, band, interactive=True):
         sig = fits.open(sig_file, 'readonly')[0]
         spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
         fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
-        info('Extracting specra for {}'.format(objectname))
+        info('Extracting spectra for {}'.format(objectname))
         try:
             hdulist = optimal_extraction(eps, sig, aperture_tables[objectname],
                                          fitsfileout=fits_file,
