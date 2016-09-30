@@ -15,9 +15,7 @@ from astropy import wcs
 from astropy.modeling import models, fitting
 import scipy.signal as signal
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib.pylab import connect
+from matplotlib import pyplot as pl
 
 from MOSFIRE import Detector
 from MOSFIRE.MosfireDrpLog import info, debug, warning, error
@@ -108,7 +106,7 @@ class ApertureEditor(object):
         self.data = np.ma.MaskedArray(data=hdu.data, mask=np.isnan(hdu.data))
         self.ydata = np.mean(self.data, axis=1)
         self.xdata = range(0,len(self.ydata), 1)
-        self.fig = plt.figure()
+        self.fig = pl.figure()
         self.ax = self.fig.gca()
         self.title = title
         self.apertures = table.Table(names=('id', 'position', 'width',\
@@ -199,19 +197,19 @@ class ApertureEditor(object):
         '''
         self.ax.plot(self.xdata, self.ydata, 'k-',
                      label='Spatial Profile', drawstyle='steps-mid')
-        plt.xlim(min(self.xdata), max(self.xdata))
+        pl.xlim(min(self.xdata), max(self.xdata))
         yspan = self.ydata.max() - self.ydata.min()
-        plt.ylim(self.ydata.min()-0.02*yspan, self.ydata.max()+0.18*yspan)
-        plt.xlabel('Pixel Position')
-        plt.ylabel('Flux (e-/sec)')
+        pl.ylim(self.ydata.min()-0.02*yspan, self.ydata.max()+0.18*yspan)
+        pl.xlabel('Pixel Position')
+        pl.ylabel('Flux (e-/sec)')
         if self.title is None:
-            plt.title('Spatial Profile')
+            pl.title('Spatial Profile')
         else:
-            plt.title(self.title)
+            pl.title(self.title)
 
 
     def plot_apertures(self):
-        plt.cla()
+#         pl.clf()
         self.plot_data()
         yspan = self.ydata.max() - self.ydata.min()
         for ap in self.apertures:
@@ -234,7 +232,6 @@ class ApertureEditor(object):
                          'position={:.0f}\nwidth={:.0f}'.format(ap['position'],
                                                                 ap['width']),
                          )
-        self.fig.canvas.draw()
 
 
     def connect(self):
@@ -245,7 +242,6 @@ class ApertureEditor(object):
 
 
     def disconnect(self):
-        self.fig.canvas.mpl_disconnect(self.cid_click)
         self.fig.canvas.mpl_disconnect(self.cid_key)
 
 
@@ -298,7 +294,8 @@ class ApertureEditor(object):
 
 
     def quit(self, event):
-        plt.close(self.fig)
+        self.disconnect()
+        pl.close(self.fig)
 
 
 ##-------------------------------------------------------------------------
@@ -308,6 +305,7 @@ def find_apertures(hdu, guesses=[], title=None, interactive=True, plotfile=None)
     '''Finds targets in spectra by simply collapsing the 2D spectra in the
     wavelength direction and fitting Gaussian profiles to the positional profile
     '''
+    pl.ion()
     ap = ApertureEditor(hdu, title=title)
 
     if (guesses == []) or (guesses is None):
@@ -321,7 +319,6 @@ def find_apertures(hdu, guesses=[], title=None, interactive=True, plotfile=None)
     ap.plot_apertures()
     if interactive:
         ap.connect()
-        plt.show()
     return ap.apertures
 
 
@@ -484,7 +481,7 @@ def optimal_extraction(image, variance_image, aperture_table,
     for i,row in enumerate(aperture_table):
         hdulist = fits.HDUList([])
         if plotfileout:
-            fig = plt.figure(figsize=(16,6))
+            fig = pl.figure(figsize=(16,6))
             wavelength_units = getattr(u, w.to_header()['CUNIT1'])
 
         sp = spectra[i]
@@ -494,24 +491,24 @@ def optimal_extraction(image, variance_image, aperture_table,
             sigma = 1./variances[i]
             pix = np.arange(0,sp.shape[0],1)
             wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron)*u.micron
-            plt.subplot(len(aperture_table), 1, i+1)
-            plt.fill_between(wavelengths, sp-sigma, sp+sigma,\
+            pl.subplot(len(aperture_table), 1, i+1)
+            pl.fill_between(wavelengths, sp-sigma, sp+sigma,\
                              label='uncertainty',\
                              facecolor='black', alpha=0.2,\
                              linewidth=0,\
                              interpolate=True)
-            plt.plot(wavelengths, sp, 'k-',
+            pl.plot(wavelengths, sp, 'k-',
                      label='Spectrum for Trace {} at {}'.format(i, row['position']))
-            plt.xlabel('Wavelength (microns)')
-            plt.ylabel('Flux (e-/sec)')
-            plt.xlim(wavelengths.value.min(),wavelengths.value.max())
-            plt.ylim(0,1.05*sp.max())
-            plt.legend(loc='best')
+            pl.xlabel('Wavelength (microns)')
+            pl.ylabel('Flux (e-/sec)')
+            pl.xlim(wavelengths.value.min(),wavelengths.value.max())
+            pl.ylim(0,1.05*sp.max())
+            pl.legend(loc='best')
 
             bn, ext = os.path.splitext(plotfileout)
             plotfilename = '{}_{:02d}{}'.format(bn, i, ext)
-            plt.savefig(plotfilename, bbox_inches='tight')
-            plt.close(fig)
+            pl.savefig(plotfilename, bbox_inches='tight')
+            pl.close(fig)
 
         var = variances[i]
         hdulist.append(fits.ImageHDU(data=var.filled(0), header=header))
