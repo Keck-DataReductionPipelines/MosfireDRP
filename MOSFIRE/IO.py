@@ -208,8 +208,8 @@ def readfits(path, use_bpm=False):
     datasec = ""
     try:
         datasec = header["DATASEC"]
-        warning("%s contains a DATASEC keyword not compatible with the pipeline" % path)
-        warning("The content of the keyword will be erased on the reduced data")
+        debug("%s contains a DATASEC keyword not compatible with the pipeline" % path)
+        debug("The content of the keyword will be erased on the reduced data")
         del header["DATASEC"]
     except:
         pass
@@ -439,8 +439,8 @@ def readmosfits(fname, options, extension=None):
         datasec = ""
         try:
             datasec = header["DATASEC"]
-            warning("%s contains a DATASEC keyword not compatible with the pipeline" % path)
-            warning("The content of the keyword will be erased on the reduced data")
+            debug("%s contains a DATASEC keyword not compatible with the pipeline" % path)
+            debug("The content of the keyword will be erased on the reduced data")
             del header["DATASEC"]
         except:
             pass
