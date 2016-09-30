@@ -136,15 +136,15 @@ class ApertureEditor(object):
 
     def delete_aperture(self, id):
         pos = self.apertures[id]['position']
-        info('  Removing aperture at position {}'.format(pos))
+        info('  Removing aperture at position {:.0f}'.format(pos))
         self.apertures.remove_row(id)
         self.plot_apertures()
 
 
     def set_position(self, id=None, pos=None):
         assert id is not None
-        info('  Changing position for aperture {} at position {:.1f}'.format(id,
-             self.apertures[id]['position']))
+        info('  Moving aperture {} from {:.0f} to {:.0f}'.format(id,
+             self.apertures[id]['position'], pos))
         if pos:
             self.apertures[id]['position'] = pos
         else:
@@ -159,7 +159,7 @@ class ApertureEditor(object):
 
     def set_width(self, id=None, width=None):
         assert id is not None
-        info('  Changing width for aperture {} at position {:.1f}'.format(id,
+        info('  Changing width for aperture {} at position {:.0f}'.format(id,
              self.apertures[id]['position']))
         if width:
             self.apertures[id]['width'] = width
@@ -184,7 +184,7 @@ class ApertureEditor(object):
 
 
     def fit_trace(self, pos, amp):
-        info('  Fitting gaussian profile near position {}'.format(pos))
+        info('  Adding fitted aperture near position {:.0f}'.format(pos))
         id = len(self.apertures)
         g0 = models.Gaussian1D(mean=pos, amplitude=amp,
                               bounds={'amplitude': [0, float('+Inf')]})
@@ -464,7 +464,7 @@ def optimal_extraction(image, variance_image, aperture_table,
     for i,row in enumerate(aperture_table):
         pos = row['position']
         width = int(row['width'])
-        info('Extracting aperture {:d} at position {:.1f}'.format(i, pos))
+        info('Extracting aperture {:d} at position {:.0f}'.format(i, pos))
 
         ymin = max([int(np.floor(pos-width)), 0])
         ymax = min([int(np.ceil(pos+width)), spectra2D.shape[0]])
@@ -511,17 +511,19 @@ def optimal_extraction(image, variance_image, aperture_table,
         hdulist.append(fits.PrimaryHDU(data=sp.filled(0), header=header))
         hdulist[0].header['APPOS'] = row['position']
         if plotfileout:
-            sigma = 1./variances[i]
+            sigma = np.sqrt(variances[i])
             pix = np.arange(0,sp.shape[0],1)
             wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron)*u.micron
-            pl.subplot(len(aperture_table), 1, i+1)
-            pl.fill_between(wavelengths, sp-sigma, sp+sigma,\
+            fillmin = sp-sigma
+            fillmax = sp+sigma
+            mask = np.isnan(fillmin) | np.isnan(fillmax) | np.isnan(sp)
+            pl.fill_between(wavelengths[~mask], fillmin[~mask], fillmax[~mask],\
                              label='uncertainty',\
-                             facecolor='black', alpha=0.2,\
+                             facecolor='black', alpha=0.1,\
                              linewidth=0,\
                              interpolate=True)
             pl.plot(wavelengths, sp, 'k-',
-                     label='Spectrum for Aperture {} at {}'.format(i, row['position']))
+                    label='Spectrum for Aperture {} at {:.0f}'.format(i, row['position']))
             pl.xlabel('Wavelength (microns)')
             pl.ylabel('Flux (e-/sec)')
             pl.xlim(wavelengths.value.min(),wavelengths.value.max())
@@ -542,8 +544,6 @@ def optimal_extraction(image, variance_image, aperture_table,
             fitsfilename = '{}_{:02d}{}'.format(bn, i, ext)
             hdulist.writeto(fitsfilename, clobber=True)
 
-    return hdulist
-
 
 ##-------------------------------------------------------------------------
 ## Extract Spectra Function
@@ -563,7 +563,6 @@ def extract_spectra(maskname, band, interactive=True):
         eps = fits.open(eps_file, 'readonly')[0]
 #         aperture_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
         aperture_plot_file = None
-        print('Finding apertures for {}'.format(objectname))
         aperture_tables[objectname] = find_apertures(eps, title=objectname,
                                                      interactive=interactive,
                                                      plotfile=aperture_plot_file)
@@ -577,14 +576,18 @@ def extract_spectra(maskname, band, interactive=True):
         spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
         fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
         info('Extracting spectra for {}'.format(objectname))
-        try:
-            hdulist = optimal_extraction(eps, sig, aperture_tables[objectname],
-                                         fitsfileout=fits_file,
-                                         plotfileout=spectrum_plot_file,
-                                         )
-        except Exception as e:
-            warning('Failed to extract spectra for {}'.format(objectname))
-            warning(e)
+        if len(aperture_tables[objectname]) == 0:
+            info('No apertures defined for {}. Skipping extraction.'.format(
+                 objectname))
+        else:
+            try:
+                optimal_extraction(eps, sig, aperture_tables[objectname],
+                                   fitsfileout=fits_file,
+                                   plotfileout=spectrum_plot_file,
+                                   )
+            except Exception as e:
+                warning('Failed to extract spectra for {}'.format(objectname))
+                warning(e)
 
 
 if __name__ == "__main__":
