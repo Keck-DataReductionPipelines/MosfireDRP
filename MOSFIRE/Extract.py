@@ -562,3 +562,11 @@ def extract_spectra(maskname, band, interactive=True):
         except Exception as e:
             warning('Failed to extract spectra for {}'.format(objectname))
             warning(e)
+
+
+if __name__ == "__main__":
+    cwd = os.path.abspath('.')
+    upone, band = os.path.split(cwd)
+    uptwo, date = os.path.split(upone)
+    upthree, maskname = os.path.split(uptwo)
+    extract_spectra(maskname, band, interactive=True)
