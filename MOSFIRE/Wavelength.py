@@ -71,8 +71,6 @@ from numpy.polynomial import chebyshev as CV
 
 from MOSFIRE import CSU, Fit, IO, Options, Filters, Detector
 from MosfireDrpLog import debug, info, warning, error
-#from IPython.Shell import IPShellEmbed
-#ipshell = IPShellEmbed()
 
 import pdb
 
@@ -1909,6 +1907,7 @@ class InteractiveSolution:
     def quit(self, x, y):
         """Quit and save the results """
         info("Closing figure")
+        self.fig.canvas.mpl_disconnect(self.cid)
         pl.close(self.fig)
 
 
