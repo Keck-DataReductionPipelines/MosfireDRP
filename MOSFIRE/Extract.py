@@ -414,9 +414,9 @@ def optimal_extraction(image, variance_image, aperture_table,
                        fitsfileout=None,
                        plotfileout=None,
                        plot=None):
-    '''Given a 2D spectrum image, a 2D variance image, and a table of trace
-    lines (e.g. as output by find_traces() above), this function will optimally
-    extract a 1D spectrum for each entry in the table of traces.
+    '''Given a 2D spectrum image, a 2D variance image, and a table of apertures
+    (e.g. as output by find_apertures() above), this function will optimally
+    extract a 1D spectrum for each entry in the table of apertures.
     
     
     '''
@@ -462,7 +462,7 @@ def optimal_extraction(image, variance_image, aperture_table,
     for i,row in enumerate(aperture_table):
         pos = row['position']
         width = int(row['width'])
-        info('Extracting data for trace {:d} at position {:.1f}'.format(i, pos))
+        info('Extracting data for aperture {:d} at position {:.1f}'.format(i, pos))
 
         ymin = max([int(np.floor(pos-width)), 0])
         ymax = min([int(np.ceil(pos+width)), spectra2D.shape[0]])
@@ -507,7 +507,7 @@ def optimal_extraction(image, variance_image, aperture_table,
 
         sp = spectra[i]
         hdulist.append(fits.PrimaryHDU(data=sp.filled(0), header=header))
-        hdulist[0].header['TRACEPOS'] = row['position']
+        hdulist[0].header['APPOS'] = row['position']
         if plotfileout:
             sigma = 1./variances[i]
             pix = np.arange(0,sp.shape[0],1)
@@ -519,7 +519,7 @@ def optimal_extraction(image, variance_image, aperture_table,
                              linewidth=0,\
                              interpolate=True)
             pl.plot(wavelengths, sp, 'k-',
-                     label='Spectrum for Trace {} at {}'.format(i, row['position']))
+                     label='Spectrum for Aperture {} at {}'.format(i, row['position']))
             pl.xlabel('Wavelength (microns)')
             pl.ylabel('Flux (e-/sec)')
             pl.xlim(wavelengths.value.min(),wavelengths.value.max())
@@ -533,7 +533,7 @@ def optimal_extraction(image, variance_image, aperture_table,
 
         var = variances[i]
         hdulist.append(fits.ImageHDU(data=var.filled(0), header=header))
-        hdulist[1].header['TRACEPOS'] = row['position']
+        hdulist[1].header['APPOS'] = row['position']
         hdulist[1].header['COMMENT'] = 'VARIANCE DATA'
         if fitsfileout:
             bn, ext = os.path.splitext(fitsfileout)
