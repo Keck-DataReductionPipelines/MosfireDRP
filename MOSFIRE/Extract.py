@@ -25,7 +25,7 @@ from MOSFIRE.MosfireDrpLog import info, debug, warning, error
 
 RN = Detector.RN * u.electron
 Gain = Detector.gain * u.electron/u.adu
-py3 = sys.version_info[0] > 2 #creates boolean value for test that Python major version > 2
+py3 = sys.version_info[0] > 2 #creates boolean value for test that Python > 2
 
 ##-------------------------------------------------------------------------
 ## Find Stellar Traces
@@ -287,7 +287,8 @@ class ApertureEditor(object):
                 response = raw_input("Please enter new half width in pixels: ")
             width = int(response)
             self.add_aperture(event.xdata, width)
-            print('Adding aperture at position {}, width {}'.format(event.xdata, width))
+            print('Adding aperture at position {}, width {}'.format(event.xdata,
+                  width))
         elif event.key == 'w':
             id = self.determine_id(event)
             self.set_width(id=id)
@@ -325,7 +326,7 @@ class ApertureEditor(object):
 ##-------------------------------------------------------------------------
 ## Find Stellar Traces
 ##-------------------------------------------------------------------------
-def find_apertures(hdu, guesses=[], title=None, interactive=True, plotfile=None):
+def find_apertures(hdu, guesses=[], title=None, interactive=True):
     '''Finds targets in spectra by simply collapsing the 2D spectra in the
     wavelength direction and fitting Gaussian profiles to the positional profile
     '''
@@ -487,10 +488,11 @@ def optimal_extraction(image, variance_image, aperture_table,
         f_opt = np.sum(P*DmS/V, axis=0)/f_new_denom
         var_fopt = np.sum(P, axis=0)/f_new_denom
         sig_fopt = np.sqrt(var_fopt)
+        typical_sigma = np.mean(sig_fopt[~np.isnan(sig_fopt)])
         spectra.append(f_opt)
         variances.append(var_fopt)
         info('  Typical level = {:.1f}'.format(np.mean(f_opt)))
-        info('  Typical sigma = {:.1f}'.format(np.mean(sig_fopt[~np.isnan(sig_fopt)])))
+        info('  Typical sigma = {:.1f}'.format(typical_sigma))
 
     mask = np.isnan(np.array(spectra)) | np.isnan(np.array(variances))
     spectra = np.ma.MaskedArray(data=np.array(spectra), mask=mask)
@@ -505,7 +507,7 @@ def optimal_extraction(image, variance_image, aperture_table,
         hdulist = fits.HDUList([])
         if plotfileout:
             fig = pl.figure(figsize=(16,6))
-            wavelength_units = getattr(u, w.to_header()['CUNIT1'])
+            wunit = getattr(u, w.to_header()['CUNIT1'])
 
         sp = spectra[i]
         hdulist.append(fits.PrimaryHDU(data=sp.filled(0), header=header))
@@ -513,17 +515,18 @@ def optimal_extraction(image, variance_image, aperture_table,
         if plotfileout:
             sigma = np.sqrt(variances[i])
             pix = np.arange(0,sp.shape[0],1)
-            wavelengths = w.wcs_pix2world(pix,1)[0] * wavelength_units.to(u.micron)*u.micron
+            wavelengths = w.wcs_pix2world(pix,1)[0]*wunit.to(u.micron)*u.micron
             fillmin = sp-sigma
             fillmax = sp+sigma
             mask = np.isnan(fillmin) | np.isnan(fillmax) | np.isnan(sp)
             pl.fill_between(wavelengths[~mask], fillmin[~mask], fillmax[~mask],\
                              label='uncertainty',\
-                             facecolor='black', alpha=0.1,\
+                             facecolor='black', alpha=0.2,\
                              linewidth=0,\
                              interpolate=True)
             pl.plot(wavelengths, sp, 'k-',
-                    label='Spectrum for Aperture {} at {:.0f}'.format(i, row['position']))
+                    label='Spectrum for Aperture {} at {:.0f}'.format(i,
+                          row['position']))
             pl.xlabel('Wavelength (microns)')
             pl.ylabel('Flux (e-/sec)')
             pl.xlim(wavelengths.value.min(),wavelengths.value.max())
@@ -561,25 +564,23 @@ def extract_spectra(maskname, band, interactive=True):
     for objectname in objectnames:
         eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
         eps = fits.open(eps_file, 'readonly')[0]
-#         aperture_plot_file = '{}_{}_{}_trace.png'.format(maskname, band, objectname)
-        aperture_plot_file = None
         aperture_tables[objectname] = find_apertures(eps, title=objectname,
                                                      interactive=interactive,
-                                                     plotfile=aperture_plot_file)
+                                                     )
     # Second, iterate through all slits again and perform spectral extraction
     # using the apertures defined above
     for objectname in objectnames:
         eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
         sig_file = '{}_{}_{}_sig.fits'.format(maskname, band, objectname)
-        eps = fits.open(eps_file, 'readonly')[0]
-        sig = fits.open(sig_file, 'readonly')[0]
         spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
         fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
-        info('Extracting spectra for {}'.format(objectname))
         if len(aperture_tables[objectname]) == 0:
             info('No apertures defined for {}. Skipping extraction.'.format(
                  objectname))
         else:
+            info('Extracting spectra for {}'.format(objectname))
+            eps = fits.open(eps_file, 'readonly')[0]
+            sig = fits.open(sig_file, 'readonly')[0]
             try:
                 optimal_extraction(eps, sig, aperture_tables[objectname],
                                    fitsfileout=fits_file,
