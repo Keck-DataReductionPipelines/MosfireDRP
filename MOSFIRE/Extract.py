@@ -144,7 +144,7 @@ class ApertureEditor(object):
     def set_position(self, id=None, pos=None):
         assert id is not None
         info('  Moving aperture {} from {:.0f} to {:.0f}'.format(id,
-             self.apertures[id]['position'], pos))
+             float(self.apertures[id]['position']), float(pos)))
         if pos:
             self.apertures[id]['position'] = pos
         else:
