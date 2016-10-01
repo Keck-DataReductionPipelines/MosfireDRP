@@ -190,13 +190,19 @@ class ApertureEditor(object):
                               bounds={'amplitude': [0, float('+Inf')]})
         fitter = fitting.LevMarLSQFitter()
         g = fitter(g0, self.xdata, self.ydata)
+        # Set maximum width of aperture to the YOFFSET parameter
         try:
-            offset = np.floor(float(self.header['YOFFSET'])/0.1799)
+            maxap = np.floor(float(self.header['YOFFSET'])/0.1799)
         except:
-            offset = self.data.shape[0]
+            maxap = self.data.shape[0]
+        # Set minimum width of aperture to an estimate of 3x the seeing
+        seeing = 0.5 # arcsec
+        minap = np.ceil(3*seeing/0.1799)
+        width = np.ceil(5.*g.param_sets[2][0])
+        width = max(min(maxap, width), minap)
         data = {'id': id,
                 'position': g.param_sets[1][0],
-                'width': min([np.ceil(5.*g.param_sets[2][0]), offset]),
+                'width': width,
                 'amplitude': g.param_sets[0][0],
                 'sigma': g.param_sets[2][0],
                }
