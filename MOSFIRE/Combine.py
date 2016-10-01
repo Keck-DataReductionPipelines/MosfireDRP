@@ -46,7 +46,7 @@ def imcombine(filelist, maskname, fname, options, sum_type):
 
         if hdr is None:
             hdr = this_hdr
-        hdr.update("fno%2.2i" % i, file, "--")
+        hdr["fno%2.2i" % i] = (file, "--")
         for card in cards:
             key, value, comment = (card.key, card.value, card.comment)
 
@@ -55,10 +55,12 @@ def imcombine(filelist, maskname, fname, options, sum_type):
 
             if len(key) > 8: key = 'HIERARCH ' + key
 
-            try: hdr.update(key, value, comment)
-            except ValueError: pass
+            try:
+                hdr[key] = (value, comment)
+            except ValueError:
+                pass
     
-    hdr.update('itime', itime, 'Itime for %i rectified images' % len(filelist))
+    hdr['itime'] = (itime, 'Itime for %i rectified images' % len(filelist))
     if sum_type == 'rate': ARR /= itime 
     if sum_type == 'ivar-rate': ARR = itime/ARR
     if sum_type == 'snr-rate': ARR /= itime

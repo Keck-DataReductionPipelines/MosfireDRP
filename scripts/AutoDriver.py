@@ -31,14 +31,18 @@ class Driver:
 
     def import_section(self):
         self.addLine("import os, time, logging")
+        self.addLine("logger = logging.getLogger(__name__)")
+        self.addLine("")
         self.addLine("import MOSFIRE")
         self.addLine("from MOSFIRE import Background, Combine, Detector, Flats, IO, Options, Rectify, Wavelength, Extract")
         self.addLine("from MOSFIRE.MosfireDrpLog import info, debug, warning, error")
-        self.addLine("logger = logging.getLogger(__name__)")
+        self.addLine("")
         self.addLine("import numpy as np")
-        self.addLine("from matplotlib import pyplot as pl")
-        self.addLine("from astropy.io import fits as pf")
         self.addLine("np.seterr(all='ignore')")
+#         self.addLine("")
+#         self.addLine("from matplotlib import pyplot as pl")
+#         self.addLine("from astropy.io import fits as pf")
+        self.addLine("")
         self.addLine("flatops = Options.flat")
         self.addLine("waveops = Options.wavelength")
         self.addLine("")
@@ -252,15 +256,17 @@ class Driver:
         self.addLine("")
 
     def printExtraction(self):
-        self.addLine('Extract.extract_spectra(maskname, band, interactive=True, combine=True)')
+        self.addLine('Extract.extract_spectra(maskname, band, interactive=(not bypassflag))')
 
 
     def printHeader(self):
         now = time.strftime("%c")
-        self.addLine("#Driver file automatically generated on "+str(now))
-        self.addLine("#For questions and comments, email mosfiredrp@gmail.com, submit a ticket on the ticketing system, or contact Luca Rizzi @ WMKO")
+        self.addLine("# Driver file automatically generated on "+str(now))
         self.addLine("")
-                     
+        self.addLine("# If you have questions, please submit a ticket on the github issue page:")
+        self.addLine("# https://github.com/Keck-DataReductionPipelines/MosfireDRP/issues")
+        self.addLine("# Alternatively, email the developers at mosfiredrp@gmail.com")
+        self.addLine("")
         
         
     def CloseFile(self):
@@ -273,51 +279,54 @@ def OffsetPairs():
     offsetFiles = glob.glob("Offset_*.txt")
     # remove Offset_ and remote .txt
     tmpOffsets = [off.replace("Offset_","").replace(".txt","") for off in offsetFiles]
-    # for each name, separate using _ as a separator
-    slitmaskOffset = []
-    processedTargets= []
-    targets_and_offsets= {}
-    for off in tmpOffsets:
-        # separate using _
-        off_array = off.split('_')
-        # the first value of the array is the offset value
+    if len(tmpOffsets) == 0:
+        return {}, ''
+    else:
+        # for each name, separate using _ as a separator
+        slitmaskOffset = []
+        processedTargets= []
+        targets_and_offsets= {}
+        for off in tmpOffsets:
+            # separate using _
+            off_array = off.split('_')
+            # the first value of the array is the offset value
 
-        # if the array has only one element, this is a slitmask (Offset_1.5.txt), add this value to the slitmask offsets
-        if len(off_array)==1:
-            type = 'slitmask'
-            if "slitmask" in targets_and_offsets:
-                tmp = targets_and_offsets["slitmask"]
-                tmp.append(float(off_array[0]))
-                targets_and_offsets["slitmask"]=tmp
+            # if the array has only one element, this is a slitmask (Offset_1.5.txt), add this value to the slitmask offsets
+            if len(off_array)==1:
+                type = 'slitmask'
+                if "slitmask" in targets_and_offsets:
+                    tmp = targets_and_offsets["slitmask"]
+                    tmp.append(float(off_array[0]))
+                    targets_and_offsets["slitmask"]=tmp
+                else:
+                    targets_and_offsets["slitmask"]=[float(off_array[0]),]
             else:
-                targets_and_offsets["slitmask"]=[float(off_array[0]),]
-        else:
-            # if the array has more than one element, we are in a long2pos or longslit mode
-            # if the last element is a PosC or PosA, then it's long2pos
-            #print off_array
-            if off_array[-1] in ['PosA','PosC']:
-                type = 'long2pos'
-                # check if we have already seen this target
-                tname = "_".join(off_array[1:-1])
-                # we are doing this for cases in which the file is Offset_-7_HIP87_7.25_PosA.txt (the _ in the file name is a problem)
-            else:
-                type = 'longslit'
-                tname = "_".join(off_array[1:])
+                # if the array has more than one element, we are in a long2pos or longslit mode
+                # if the last element is a PosC or PosA, then it's long2pos
+                #print off_array
+                if off_array[-1] in ['PosA','PosC']:
+                    type = 'long2pos'
+                    # check if we have already seen this target
+                    tname = "_".join(off_array[1:-1])
+                    # we are doing this for cases in which the file is Offset_-7_HIP87_7.25_PosA.txt (the _ in the file name is a problem)
+                else:
+                    type = 'longslit'
+                    tname = "_".join(off_array[1:])
 
-            if tname not in processedTargets:
-                # add the new target to the list
-                processedTargets.append(tname)
-                # add the current offset to the list of offsets files for this target
-            if tname in targets_and_offsets:
-                tmp=targets_and_offsets[tname]
-                tmp.append(float(off_array[0]))
-                #print "adding new offset to target "+str(tname)
-                targets_and_offsets[tname]=tmp
-            else:
-                #print "creating new offset set for target "+str(tname)
-                targets_and_offsets[tname]=[float(off_array[0]),]
+                if tname not in processedTargets:
+                    # add the new target to the list
+                    processedTargets.append(tname)
+                    # add the current offset to the list of offsets files for this target
+                if tname in targets_and_offsets:
+                    tmp=targets_and_offsets[tname]
+                    tmp.append(float(off_array[0]))
+                    #print "adding new offset to target "+str(tname)
+                    targets_and_offsets[tname]=tmp
+                else:
+                    #print "creating new offset set for target "+str(tname)
+                    targets_and_offsets[tname]=[float(off_array[0]),]
 
-    return targets_and_offsets,type
+        return targets_and_offsets,type
 
 def SetupFiles(target=None, offsets=None, type=None):
     # convert numbers such as 1.0 to 1, but leaves 1.5 as 1.5
@@ -402,8 +411,6 @@ if len(sys.argv) == 3:
         sys.exit()
 
 targets_and_offsets,type = OffsetPairs()
-print targets_and_offsets
-print type
 
 
 if 'slitmask' in targets_and_offsets:
@@ -421,7 +428,6 @@ if 'slitmask' in targets_and_offsets:
     mydriver.printRectification()
     mydriver.printExtraction()
     mydriver.CloseFile()
-
 elif type is 'long2pos' or type is 'longslit':
     Targets = targets_and_offsets.keys()
     for target in Targets:
@@ -444,3 +450,5 @@ elif type is 'long2pos' or type is 'longslit':
         mydriver.printBackground()
         mydriver.printRectification()
         mydriver.CloseFile()
+else:
+    print('No data found in Offsets*txt files.  No driver file generated')

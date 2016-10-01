@@ -60,19 +60,17 @@ try:
     from astropy.io import fits as pf
 except:
     import pyfits as pf
+from matplotlib import pyplot as pl
 
 from scipy.interpolate import interp1d
 from scipy import signal 
 from scipy import optimize
-# from matplotlib.widgets import Button
+from matplotlib.widgets import Button
 from numpy.polynomial import chebyshev as CV
 
-from matplotlib import pyplot as pl
 
 from MOSFIRE import CSU, Fit, IO, Options, Filters, Detector
 from MosfireDrpLog import debug, info, warning, error
-#from IPython.Shell import IPShellEmbed
-#ipshell = IPShellEmbed()
 
 import pdb
 
@@ -1916,9 +1914,9 @@ class InteractiveSolution:
 
     def quit(self, x, y):
         """Quit and save the results """
-        if self.fig is not None:
-            info("Closing figure")
-            pl.close(self.fig)
+        info("Closing figure")
+        self.fig.canvas.mpl_disconnect(self.cid)
+        pl.close(self.fig)
 
 
     def reset(self, x, y):

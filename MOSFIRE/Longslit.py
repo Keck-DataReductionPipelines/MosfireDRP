@@ -36,29 +36,29 @@ def rectify(dname, lamdat, A, B, maskname, band, wavoptions,
         f = interp1d(ll[ok], ss[ok], bounds_error=False)
         rectified[i,:] = f(ll_fid)
 
-    header.update("wat0_001", "system=world")
-    header.update("wat1_001", "wtype=linear")
-    header.update("wat2_001", "wtype=linear")
-    header.update("dispaxis", 1)
-    header.update("dclog1", "Transform")
-    header.update("dc-flag", 0)
-    header.update("ctype1", "AWAV")
-    header.update("cunit1", "Angstrom")
-    header.update("crval1", ll_fid[0])
-    header.update("crval2", 0)
-    header.update("crpix1", 1)
-    header.update("crpix2", 1)
-    header.update("cdelt1", 1)
-    header.update("cdelt2", 1)
-    header.update("cname1", "angstrom")
-    header.update("cname2", "pixel")
-    header.update("cd1_1", dlam)
-    header.update("cd1_2", 0)
-    header.update("cd2_1", 0)
-    header.update("cd2_2", 1)
+    header["wat0_001"] = "system=world"
+    header["wat1_001"] = "wtype=linear"
+    header["wat2_001"] = "wtype=linear"
+    header["dispaxis"] = 1
+    header["dclog1"] = "Transform"
+    header["dc-flag"] = 0
+    header["ctype1"] = "AWAV"
+    header["cunit1"] = "Angstrom"
+    header["crval1"] = ll_fid[0]
+    header["crval2"] = 0
+    header["crpix1"] = 1
+    header["crpix2"] = 1
+    header["cdelt1"] = 1
+    header["cdelt2"] = 1
+    header["cname1"] = "angstrom"
+    header["cname2"] = "pixel"
+    header["cd1_1"] = dlam
+    header["cd1_2"] = 0
+    header["cd2_1"] = 0
+    header["cd2_2"] = 1
 
 
-    header.update("object", "rectified [eps]")
+    header["object"] = "rectified [eps]"
     IO.writefits(rectified, maskname, "rectified_%s" % (dname), 
         wavoptions, header=header, overwrite=True, lossy_compress=True)
 

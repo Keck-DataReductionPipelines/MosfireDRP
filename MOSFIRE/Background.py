@@ -668,7 +668,7 @@ def background_subtract_helper(slitno):
     ss = slit[train_roi].flatten()
     ys = Y[train_roi].flatten()
 
-    dl = np.ma.median(np.diff(lslit[lslit.shape[0]/2,:]))[0]
+    dl = np.ma.median(np.diff(lslit[lslit.shape[0]/2,:]))
     if dl == 0:
         return {"ok": False}
 
