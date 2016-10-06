@@ -548,7 +548,9 @@ def check_wavelength_roi(maskname, band, skyfiles, arcfiles, LROI, options, no_c
     return LROI
 
 
-def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, longslit=None,argon=None, extension=None, bypass=False,short_exp=False):
+def fit_lambda_interactively(maskname, band, wavenames, options, neon=None,
+                             longslit=None,argon=None, extension=None,
+                             bypass=False, noninteractive=False, short_exp=False):
     """Fit the one-dimensional wavelength solution to each science slit
     
     Args:
@@ -566,10 +568,14 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
             row_position is the location to perform the interactive solution over. This
                 row should be clean of any contaminatring light
 
-        bypass: Bypass the manual fitting and run an autofit routine.
+        noninteractive: Bypass the manual fitting and run an autofit routine.
+        bypass: Bypass the manual fitting and run an autofit routine.  (This is 
+                a duplicate of noninteractive above for backward compatibility).
 
         """
 
+    ## Set noninteractive mode if either noninteractive or bypass is set
+    noninteractive = noninteractive or bypass
 
     np.seterr(all="ignore")
 
@@ -600,7 +606,10 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     tock = time.time()
     
     outfilename = fn
-    fig = pl.figure(1,figsize=(16,8))
+    if noninteractive is False:
+        fig = pl.figure(1,figsize=(16,8))
+    else:
+        fig = None
     info("Started interactive solution")
     if longslit is not None and longslit['mode'] is "longslit":
         starting_pos = longslit["row_position"]
@@ -610,10 +619,10 @@ def fit_lambda_interactively(maskname, band, wavenames, options, neon=None, long
     debug("using line list")
     debug(linelist)
     II = InteractiveSolution(fig, mfits, linelist, options, 1,
-        outfilename, solutions=solutions, bypass=bypass, starting_pos=starting_pos)
-    info("Waiting for user input")
+        outfilename, solutions=solutions, noninteractive=noninteractive, starting_pos=starting_pos)
+    info( "Waiting")
 
-    if bypass is False:
+    if noninteractive is False:
         pl.ioff()
         pl.show()
         #pl.draw()
@@ -1621,7 +1630,7 @@ class InteractiveSolution:
     first_time = True
 
     def __init__(self, fig, mfits, linelist, options, slitno, outfilename, 
-            solutions=None,bypass=False, starting_pos=None):
+            solutions=None, noninteractive=False, starting_pos=None):
         self.header = mfits[0]
         self.data = mfits[1]
         self.bs = mfits[2]
@@ -1631,7 +1640,7 @@ class InteractiveSolution:
         self.fig = fig
         self.outfilename = outfilename
         self.starting_pos = starting_pos
-        self.bypass = bypass
+        self.noninteractive = noninteractive
         self.pix = np.arange(2048)
         band = self.header["filter"].rstrip()
         self.xrng = Filters.hpp[band][:]
@@ -1645,7 +1654,7 @@ class InteractiveSolution:
         else:
             self.solutions = solutions
 
-        if self.bypass:
+        if self.noninteractive:
             self.setup()
             self.fit_event(0,0)
             #self.nextobject(0,0)  ### the call to next object is built-in in fit_event
@@ -1654,13 +1663,12 @@ class InteractiveSolution:
                 self.fit_event(0,0)
                 self.nextobject(0,0)
         else:
+            # follow line prevents window from going full screen when the
+            # 'f'it button is pressed.
+            pl.rcParams['keymap.fullscreen'] = ''
             self.cid = self.fig.canvas.mpl_connect('key_press_event', self)
             self.setup()
             self.fit_event(0,0)
-
-        # follow line prevents window from going full screen when the
-        # 'f'it button is pressed.
-        pl.rcParams['keymap.fullscreen'] = ''
 
     
     def setup(self):
@@ -1732,17 +1740,17 @@ class InteractiveSolution:
 
         self.ll = CV.chebval(self.pix, self.cfit)
 
-        if self.bypass:
+        if self.noninteractive:
             pass
         else:
             info("Launching graphics display.    ")
             self.redraw()
 
-    def toggle_bypass(self,x,y):
+    def toggle_noninteractive(self,x,y):
         info("############ NON INTERACTIVE MODE ENABLED ###########")
         info("# From now on, the fit will proceed automatically   #")
         info("#####################################################")
-        self.bypass = True
+        self.noninteractive = True
         self.quit(0,0)
         self.nextobject(0,0)
         
@@ -1885,7 +1893,7 @@ class InteractiveSolution:
         if self.slitno > len(self.bs.ssl): 
             self.done = True
             self.slitno -= 1
-            if self.bypass is False:
+            if self.noninteractive is False:
                 self.draw_done()
 
         info("Saving to: "+str(self.outfilename))
@@ -1948,7 +1956,7 @@ class InteractiveSolution:
 
         # Calculate current std error
         error = np.std(deltas[np.isfinite(deltas)])
-        if self.sigma_clip is True or self.bypass:
+        if self.sigma_clip is True or self.noninteractive:
             # prepare a sigma tolerance (reject values of deltas > tolerance * sigma)
             tolerance = 3
             # if the std error is > 0.10, iteratively reject lines
@@ -1995,7 +2003,7 @@ class InteractiveSolution:
 
         info('Stored slit number: {}'.format(str(self.solutions[self.slitno-1]['slitno'])))
 
-        if self.bypass is False:
+        if self.noninteractive is False:
             self.redraw()
         else:
             self.nextobject(0,0)
@@ -2009,7 +2017,7 @@ class InteractiveSolution:
 
         actions_mouseless = {".": self.fastforward, "n": self.nextobject, "p":
                 self.prevobject, "q": self.quit, "r": self.reset, "f":
-                self.fit_event, "k": self.toggle_sigma_clip, "\\": self.fit_event, "b": self.toggle_bypass}
+                self.fit_event, "k": self.toggle_sigma_clip, "\\": self.fit_event, "b": self.toggle_noninteractive}
 
         actions = { "c": self.shift, "d": self.drop_point,
                 "z": self.zoom, "x": self.unzoom, "s": self.savefig}

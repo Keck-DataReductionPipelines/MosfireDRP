@@ -19,8 +19,8 @@ waveops = Options.wavelength
 maskname = 'LONGSLIT-3x0.7'
 band = 'H'
 
-#Set bypass to True to autofit wavelenth solution instead of manually fitting.
-bypassflag=False
+#Set noninteractive to True to autofit wavelenth solution instead of manually fitting.
+noninteractiveflag=False
 # modify the target name to match your observations
 obsfiles=['Offset_5_HIP17971.txt','Offset_-5_HIP17971.txt']
 target="HIP17971"
@@ -32,7 +32,7 @@ longslit = {'yrange':[968,1100],'row_position':1034,'mode':'longslit'}
 Flats.handle_flats('Flat.txt', maskname, band, flatops,longslit=longslit)
 
 Wavelength.imcombine(obsfiles, maskname, band, waveops)
-Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops,longslit=longslit, bypass=bypassflag)
+Wavelength.fit_lambda_interactively(maskname, band, obsfiles,waveops,longslit=longslit, noninteractive=noninteractiveflag)
 Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles,waveops,longslit=longslit)
 Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops,longslit=longslit)
 
