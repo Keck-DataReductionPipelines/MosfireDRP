@@ -256,7 +256,7 @@ class Driver:
         self.addLine("")
 
     def printExtraction(self):
-        self.addLine('Extract.extract_spectra(maskname, band, interactive=(not bypassflag))')
+        self.addLine('Extract.extract_spectra(maskname, band, interactive=(not noninteractiveflag))')
 
 
     def printHeader(self):
