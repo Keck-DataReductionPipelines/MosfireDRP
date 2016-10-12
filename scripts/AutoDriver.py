@@ -79,6 +79,8 @@ class Driver:
         self.addLine("")
                      
     def isEmpty(self,file):
+        if not os.path.exists(file):
+            return True
         fname = IO.list_file_to_strings(file)
         if len(fname):
             return False
@@ -256,7 +258,14 @@ class Driver:
         self.addLine("")
 
     def printExtraction(self):
-        self.addLine('Extract.extract_spectra(maskname, band, interactive=(not noninteractiveflag))')
+        if self.type is 'slitmask':
+            self.addLine('Extract.extract_spectra(maskname, band, interactive=(not noninteractiveflag))')
+        elif self.type is 'longslit':
+            self.addLine('Extract.extract_spectra(maskname, band, target=target, interactive=(not noninteractiveflag))')
+        elif self.type is 'long2pos':
+            self.addLine('Extract.extract_spectra(maskname, band, target=target, interactive=(not noninteractiveflag))')
+        elif self.type is 'long2pos_specphot':
+            self.addLine('Extract.extract_spectra(maskname, band, target=target, interactive=(not noninteractiveflag))')
 
 
     def printHeader(self):
