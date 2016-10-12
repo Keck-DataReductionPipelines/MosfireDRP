@@ -15,8 +15,6 @@ import scipy as sp
 import scipy.ndimage
 from scipy import interpolate as II
 
-import pdb
-
 import MOSFIRE
 from MOSFIRE import CSU, Fit, IO, Options, Filters, Detector, Wavelength
 from MosfireDrpLog import debug, info, warning, error
@@ -36,7 +34,8 @@ def rem_header_key(header, key):
 def guess_plan_from_positions(posnames):
     ''' Based on a Set() of position names guess the observing plan.
         e.g., position names Set(["A", "B", "A'", "B'"]) -> "A-B", "A'-B'" '''
-    if posnames == set(["A", "B"]): return [["A", "B"]]
+    if posnames == set(["A", "B"]):
+        return [["A", "B"]]
     elif posnames == set(["A'", "B'", "A", "B"]): 
         return [["A", "B"], ["A'", "B'"]]
     else:
@@ -701,13 +700,17 @@ def background_subtract_helper(slitno):
             delta = dl*0.9
             knots = np.arange(knotstart, knotend, delta)
             bspline = II.splrep(ls[OK], ss[OK], k=5, task=-1, t=knots)
-        except:
+        except Error as e:
+            warning('Failed to fit spline with delta = {:5f}'.format(delta))
+            warning(e.strerror)
             delta = dl*1.4
+            info('Trying with delta = {:5f}'.format(delta))
             knots = np.arange(knotstart, knotend, delta)
             try:
                 bspline = II.splrep(ls[OK], ss[OK], k=5, task=-1, t=knots)
-            except:
+            except Error as e:
                 warning("Could not construct spline on slit "+str(slitno))
+                warning(e.strerror)
                 return {"ok": False}
 
         ll = lslit.flatten()
