@@ -557,29 +557,44 @@ def optimal_extraction(image, variance_image, aperture_table,
 ##-------------------------------------------------------------------------
 ## Extract Spectra Function
 ##-------------------------------------------------------------------------
-def extract_spectra(maskname, band, interactive=True):
+def extract_spectra(maskname, band, interactive=True, target='default'):
 
-    ## Get objectnames from slit edges
-    edges = np.load('slit-edges_{}.npy'.format(band))
-    objectnames = [edge['Target_Name'] for edge in edges[:-1]]
+    if target == 'default':
+        ## Get objectnames from slit edges
+        edges = np.load('slit-edges_{}.npy'.format(band))
+        objectnames = [edge['Target_Name'] for edge in edges[:-1]]
+        eps_files = ['{}_{}_{}_eps.fits'.format(maskname, band, objectname)
+                     for objectname in objectnames]
+        sig_files = ['{}_{}_{}_sig.fits'.format(maskname, band, objectname)
+                     for objectname in objectnames]
+        spectrum_plot_files = ['{}_{}_{}.png'.format(maskname, band, objectname)
+                               for objectname in objectnames]
+        fits_files = ['{}_{}_{}_1D.fits'.format(maskname, band, objectname)
+                      for objectname in objectnames]
+    else:
+        objectnames = [target]
+        eps_files = ['{}_{}_eps.fits'.format(target, band)]
+        sig_files = ['{}_{}_sig.fits'.format(target, band)]
+        spectrum_plot_files = ['{}_{}.png'.format(target, band)]
+        fits_files = ['{}_{}_1D.fits'.format(target, band)]
 
     aperture_tables = {}
     if interactive:
         print_instructions()
     # First, iterate through all slits and define the apertures to extract
-    for objectname in objectnames:
-        eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
+    for i,eps_file in enumerate(eps_files):
+        objectname = objectnames[i]
         eps = fits.open(eps_file, 'readonly')[0]
         aperture_tables[objectname] = find_apertures(eps, title=objectname,
                                                      interactive=interactive,
                                                      )
     # Second, iterate through all slits again and perform spectral extraction
     # using the apertures defined above
-    for objectname in objectnames:
-        eps_file = '{}_{}_{}_eps.fits'.format(maskname, band, objectname)
-        sig_file = '{}_{}_{}_sig.fits'.format(maskname, band, objectname)
-        spectrum_plot_file = '{}_{}_{}.png'.format(maskname, band, objectname)
-        fits_file = '{}_{}_{}_1D.fits'.format(maskname, band, objectname)
+    for i,eps_file in enumerate(eps_files):
+        objectname = objectnames[i]
+        sig_file = sig_files[i]
+        spectrum_plot_file = spectrum_plot_files[i]
+        fits_file = fits_files[i]
         if len(aperture_tables[objectname]) == 0:
             info('No apertures defined for {}. Skipping extraction.'.format(
                  objectname))

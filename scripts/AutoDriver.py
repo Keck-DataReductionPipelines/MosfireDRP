@@ -449,6 +449,7 @@ elif type is 'long2pos' or type is 'longslit':
         mydriver.printWavelengthFit()
         mydriver.printBackground()
         mydriver.printRectification()
+        mydriver.printExtraction()
         mydriver.CloseFile()
 else:
     print('No data found in Offsets*txt files.  No driver file generated')
