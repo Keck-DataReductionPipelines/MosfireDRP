@@ -180,36 +180,34 @@ def handle_file_list(output_file, files):
         print "%s: already exists, skipping" % output_file 
 #         pass
 
-    print "\t", output_file
-    f = open(output_file, "w")
-    f.write(descriptive_blurb())
-    if len(files) == 0:
-        f.close()
-        return
+    if len(files) > 0:
+        with open(output_file, "w") as f:
+            f = open(output_file, "w")
+            f.write(descriptive_blurb())
 
-    picker = lambda x: x
-    if len(files[0]) == 2: picker = lambda x: x[0]
+            picker = lambda x: x
+            if len(files[0]) == 2: picker = lambda x: x[0]
 
-    # Identify unique path to files:
-    paths = [os.path.dirname(picker(file)) for file in files]
-    paths = list(set(paths))
+            # Identify unique path to files:
+            paths = [os.path.dirname(picker(file)) for file in files]
+            paths = list(set(paths))
 
-    if len(paths) == 1:
-        path_to_all = paths[0]
-        converter = os.path.basename
-        f.write("%s # Abs. path to files [optional]\n" % path_to_all)
+            if len(paths) == 1:
+                path_to_all = paths[0]
+                converter = os.path.basename
+                f.write("%s # Abs. path to files [optional]\n" % path_to_all)
+            else:
+                converter = lambda x: x
+
+
+            for path in files:
+                if len(path) == 2:  to_write = "%s # %s s\n" % (converter(path[0]), path[1])
+                else:               to_write = "%s\n" % converter(path)
+
+                f.write("%s" % to_write)
     else:
-        converter = lambda x: x
+        print('No files to write for {}'.format(output_file))
 
-
-    for path in files:
-        if len(path) == 2:  to_write = "%s # %s s\n" % (converter(path[0]), path[1])
-        else:               to_write = "%s\n" % converter(path)
-
-        f.write("%s" % to_write)
-            
-
-    f.close()
 
 def handle_date_and_filter(mask, date, filter, mask_info):
 
