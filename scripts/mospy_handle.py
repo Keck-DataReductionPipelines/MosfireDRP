@@ -53,10 +53,10 @@ for fname in files:
         print "Missing header file in: %s" % fname
 
     try:
-        print "%(datafile)12s %(object)40s %(truitime)6.1f s %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s" % (header)
+        print "%(datafile)12s %(object)35s %(truitime)6.1fs %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s" % (header)
     except:
         try:
-            print "%(datafile)12s %(object)25s %(truitime)6.1f s %(lamps)3s %(filter)6s %(mgtname)7s" % (header)
+            print "%(datafile)12s %(object)25s %(truitime)6.1fs %(lamps)3s %(filter)6s %(mgtname)7s" % (header)
         except:
             print "%s Skipped" % fname
             continue
@@ -205,8 +205,6 @@ def handle_file_list(output_file, files):
                 else:               to_write = "%s\n" % converter(path)
 
                 f.write("%s" % to_write)
-    else:
-        print('No files to write for {}'.format(output_file))
 
 
 def handle_date_and_filter(mask, date, filter, mask_info):
