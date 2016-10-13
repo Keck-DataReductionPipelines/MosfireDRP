@@ -568,7 +568,7 @@ def imarith(operand1, op, operand2, result):
         header['history'] = 'Other than exposure time which was edited'
         header['EXPTIME'] = exptime
 
-    hdu = fits.PrimaryHDU(data=data, header=header)
+    hdu = pf.PrimaryHDU(data=data, header=header)
     hdu.writeto(result)
 
 
