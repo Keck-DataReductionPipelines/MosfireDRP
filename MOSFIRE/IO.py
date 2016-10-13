@@ -554,8 +554,8 @@ def imarith(operand1, op, operand2, result):
     operation = { "+": operator.add, "-": operator.sub,\
                   "*": operator.mul, "/": operator.truediv}
 
-    hdulist1 = fits.open(operand1, 'readonly')
-    hdulist2 = fits.open(operand2, 'readonly')
+    hdulist1 = pf.open(operand1, 'readonly')
+    hdulist2 = pf.open(operand2, 'readonly')
     data = operation[op](hdulist1[0].data, hdulist2[0].data)
     header = hdulist1[0].header
     header['history'] = 'imarith {} {} {}'.format(operand1, op, operand2)
