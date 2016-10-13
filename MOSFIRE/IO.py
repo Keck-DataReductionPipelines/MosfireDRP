@@ -452,11 +452,11 @@ def readmosfits(fname, options, extension=None):
         error("Improper MOSFIRE FITS File: %s" % path)
         raise Exception("Improper MOSFIRE FITS File: %s" % path)
 
-    if np.abs(header["REGTMP1"] - 77) > 0.1:
-        warning("**************************************")
-        warning("The temperature of the detector is %3.3f where it "
-                "should be 77.000 deg. Please notify Keck support staff." %
-                header["REGTMP1"])
+#     if np.abs(header["REGTMP1"] - 77) > 0.1:
+#         warning("**************************************")
+#         warning("The temperature of the detector is %3.3f where it "
+#                 "should be 77.000 deg. Please notify Keck support staff." %
+#                 header["REGTMP1"])
 
     ssl = ssl[ssl.field("Slit_Number") != ' ']
     msl = msl[msl.field("Slit_Number") != ' ']
