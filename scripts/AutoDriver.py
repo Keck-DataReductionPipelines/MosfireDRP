@@ -67,8 +67,10 @@ class Driver:
         offsetfile = self.offsetFiles[0]
         fname = IO.list_file_to_strings(offsetfile)
 
-        if os.path.isabs(fname[0]): path = fname[0]
-        else: path = os.path.join(fname_to_path(fname[0]), fname[0])
+        if os.path.isabs(fname[0]):
+            path = fname[0]
+        else:
+            path = os.path.join(fname_to_path(fname[0]), fname[0])
         hdulist = pf.open(path)
         header = hdulist[0].header
 
