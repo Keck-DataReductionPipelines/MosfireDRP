@@ -5,13 +5,13 @@ MOSFIRE 'handle' command:
 
 (c) npk - Dec 2013
 '''
-import MOSFIRE
 import MOSFIRE.IO as IO
 import os
 import numpy as np
 import sys
 import glob
 
+from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 
 if len(sys.argv) < 3:
     print '''Usage: mospy handle [target]'''
@@ -19,6 +19,7 @@ if len(sys.argv) < 3:
 
 ## Output the file list to a text file for later examination
 if os.path.exists('filelist.txt'):
+    debug('Removing old filelist.txt')
     os.remove('filelist.txt')
 fl = open('filelist.txt', 'write')
 
@@ -29,10 +30,12 @@ for i in range(1, len(sys.argv)):
 
 masks = {}
 
+
+info('Examining {} files'.format(len(files)))
 for fname in files:
 
     try:
-        header = MOSFIRE.IO.readheader(fname)
+        header = IO.readheader(fname)
     except IOError, err:
         fl.write("Couldn't IO %s\n" % fname)
         continue
@@ -215,11 +218,12 @@ def handle_file_list(output_file, files):
             else:
                 converter = lambda x: x
 
-
+            info('Writing {} files to {}'.format(len(files), output_file))
             for path in files:
-                if len(path) == 2:  to_write = "%s # %s s\n" % (converter(path[0]), path[1])
-                else:               to_write = "%s\n" % converter(path)
-
+                if len(path) == 2:
+                    to_write = "%s # %s s\n" % (converter(path[0]), path[1])
+                else:
+                    to_write = "%s\n" % converter(path)
                 f.write("%s" % to_write)
 
 
