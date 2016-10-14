@@ -14,13 +14,14 @@ __Important Note__: The [Ureka package has been deprecated](http://ssb.stsci.edu
 * Improved slit tracing using a better thresholding algorithm
 * An updated (and now web based) [instruction manual](http://keck-datareductionpipelines.github.io/MosfireDRP/)
 * The DRP now performs optimal spectral extraction [Horne 1986](http://adsabs.harvard.edu/abs/1986PASP...98..609H) and outputs a 1D spectrum.  Please note that this is intended as a quick look tool, not for final science use.
+* The `handle` step now writes `filelist.txt` which contains a list of all the files processed by `handle` instead of printing that output to the screen.  The file also contains messages for files not categorized for processing explaining why.  In addition, `handle` now no longer writes list files with no content.  This is intended to make it easier to quickly see what files are available for reduction.
+
 
 ### Improvements and bug fixes
 
 * Changed dependence on `pylab` to `matplotlib.pyplot`
 * Uses `astropy.io.fits` instead of `pyfits` when available
 * Adjust log messages to send more to DEBUG instead of INFO.  Leads to less clutter in messages visible to user.
-
 
 
 ## Changes in Version 2015A
