@@ -180,7 +180,8 @@ class ApertureEditor(object):
         maxval = max(valid_profile)
         maxind = valid_profile.index(maxval)
         info('  Guessing at aperture near position {}'.format(maxind))
-        self.fit_trace(maxind, maxval)
+        return (maxind, maxval)
+#         self.fit_trace(maxind, maxval)
 
 
     def fit_trace(self, pos, amp):
@@ -342,7 +343,24 @@ def find_apertures(hdu, guesses=[], title=None, interactive=True):
         ap.connect()
 
     if (guesses == []) or (guesses is None):
-        ap.guess()
+        # Guess at object position where specified in header by CRVAL2
+        pos = int(-hdu.header['CRVAL2'])
+        amp = ap.ydata[int(pos)]
+        # Estimate signal to noise of profile at that spot
+        # First, clip top and bottom 10 percent of pixels to roughly remove
+        # contribution by a single bright source.
+        pct = 10
+        pctile = (np.percentile(ap.ydata, pct), np.percentile(ap.ydata, 100-pct))
+        w = np.where((ap.ydata > pctile[0]) & (ap.ydata < pctile[1]))
+        # Use the unclipped pixels to estimate signal to noise.
+        std = np.std(ap.ydata[w])
+        snr = amp/std
+        # If SNR is strong, fit a gaussian, if not, just blindly add an aperture
+        if snr > 5:
+            ap.fit_trace(pos, amp)
+        else:
+            width = 10
+            ap.add_aperture(pos, width)
     else:
         for guess in guesses:
             if len(guess) == 1:
