@@ -933,11 +933,10 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
 
         if smooth == True:
             xr = np.arange(len(lp))
-
-            for i in xrange(lams.shape[1]):
-                ff = np.poly1d(Fit.polyfit_clip(xr, lams[lp, i], 3))
-                d = lams[lp,i] - ff(xr)
-                lams[lp, i] = ff(xr)
+            for k in xrange(lams.shape[1]):
+                ff = np.poly1d(Fit.polyfit_clip(xr, lams[lp, k], 3))
+                d = lams[lp,k] - ff(xr)
+                lams[lp, k] = ff(xr)
 
 
 #         if False == True:
