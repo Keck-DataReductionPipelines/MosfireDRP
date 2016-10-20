@@ -174,8 +174,8 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
     Convert a flat image into a flat field
     '''
 
-    def pixel_min(y): return np.floor(np.min(y))
-    def pixel_max(y): return np.ceil(np.max(y))
+    def pixel_min(y): return int(np.floor(np.min(y)))
+    def pixel_max(y): return int(np.ceil(np.max(y)))
 
     def collapse_flat_box(dat):
         '''Collapse data to the spectral axis (0)'''
@@ -238,8 +238,8 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
             pdb.set_trace()
 
         for i in range(hpps[0], hpps[1]):
-            top = np.floor(tf(i))
-            bottom = np.ceil(bf(i))
+            top = int(np.floor(tf(i)))
+            bottom = int(np.ceil(bf(i)))
             
             data[top:bottom, i] = flat[top:bottom,i]
 
