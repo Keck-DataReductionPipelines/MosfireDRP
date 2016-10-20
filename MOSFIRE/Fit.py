@@ -8,6 +8,7 @@ import scipy.optimize as optimize
 import numpy as np
 from matplotlib import pyplot as pl
 import nmpfit_mos as mpfit
+from MosfireDrpLog import debug, info, warning, error
 
 # Following is to correct for old/new version of stsci python
 
@@ -316,10 +317,19 @@ def polyfit_clip(xs, ys, order, nsig=2.5):
 
     ff = np.poly1d(np.polyfit(xs, ys, order))
     sd = np.std(ys - ff(xs))
+    if sd == 0.0:
+        warning('Clipping failed because stddev=0, using unclipped fit.')
+        result = ff
+    else:
+        r = np.abs(ys - ff(xs))
+        ok = r < (sd * nsig)
+        try:
+            result = np.polyfit(xs[ok], ys[ok], order)
+        except:
+            warning('Clipping failed, using unclipped fit.')
+            result = ff
 
-    r = np.abs(ys - ff(xs))
-    ok = r < (sd * nsig)
-    return np.polyfit(xs[ok], ys[ok], order)
+    return result
 
 def polyfit_sigclip(xs, ys, order, nmad=4):
 
