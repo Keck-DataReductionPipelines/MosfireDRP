@@ -104,13 +104,15 @@ def print_instructions():
 
 
 class ApertureEditor(object):
-    def __init__(self, hdu, title=None):
+    def __init__(self, hdu, title=None, interactive=False):
         self.header = hdu.header
         self.data = np.ma.MaskedArray(data=hdu.data, mask=np.isnan(hdu.data))
         self.ydata = np.mean(self.data, axis=1)
         self.xdata = range(0,len(self.ydata), 1)
-        self.fig = pl.figure()
-        self.ax = self.fig.gca()
+        self.interactive = interactive
+        if self.interactive:
+            self.fig = pl.figure()
+            self.ax = self.fig.gca()
         self.title = title
         if title:
             info('Editing apertures for {}'.format(title))
@@ -214,49 +216,51 @@ class ApertureEditor(object):
     def plot_data(self):
         '''Plot the raw data without apertures.
         '''
-        debug('  Plotting profile data')
-        pl.plot(self.xdata, self.ydata, 'k-',
-                label='Spatial Profile', drawstyle='steps-mid')
-        pl.xlim(min(self.xdata), max(self.xdata))
-        yspan = self.ydata.max() - self.ydata.min()
-        pl.ylim(self.ydata.min()-0.02*yspan, self.ydata.max()+0.18*yspan)
-        pl.xlabel('Pixel Position')
-        pl.ylabel('Flux (e-/sec)')
-        if self.title is None:
-            pl.title('Spatial Profile')
-        else:
-            pl.title(self.title)
+        if self.interactive:
+            debug('  Plotting profile data')
+            pl.plot(self.xdata, self.ydata, 'k-',
+                    label='Spatial Profile', drawstyle='steps-mid')
+            pl.xlim(min(self.xdata), max(self.xdata))
+            yspan = self.ydata.max() - self.ydata.min()
+            pl.ylim(self.ydata.min()-0.02*yspan, self.ydata.max()+0.18*yspan)
+            pl.xlabel('Pixel Position')
+            pl.ylabel('Flux (e-/sec)')
+            if self.title is None:
+                pl.title('Spatial Profile')
+            else:
+                pl.title(self.title)
 
 
     def plot_apertures(self):
-        pl.cla()
-        self.plot_data()
-        yspan = self.ydata.max() - self.ydata.min()
-        if len(self.apertures) == 0:
-            pl.draw()
-        for ap in self.apertures:
-            debug('  Plotting aperture at position {}'.format(ap['position']))
-            if ap['sigma'] is not None and ap['amplitude'] is not None:
-                g = models.Gaussian1D(mean=ap['position'],
-                                      amplitude=ap['amplitude'],
-                                      stddev=ap['sigma'])
-                fit = [g(x) for x in self.xdata]
-                pl.plot(self.xdata, fit, 'b-', label='Fit', alpha=0.5)
-            shadeymin = np.floor(self.ydata.min())
-            shadeymax = np.ceil(self.ydata.max())
-            pl.axvspan(ap['position']-ap['width'],
-                            ap['position']+ap['width'],
-                            ymin=shadeymin,
-                            ymax=shadeymax,
-                            facecolor='y', alpha=0.3,
-                            )
-            pl.text(ap['position']-ap['width']+1,
-                         self.ydata.max() + 0.05*yspan,
-                         'position={:.0f}\nwidth={:.0f}'.format(ap['position'],
-                                                                ap['width']),
-                         )
-            pl.draw()
-        pl.show()
+        if self.interactive:
+            pl.cla()
+            self.plot_data()
+            yspan = self.ydata.max() - self.ydata.min()
+            if len(self.apertures) == 0:
+                pl.draw()
+            for ap in self.apertures:
+                debug('  Plotting aperture at position {}'.format(ap['position']))
+                if ap['sigma'] is not None and ap['amplitude'] is not None:
+                    g = models.Gaussian1D(mean=ap['position'],
+                                          amplitude=ap['amplitude'],
+                                          stddev=ap['sigma'])
+                    fit = [g(x) for x in self.xdata]
+                    pl.plot(self.xdata, fit, 'b-', label='Fit', alpha=0.5)
+                shadeymin = np.floor(self.ydata.min())
+                shadeymax = np.ceil(self.ydata.max())
+                pl.axvspan(ap['position']-ap['width'],
+                                ap['position']+ap['width'],
+                                ymin=shadeymin,
+                                ymax=shadeymax,
+                                facecolor='y', alpha=0.3,
+                                )
+                pl.text(ap['position']-ap['width']+1,
+                             self.ydata.max() + 0.05*yspan,
+                             'position={:.0f}\nwidth={:.0f}'.format(ap['position'],
+                                                                    ap['width']),
+                             )
+                pl.draw()
+            pl.show()
 
     def connect(self):
         '''Connect keypresses to matplotlib for interactivity.
@@ -338,7 +342,7 @@ def find_apertures(hdu, guesses=[], title=None, interactive=True):
     wavelength direction and fitting Gaussian profiles to the positional profile
     '''
     pl.ioff()
-    ap = ApertureEditor(hdu, title=title)
+    ap = ApertureEditor(hdu, title=title, interactive=interactive)
     if interactive:
         ap.connect()
 
