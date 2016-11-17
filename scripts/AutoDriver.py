@@ -30,7 +30,9 @@ class Driver:
         self.target.write(line+"\n")
 
     def import_section(self):
-        self.addLine("import os, time, logging")
+        self.addLine("import os")
+        self.addLine("import time")
+        self.addLine("import logging")
         self.addLine("logger = logging.getLogger(__name__)")
         self.addLine("")
         self.addLine("import MOSFIRE")
