@@ -6,6 +6,7 @@ from __future__ import division, print_function
 import os
 import sys
 import textwrap
+import re
 
 import numpy as np
 from astropy.io import fits
@@ -337,7 +338,8 @@ class ApertureEditor(object):
 ##-------------------------------------------------------------------------
 ## Find Stellar Traces
 ##-------------------------------------------------------------------------
-def find_apertures(hdu, guesses=[], title=None, interactive=True):
+def find_apertures(hdu, guesses=[], title=None, interactive=True,
+                   maskname=''):
     '''Finds targets in spectra by simply collapsing the 2D spectra in the
     wavelength direction and fitting Gaussian profiles to the positional profile
     '''
@@ -345,6 +347,9 @@ def find_apertures(hdu, guesses=[], title=None, interactive=True):
     ap = ApertureEditor(hdu, title=title, interactive=interactive)
     if interactive:
         ap.connect()
+
+    if re.search('LONGSLIT', maskname):
+        guesses = [int(np.argmax(ap.ydata))]
 
     if (guesses == []) or (guesses is None):
         # Guess at object position where specified in header by CRVAL2
@@ -367,10 +372,7 @@ def find_apertures(hdu, guesses=[], title=None, interactive=True):
             ap.add_aperture(pos, width)
     else:
         for guess in guesses:
-            if len(guess) == 1:
-                ap.fit_trace(guess, 1)
-            else:
-                ap.add_aperture(guess[0], guess[1])
+            ap.fit_trace(guess, ap.ydata[guess])
     return ap.apertures
 
 
@@ -609,6 +611,7 @@ def extract_spectra(maskname, band, interactive=True, target='default'):
         eps = fits.open(eps_file, 'readonly')[0]
         aperture_tables[objectname] = find_apertures(eps, title=objectname,
                                                      interactive=interactive,
+                                                     maskname=maskname,
                                                      )
     # Second, iterate through all slits again and perform spectral extraction
     # using the apertures defined above
