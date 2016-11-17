@@ -323,16 +323,15 @@ def r_interpol(ls, ss, lfid, tops, top, shift_pix=0, pad=[0,0], fill_value=0.0):
     # First interpolate onto a common wavelength grid
     for i in xrange(S[0]):
 
-        ll = ls[i,:] ; sp = ss[i,:]
+        ll = ls[i,:]
+        sp = ss[i,:]
         ok = np.where(ll>1000)[0]
 
-        if len(ok) < 100: continue
+        if len(ok) >= 100:
+            f = II.interp1d(ll[ok], sp[ok], bounds_error=False, 
+                fill_value = fill_value)
+            output[i,:] = f(lfid)
 
-        f = II.interp1d(ll[ok], sp[ok], bounds_error=False, 
-            fill_value = fill_value)
-            
-
-        output[i,:] = f(lfid)
 
     # Now rectify in spatial
     vert_shift = tops-top-shift_pix
