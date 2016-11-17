@@ -30,6 +30,9 @@ class Driver:
         self.target.write(line+"\n")
 
     def import_section(self):
+        self.addLine("import matplotlib")
+        self.addLine("matplotlib.use('TkAgg') # Force TkAgg backend for interactivity. This is")
+        self.addLine("                        # critical to bypass a bug in the MacOSX backend.")
         self.addLine("import os")
         self.addLine("import time")
         self.addLine("import logging")
