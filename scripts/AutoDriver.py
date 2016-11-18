@@ -386,7 +386,7 @@ def SetupFiles(target=None, offsets=None, type=None):
             setupLines.append("obsfiles_posCwide = ['Offset_-14_"+str(target)+"_PosC.txt', 'Offset_-7_"+str(target)+"_PosC.txt']")
             setupLines.append('target_posCwide = "'+str(target)+'_POSC_WIDE"')
             setupLines.append("IO.fix_long2pos_headers(obsfiles_posCwide)") 
-            setupLines.append("obsfiles_posAwide = ['Offset_14_"+str(target)+"_PosA.txt', 'Offset_21_"+str(target)+"_PosA.txt']")
+            setupLines.append("obsfiles_posAwide = ['Offset_14_"+str(target)+"_PosA.txt', 'Offset_-7_"+str(target)+"_PosA.txt']")
             setupLines.append('target_posAwide = "'+str(target)+'_POSA_WIDE"')
             setupLines.append("IO.fix_long2pos_headers(obsfiles_posAwide)") 
             specphot = True
