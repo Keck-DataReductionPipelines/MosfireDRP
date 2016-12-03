@@ -472,23 +472,29 @@ def optimal_extraction(image, variance_image, aperture_table,
     spectra2D = hdu.data
     variance2D = vhdu.data
     header = hdu.header
-    w = wcs.WCS(hdu.header)
-    
+    worig = wcs.WCS(hdu.header)
+
     ## State assumptions
     assert header['DISPAXIS'] == 1
-    assert w.to_header()['CTYPE1'] == 'AWAV'
+    assert worig.to_header()['CTYPE1'] == 'AWAV'
     assert header['CD1_2'] == 0
     assert header['CD2_1'] == 0
-    flattened_wcs = w.dropaxis(1)
-    assert flattened_wcs.to_header()['CTYPE1'] == 'AWAV'
+    assert worig.dropaxis(1).to_header()['CTYPE1'] == 'AWAV'
 
     ## Replace old WCS in header with the collapsed WCS
-    for key in w.to_header().keys():
+    w = worig.dropaxis(1)
+    for key in worig.to_header().keys():
         if key in header.keys():
             header.remove(key)
-    for key in flattened_wcs.to_header().keys():
-        header[key] = (flattened_wcs.to_header()[key],\
-                       flattened_wcs.to_header().comments[key])
+    for key in w.to_header().keys():
+        if key in ['PC1_1', 'CRVAL1']:
+            header.set(key, w.to_header()[key]*1e10, 
+                       w.to_header().comments[key])
+        elif key in ['CUNIT1', 'CNAME1']:
+            header.set(key, 'Angstrom', w.to_header().comments[key])
+        else:
+            header.set(key, w.to_header()[key],
+                       w.to_header().comments[key])
 
     spectra = []
     variances = []
@@ -527,11 +533,6 @@ def optimal_extraction(image, variance_image, aperture_table,
     mask = np.isnan(np.array(spectra)) | np.isnan(np.array(variances))
     spectra = np.ma.MaskedArray(data=np.array(spectra), mask=mask)
     variances = np.ma.MaskedArray(data=np.array(variances), mask=mask)
-
-    w = wcs.WCS(header).dropaxis(1)
-    wh = w.to_header()
-    for key in wh.keys():
-        header[key] = wh[key]
 
     for i,row in enumerate(aperture_table):
         hdulist = fits.HDUList([])
