@@ -204,7 +204,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         header["crval2"] = -solution["eps_img"].shape[0]/2 - pixel_dist
         header["crpix1"] = 1
         header["crpix2"] = 1
-        header["cdelt1"] = 1
+        header["cdelt1"] = ll[1]-ll[0]
         header["cdelt2"] = 1
         header["cname1"] = "angstrom"
         header["cname2"] = "pixel"
@@ -270,7 +270,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
     header["crval2"] = 1
     header["crpix1"] = 1
     header["crpix2"] = 1
-    header["cdelt1"] = 1
+    header["cdelt1"] = (ll[1]-ll[0], 'Angstrom/pixel')
     header["cdelt2"] = 1
     header["cname1"] = "angstrom"
     header["cname2"] = "pixel"
@@ -278,7 +278,6 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
     header["cd1_2"] = 0
     header["cd2_1"] = 0
     header["cd2_2"] = 1
-
 
     header["bunit"] = "ELECTRONS/SECOND"
     info("############ Final reduced file: {0}_{1}_eps.fits".format(outname,band))
