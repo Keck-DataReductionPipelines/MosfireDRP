@@ -254,20 +254,6 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
             itimes = np.sum(itimes, axis=0)
             Nframe = len(files) 
 
-        elif len(files) > 5:
-            print "WARNING: Drop min/max CRR"
-            srt = np.argsort(el_per_sec,axis=0)
-            shp = el_per_sec.shape
-            sti = np.ogrid[0:shp[0], 0:shp[1], 0:shp[2]]
-
-            electrons = electrons[srt, sti[1], sti[2]]
-            itimes = itimes[srt, sti[1], sti[2]]
-
-            electrons = np.sum(electrons[1:-1,:,:], axis=0)
-            itimes = np.sum(itimes[1:-1,:,:], axis=0)
-
-            Nframe = len(files) - 2
-
         else:
             warning( "With less than 5 frames, the pipeline does NOT perform")
             warning( "Cosmic Ray Rejection.")
