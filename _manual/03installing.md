@@ -11,10 +11,10 @@ The 2016 version of the pipeline no longer requires IRAF/PyRAF, so the installat
 
 The pipeline requires the following python modules:
 
-* numpy >= v?.?
-* astropy >= v?.?
-* ccdproc >= v?.?
-* scipy >= v?.?
+* numpy
+* astropy
+* ccdproc
+* scipy
 
 # Installing python
 
