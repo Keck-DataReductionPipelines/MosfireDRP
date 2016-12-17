@@ -1,5 +1,5 @@
-REDUX
-DATA
-.DS_Store
+_site
+.sass-cache
+.jekyll-metadata
 MOSFIRE
-repository_version
+astropy_helpers
