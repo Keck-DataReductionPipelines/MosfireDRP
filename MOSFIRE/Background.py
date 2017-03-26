@@ -22,6 +22,10 @@ from MosfireDrpLog import debug, info, warning, error
 #from IPython.Shell import IPShellEmbed
 #ipshell = IPShellEmbed()
 
+class FitError(Exception):
+    def __init__(self,e):
+        self.e = e
+
 def rem_header_key(header, key):
 
     try:
@@ -686,17 +690,17 @@ def background_subtract_helper(slitno):
             delta = dl*0.9
             knots = np.arange(knotstart, knotend, delta)
             bspline = II.splrep(ls[OK], ss[OK], k=5, task=-1, t=knots)
-        except Error as e:
+        except ValueError as e:
             warning('Failed to fit spline with delta = {:5f}'.format(delta))
-            warning(e.strerror)
+            warning(str(e))
             delta = dl*1.4
             info('Trying with delta = {:5f}'.format(delta))
             knots = np.arange(knotstart, knotend, delta)
             try:
                 bspline = II.splrep(ls[OK], ss[OK], k=5, task=-1, t=knots)
-            except Error as e:
+            except ValueError as e:
                 warning("Could not construct spline on slit "+str(slitno))
-                warning(e.strerror)
+                warning(str(e))
                 return {"ok": False}
 
         ll = lslit.flatten()
