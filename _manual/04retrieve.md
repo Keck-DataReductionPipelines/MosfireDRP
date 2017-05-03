@@ -11,7 +11,7 @@ If you need to retrieve your data, you may either use a secure copy (scp) assumi
 A useful tool is the file translator script that will convert your KOA file names to the standard filenames as they were written to disk during your observing session (koa_translator). Again, your filenames must preserve the standard naming convention and the koa_translator script does this for you.
 
 If you do not have data of your own and wish to download the example:
-Grab the data from: [http://mosfire.googlecode.com/files/DRP_Test_Case_Hband.zip](http://mosfire.googlecode.com/files/DRP_Test_Case_Hband.zip).
+Grab the data from: [https://www2.keck.hawaii.edu/realpublic/inst/mosfire/DRP_Test_Case_Hband.zip](https://www2.keck.hawaii.edu/realpublic/inst/mosfire/DRP_Test_Case_Hband.zip).
 
 Move the test case zip file to a directory of your choice (we will assume `~/Data` for the examples in this manual) and unzip the DRP test case file:
 
