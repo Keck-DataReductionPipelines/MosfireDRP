@@ -791,7 +791,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
     xposs_top_this = np.arange(10,2000,100)
     yposs_top_this = topfun(xposs_top_this)
 
-    initial_edges = np.array([2034])
+    initial_edges = np.array([2034], dtype=np.int)
     edge = 2034
 
     # build an array of values containing the lower edge of the slits
@@ -799,14 +799,14 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
     for target in xrange(len(ssl)):        
     # target is the slit number
         edge -= DY * numslits[target]
-        initial_edges=np.append(initial_edges,edge)
+        initial_edges=np.append(initial_edges,int(edge))
 
     # collapse the 2d flat along the walenegth axis to build a spatial profile of the slits
     vertical_profile = np.mean(data, axis=1)
 
     # build an array containing the spatial positions of the slit centers, basically the mid point between the expected
     # top and bottom values of the slit pixels
-    spatial_centers = np.array([])
+    spatial_centers = np.array([], dtype=np.int)
     for k in np.arange(0,len(initial_edges)-1):
         spatial_centers = np.append(spatial_centers,(initial_edges[k]+initial_edges[k+1])/2)
     #slit_values=np.array([])
