@@ -421,8 +421,8 @@ def find_edge_pair(data, y, roi_width, edgeThreshold=450):
 
             between = offset + width/2
             if 0 < between < len(v)-1:
-                start = np.max([0, between-2])
-                stop = np.min([len(v),between+2])
+                start = int(np.max([0, between-2]))
+                stop = int(np.min([len(v),between+2]))
                 yposs_bot_scatters.append(np.min(v[start:stop])) # 5
 
                 if False:
