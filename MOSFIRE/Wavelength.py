@@ -358,8 +358,8 @@ def fit_lambda(maskname,
 
     tock = time.time()
 
-
-    if True:
+    multicore = False
+    if multicore:
         p = Pool()
         solutions = p.map(fit_lambda_helper, range(len(bs.ssl)))
         p.close()
