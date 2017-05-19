@@ -375,7 +375,7 @@ def find_edge_pair(data, y, roi_width, edgeThreshold=450):
     '''
 
     def select_roi(data, roi_width):
-        v = data[y-roi_width:y+roi_width, xp-2:xp+2]
+        v = data[int(y-roi_width):int(y+roi_width), int(xp)-2:int(xp)+2]
         v = np.median(v, axis=1) # Axis = 1 is spatial direction
 
         return v
