@@ -2263,7 +2263,7 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
         """        
 
         cfit = sol_1d[1]
-        spec_here = np.ma.median(data[yhere-2:yhere+2, :], axis=0)
+        spec_here = np.ma.median(data[int(yhere)-2:int(yhere)+2, :], axis=0)
         shift = Fit.xcor_peak(spec_here, spec0, lags)
         ll_here = CV.chebval(pix - shift, cfit)
         [xs, sxs, sigmas] = find_known_lines(linelist,
