@@ -388,7 +388,16 @@ def fit_lambda_helper(slitno):
 
     slitedges = edgedata
 
-    sol_1d = center_solutions[slitidx]["sol_1d"]
+    try:
+        sol_1d = center_solutions[slitidx]["sol_1d"]
+    except TypeError:
+        error('Unable to obtain wavelength solution for slit.')
+        error('Did you sucessfully fit a wavelength solution for every slit?')
+        error('If so, you should have gotten the red "Done!" written across the')
+        error('wavelength plot in the interactive solution step')
+        raise TypeError('Unable to obtain wavelength solution for slit.')
+
+#     sol_1d = center_solutions[slitidx]["sol_1d"]
     edge = slitedges[slitidx]
     linelist = center_solutions[slitidx]["linelist"]
 
