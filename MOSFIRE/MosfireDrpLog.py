@@ -30,3 +30,13 @@ critical = mylogger.critical
 
 
 #logger.info ("log started")
+
+# Add log entries for versions of numpy, matplotlib, astropy, ccdproc
+import numpy as np
+info('numpy version = {}'.format(np.__version__))
+import matplotlib
+info('matplotlib version = {}'.format(matplotlib.__version__))
+import astropy
+info('astropy version = {}'.format(astropy.__version__))
+import ccdproc
+info('ccdproc version = {}'.format(ccdproc.__version__))
