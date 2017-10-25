@@ -470,12 +470,17 @@ def fit_edge_poly(xposs, xposs_missing, yposs, order):
 
     # Remove any fits that deviate wildly from the 2nd order polynomial
     ok = np.abs(yposs - fun(xposs)) < 1
+    info(yposs)
+    info(len(yposs))
+    info(ok)
+    info(len(ok))
     if not ok.any():
             error("Flat is not well illuminated? Cannot find edges")
             raise Exception("Flat is not well illuminated? Cannot find edges")
 
     # Now refit to user requested order
     fun = np.poly1d(Fit.polyfit_clip(xposs[ok], yposs[ok], order))
+    yposs_ok = yposs[ok]
     res = fun(xposs[ok]) - yposs[ok]
     sd = np.std(res)
     ok = np.abs(res) < 2*sd
@@ -486,9 +491,13 @@ def fit_edge_poly(xposs, xposs_missing, yposs, order):
     pix = np.arange(2048)
     V = fun(pix)
     if np.abs(V.max() - V.min()) > 10:
+        info ("Dimension of ok: %d" % (len(ok)))
+        info ("Dimension of yposs: %d" % (len(yposs)))
         info ("Forcing a horizontal slit edge")
         print "Forcing a horizontal slit edge"
-        fun = np.poly1d(np.median(yposs[ok]))
+        tmp = yposs_ok[ok]
+        fun = np.poly1d(np.median(tmp))
+        #fun = np.poly1d(np.median(yposs[ok]))
 
 
     return (fun, res, sd, ok)
