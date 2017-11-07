@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Wavelength Calibration – K Band - MOSFIRE DRP Documentation</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Wavelength Calibration \u2013 K Band";
+    var mkdocs_page_input_path = "wavelengthK.md";
+    var mkdocs_page_url = "/wavelengthK/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> MOSFIRE DRP Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">DRP Manual</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../manual/">Contents</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../changes/">Changes</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../preface/">Preface</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../installing/">Installing</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../retrieve/">Retrieve Your Data</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../handle/">Handle</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../autodriver/">Automatic Generation of the Driver File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../driver/">The driver.py File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../flats/">Flats</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthYJH/">Wavelength Calibration – Y, J, and H Bands</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Wavelength Calibration – K Band</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#wavelength-calibration-k">Wavelength Calibration (K)</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#combine-the-arc-line-spectra">Combine the arc line spectra</a></li>
+        
+            <li><a class="toctree-l4" href="#identify-arc-lines-using-night-sky-solution">Identify arc lines using night sky solution</a></li>
+        
+            <li><a class="toctree-l4" href="#wavelength-fitting-for-the-entire-slit-using-arcs">Wavelength fitting for the entire slit using arcs</a></li>
+        
+            <li><a class="toctree-l4" href="#merge-the-arc-and-sky-lists">Merge the arc and sky lists</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../background/">Background Subtraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../rectify/">Rectify</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../extract/">Spectral Extraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../long2pos/">Long2pos Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../longslit/">Longslit Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../headercomments/">A Word About Header Comments</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../hints/">Some Hints</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">MOSFIRE DRP Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>DRP Manual &raquo;</li>
+        
+      
+    
+    <li>Wavelength Calibration – K Band</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="wavelength-calibration-k">Wavelength Calibration (K)</h1>
+<p>The night sky lines at the red end of the K-band are too faint to achieve small-fraction of a pixel RMS wavelength calibration. You will have to observe a Neon and Argon arc lamps during your afternoon calibrations. By default, the calibration script at the observatory is setup to acquire both the Ne and Argon arcs.</p>
+<p>Because the beams emminating from the arclamp do not follow the same path as the beams coming from the sky, there will be a slight difference between the two solutions. For the afformentioned beam matching reason, the most accurate solution is the night sky lines. Thus, the code has to be clever about merging the two solutions.</p>
+<p>The following subsections describe the additional steps that are necessary to process the arcline data and combine the arcs and night sky line wavelength solutions.</p>
+<h2 id="combine-the-arc-line-spectra">Combine the arc line spectra</h2>
+<p>Just like the step in section 8.1 where you combined the science frames to create nightsky line spectra, we first need to combine the arcline data. The arcs are typically three files and you should see them listed in the Ne.txt and Ar.txt file lists in your K band sub directory. To combine the images simply uncomment and run:</p>
+<pre><code>Wavelength.imcombine('Ne.txt', maskname, band, waveops)                                                                                                    
+Wavelength.imcombine('Ar.txt', maskname, band, waveops)
+</code></pre>
+<h2 id="identify-arc-lines-using-night-sky-solution">Identify arc lines using night sky solution</h2>
+<p>Instead of having to interactively determine the wavelenth solution for the arcs like we did in section 8.2 for the night sky lines, we are going to use the solutions for the night sky lines as a first approximation for the arcs. This may usually be done because the arcs differ from the night sky lines by a fractions of pixels. You are welcome to interactively solve the neon lamp solution with the Wavelength.fit_lambda_interactively routine; however, the need to run the interactive solution method should be rare. </p>
+<p>To apply the solution from the night sky lines to the arcs center slit position, uncomment and run the following lines.</p>
+<pre><code>Wavelength.apply_interactive(maskname, band, waveops, apply=obsfiles, to='Ne.txt', neon=True)                                                              
+Wavelength.apply_interactive(maskname, band, waveops, apply=obsfiles, to='Ar.txt', argon=True)
+</code></pre>
+<p>This step, when run will produce output like:</p>
+<pre><code>slitno  1 STD: 0.16 MAD: 0.06
+slitno  2 STD: 0.03 MAD: 0.02
+slitno  3 STD: 0.04 MAD: 0.04
+slitno  4 STD: 0.05 MAD: 0.01
+</code></pre>
+<p>For each slit, a new solution is generated for the neon line. The output mimics that described previously where STD is the standard deviation and MAD is the median absolute deviation in angstroms.</p>
+<h2 id="wavelength-fitting-for-the-entire-slit-using-arcs">Wavelength fitting for the entire slit using arcs</h2>
+<p>The next step in the wavelength fitting process is to propogate the arc solution spatially along each slit. Again this is the same process essentially as the fit for the night sky lines. This moves along each row for the slit to determine a wavelenth solution. The output files are comperable to those in step 8.3</p>
+<pre><code>Wavelength.fit_lambda(maskname, band, 'Ne.txt', 'Ne.txt', waveops, wavenames2='Ar.txt')
+</code></pre>
+<p>You will note that the Ar.txt file is listed as an optional argument. If you choose not to use the Argon lamps, then you may simply remove the optional wavenames2 and execute this using only the Ne arcs.</p>
+<p>Again, this process takes some time to complete.</p>
+<h2 id="merge-the-arc-and-sky-lists">Merge the arc and sky lists</h2>
+<p>In this portion of the procedure, we merge the two lists. These commands may not be run individually. Instead any command containing the variable LROI needs to be run in one mospy driver file session in order to pass the LROI variable. In this section we determin the offsets between the region of overlap between the nightskylines and the arclines. A plot of that region is displayed. To move on you will have to close the plot. </p>
+<p>To execute this step you will need to uncomment the following lines in the driver file.</p>
+<pre><code>LROI = [[21000, 22800]] * 1                                                                                                                                
+LROIs = Wavelength.check_wavelength_roi(maskname, band, obsfiles, 'Ne.txt', LROI, waveops)        
+Wavelength.apply_lambda_simple(maskname, band, 'Ne.txt', waveops)                                                                                          
+Wavelength.apply_lambda_sky_and_arc(maskname, band, obsfiles,  'Ne.txt', LROIs, waveops, neon=True)
+</code></pre>
+<p>The merged output solution will have a filename that looks like:</p>
+<pre><code>merged_lambda_coeffs_wave_stack_K_m130114_0451-0453_and_wave_stack_K_m140508_0197-0199.npy
+merged_lambda_solution_wave_stack_K_m130114_0451-0453_and_wave_stack_K_m140508_0197-0199.fits
+merged_rectified_wave_stack_K_m130114_0451-0453_and_wave_stack_K_m140508_0197-0199.fits.gz
+</code></pre>
+<p>The ouput files have the same format as those in section 8.4 and will need to be used as inputs to the Background and Rectify section below.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../background/" class="btn btn-neutral float-right" title="Background Subtraction">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../wavelengthYJH/" class="btn btn-neutral" title="Wavelength Calibration – Y, J, and H Bands"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../wavelengthYJH/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../background/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/require.js"></script>
+      <script src="../search/search.js"></script>
+
+</body>
+</html>

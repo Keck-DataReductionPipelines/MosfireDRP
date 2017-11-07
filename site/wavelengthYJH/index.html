@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Wavelength Calibration – Y, J, and H Bands - MOSFIRE DRP Documentation</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Wavelength Calibration \u2013 Y, J, and H Bands";
+    var mkdocs_page_input_path = "wavelengthYJH.md";
+    var mkdocs_page_url = "/wavelengthYJH/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> MOSFIRE DRP Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">DRP Manual</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../manual/">Contents</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../changes/">Changes</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../preface/">Preface</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../installing/">Installing</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../retrieve/">Retrieve Your Data</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../handle/">Handle</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../autodriver/">Automatic Generation of the Driver File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../driver/">The driver.py File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../flats/">Flats</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Wavelength Calibration – Y, J, and H Bands</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#wavelength-calibration-y-j-h">Wavelength Calibration (Y, J, H)</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#combine-files">Combine files</a></li>
+        
+            <li><a class="toctree-l4" href="#interactive-wavelength-fitting">Interactive wavelength fitting</a></li>
+        
+            <li><a class="toctree-l4" href="#wavelength-fitting-for-the-entire-slit">Wavelength fitting for the entire slit</a></li>
+        
+            <li><a class="toctree-l4" href="#apply-the-wavelength-solution">Apply the wavelength solution</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthK/">Wavelength Calibration – K Band</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../background/">Background Subtraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../rectify/">Rectify</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../extract/">Spectral Extraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../long2pos/">Long2pos Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../longslit/">Longslit Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../headercomments/">A Word About Header Comments</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../hints/">Some Hints</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">MOSFIRE DRP Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>DRP Manual &raquo;</li>
+        
+      
+    
+    <li>Wavelength Calibration – Y, J, and H Bands</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="wavelength-calibration-y-j-h">Wavelength Calibration (Y, J, H)</h1>
+<p>In the shorter wavebands, when using the recommended exposure times, the wavelength calibration is performed on night sky lines. The mospy Wavelength module is responsbile for these operations. See the example driver file in section 7.</p>
+<h2 id="combine-files">Combine files</h2>
+<p>First step is to produce a file with which you will train your wavelength solution. Since we’re using night sky lines for training, the approach is to combine individual science exposures. This is performed by the python Wavelength.imcombine routine. For a lot of users, this will look something like in the Driver.py file:</p>
+<pre><code>Wavelength.imcombine(obsfiles, maskname, band, waveops)
+</code></pre>
+<p>The first parameter is obsfiles which is a python string array indicating the list of files in the offset positions. Note that obsfiles has defaults of “Offset_1.5.txt” and “Offset_-1.5.txt” and may need to be updated as described in section 6. </p>
+<p>Suppose you want to exclude a file for reasons such as weather or telescope fault, simply remove the offending file from the appropriate Offset_*.txt. Likewise, you are welcome to add files in as you like, such as observations from the previous night.</p>
+<p>Outputs of this step are:</p>
+<table>
+<thead>
+<tr>
+<th>Filename</th>
+<th>Contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wave_stack_[band]_[range].fits</code></td>
+<td>A median-combined image of the files to be used for the wavelength solution.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="interactive-wavelength-fitting">Interactive wavelength fitting</h2>
+<p>The next step is to use the wave_stack_*.fits file and determine an initial wavelength solution for each slit. During this process, we interactively fit the lines using a gui that displays. To initiate this process, uncomment the line in the Driver.py file:</p>
+<pre><code>#Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles, waveops)
+</code></pre>
+<p>And then re-execute the driver file: </p>
+<pre><code>mospy Driver.py
+</code></pre>
+<p>when you run this step, a GUI window appears.</p>
+<p><img alt="Screenshot" src="../image3.png" title="The interactive wavelength solving window. This is a J-band night sky spectrum." /></p>
+<p>The interactive wavelength solving window. This is a J-band night sky spectrum.</p>
+<p><img alt="Screenshot" src="../image4.png" title="The interactive wavelength solving window showing an initial fit. This is a J-band night sky spectrum and one of the night sky lines on the right hand side is clearly a poor fit compared to the rest of the identified lines." /></p>
+<p>The interactive wavelength solving window showing an initial fit. This is a J-band night sky spectrum and one of the night sky lines on the right hand side is clearly a poor fit compared to the rest of the identified lines.</p>
+<p><img alt="Screenshot" src="../image5.png" title="The interactive wavelength solving window showing a good fit with the initial poor line removed from the calculation. " /></p>
+<p>The interactive wavelength solving window showing a good fit with the initial poor line removed from the calculation. 
+The interactive wavelength solving window showing an initial fit. This is a J-band night sky spectrum and one of the night sky lines on the right hand side is clearly a poor fit compared to the rest of the identified lines.</p>
+<p>Plotted in the gui will be a sky line spectrum and vertical lines denoting positions and wavelengths of the sky lines. Your goal is to help the pipeline by identifying the night sky lines in the center of each slit. Once you come up with a good solution in the center, the pipeline will propagate it spatially along the slit. In the gui, Press ? to see a list of commands in the console window. The list of commands available on the GUI are:</p>
+<ul>
+<li>c - to center on the nearest peak (first thing to do to shift the initial wavelength guess) </li>
+<li>c - Center the nearest line at the cursor position </li>
+<li>\ - Fit fit the data</li>
+<li>f – Alternate way to fit the data, equivalent to \ but may cause the spectrum to become full screen.</li>
+<li>k – Toggles k-sigma clipping on and off. Also performs a new fit.</li>
+<li>b -  Turns on bypass mode. From now on, the interactive window is not displayed and the fit continues automatically.</li>
+<li>d - Delete a point (remove the wackadoos) </li>
+<li>n - proceed to the Next object </li>
+<li>p - return to back to the Previous object </li>
+<li>r - Reset the current slit (try this if the plot looks strange) </li>
+<li>z - Zoom at cursor position </li>
+<li>x - Unzoom: full screen </li>
+<li>s - Save figure to disk </li>
+<li>h - Help </li>
+<li>q - Quit and save results </li>
+</ul>
+<p>Below is a rough procedure for completing the interactive fitting process. The steps you need to take are as follows. </p>
+<ul>
+<li>First, check to see if the orange lines match up with obvious night sky lines. If not the expected position does not match the actually position of the line do the following:<ul>
+<li>Place your cursor over a line</li>
+<li>Press the “c’ button that will shift the predicted position to the observed line. </li>
+</ul>
+</li>
+<li>Press “f” to fit. An initial fit is done automatically (starting with version 2015A) A Chebyshev polynomial, f, such that f(pixel #) returns the wavelength in Angstroms.</li>
+<li>You can chose to use k-sigma clipping to avoid the manual operation of removing bad lines with the “k” key. </li>
+<li>Press "x" to unzoom to the full size region</li>
+<li>Assess the fit:<ul>
+<li>If a line is poorly fit and should be removed<ul>
+<li>Move the cursor to the line</li>
+<li>Press “d” to delete the line from the fit</li>
+</ul>
+</li>
+<li>For good fits, the residual points turn green.</li>
+</ul>
+</li>
+<li>When the satisfied with the fit, press “n” to move to the next object.</li>
+<li>If you want to disable the interactive fit and switch to the automatic fit, press “b” (bypass)</li>
+<li>Repeat the process above until you see the red Done! text in the center of your screen. </li>
+<li>Press “q” to quit the interactive gui and move to the next step.</li>
+</ul>
+<p>The prompt should return following the fitting process. The outputs from this process are:</p>
+<table>
+<thead>
+<tr>
+<th>Filename</th>
+<th>Contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>barset.npy</code></td>
+<td>bar positions for each slit are specified</td>
+</tr>
+<tr>
+<td><code>lambda_center_coeffs_wave_stack_band_filenames.npy</code></td>
+<td>The coefficients of the fit and positions of the measured lines.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="wavelength-fitting-for-the-entire-slit">Wavelength fitting for the entire slit</h2>
+<p>The next step in the wavelength fitting process is to propogate the solution spatially along each slit. To complete this process we uncomment the line in the Driver.py file:  </p>
+<pre><code>#Wavelength.fit_lambda(maskname, band, obsfiles, obsfiles, waveops)
+</code></pre>
+<p>This is one of the longer running processes and the output should look something like:</p>
+<pre><code>...
+resid ang S09 @ p 978: 0.10 rms 0.07 mad [shift-22]
+resid ang S09 @ p 979: 0.09 rms 0.06 mad [shift-22]
+resid ang S09 @ p 980: 0.10 rms 0.06 mad [shift-22]
+resid ang S09 @ p 981: 0.09 rms 0.06 mad [shift-22]
+resid ang S09 @ p 982: 0.08 rms 0.05 mad [shift-22]
+resid ang S09 @ p 983: 0.08 rms 0.04 mad [shift-22]
+...
+</code></pre>
+<p>The prompt should return following the fitting process. The outputs from this process are:</p>
+<table>
+<thead>
+<tr>
+<th>Filename</th>
+<th>Contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lambda_coeffs_wave_stack_J_m130114_0443-0445.npy</code></td>
+<td>coefficients of the fit for each row within the slit</td>
+</tr>
+</tbody>
+</table>
+<h2 id="apply-the-wavelength-solution">Apply the wavelength solution</h2>
+<p>The last step in the wavelength fitting process is to apply the solution and create maps of the wavelength for the data set. To complete this process we uncomment the line in the Driver.py file:  </p>
+<pre><code>  #Wavelength.apply_lambda_simple(maskname, band, obsfiles, waveops)
+</code></pre>
+<p>The prompt should return following the fitting process. The outputs from this process are:</p>
+<table>
+<thead>
+<tr>
+<th>Filename</th>
+<th>Contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lambda_solution_wave_stack_J_m130114_0443-0445.fits</code></td>
+<td>contains a map of the wavelength for each pixel in the spectra</td>
+</tr>
+<tr>
+<td><code>sigs_solution_wave_stack_J_m130114_0443-0445.fits</code></td>
+<td>contains the uncertainty in the measured wavelength position for each pixel in the spectra</td>
+</tr>
+<tr>
+<td><code>rectified_wave_stack_J_m130114_0443-0445.fits</code></td>
+<td>contains the spatially and wavelength rectified resampled sky emission. A column in the image contains all pixels at the same wavelength.</td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../wavelengthK/" class="btn btn-neutral float-right" title="Wavelength Calibration – K Band">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../flats/" class="btn btn-neutral" title="Flats"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../flats/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../wavelengthK/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/require.js"></script>
+      <script src="../search/search.js"></script>
+
+</body>
+</html>
