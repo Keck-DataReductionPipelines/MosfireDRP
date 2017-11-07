@@ -1,8 +1,4 @@
----
-layout: page
-title: Background Subtraction
-permalink: /manual/background
----
+# Background Subtraction
 
 This DRP assumes that targets are nodded along the slit with integration times as described on the instrument web page. The integration times described were selected such that the shot-noise in the region between night sky lines is over 5x larger than the read noise of a 16-fowler sample. For MOSFIRE, we define this as background limited.
 

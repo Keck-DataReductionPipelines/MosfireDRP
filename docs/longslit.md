@@ -1,8 +1,4 @@
----
-layout: page
-title: Longslit Reductions
-permalink: /manual/longslit
----
+# Longslit Reductions
 
 The longslit reductions require transferring the Longslit_Driver.py file into the reduction directory. A few key parameters have to be adjusted in Longslit_Driver.py to help the pipeline figure out where to extract the longslit from. 
 

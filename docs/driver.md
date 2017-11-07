@@ -1,8 +1,4 @@
----
-layout: page
-title: The driver.py File
-permalink: /manual/driver
----
+# The driver.py File
 
 The driver file controls all the pipeline steps, and in the drivers sub-directory, you will find a number of driver files: `Driver.py`, `K_Driver.py`, `Long2pos_driver.py`, and `Longslit_Driver.py`. The `Driver` and `K_Driver` will reduce your science data for bands Y,J, and H (this includes the sample data set). The K band requires a special approach because there are too few bright night-sky emission lines at the red end and so the `K_Driver` synthesizes arclamps and night sky lines. The `Long2pos_driver.py` handles `long2pos` and `long2pos_specphot` observations, while the `Longslit_driver.py` deals with observations of single objects using a longslit configuration.
  

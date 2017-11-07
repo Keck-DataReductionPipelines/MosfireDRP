@@ -3,3 +3,4 @@ _site
 .jekyll-metadata
 MOSFIRE
 astropy_helpers
+site/

@@ -1,8 +1,4 @@
----
-layout: page
-title: Some Hints
-permalink: /manual/hints
----
+# Hints
 
 ## Pay attention to the wavelength fitting output
 

@@ -1,10 +1,8 @@
----
-layout: page
-title: Changes in Version 2016
-permalink: /manual/changes
----
+# Change Log
 
 __Important Note__: The [Ureka package has been deprecated](http://ssb.stsci.edu/ureka/) as of April 26, 2016.  As a result, the MOSFIRE pipeline has migrated to a version which is not dependent on IRAF/PyRAF, but only on python packages.  It should work with any python install which provides the required packages and versions.
+
+## Changes in Version 2016
 
 ### New features
 

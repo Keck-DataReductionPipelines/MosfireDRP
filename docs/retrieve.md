@@ -1,8 +1,4 @@
----
-layout: page
-title: Retrieve Your Data
-permalink: /manual/retrieve
----
+# Retrieve
 
 Before running the drp, you will need a set of spectroscopic data to reduce that includes flats, science observations, and if the observations are K-band, arcs and thermal flats. NOTE: You must preserve Keck’s file naming convention as the DRP uses the file name to parse data sets. The standard naming convention is `mYYMMDD_####.fits`. 
 

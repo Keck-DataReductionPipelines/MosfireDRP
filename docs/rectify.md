@@ -1,8 +1,4 @@
----
-layout: page
-title: Rectify
-permalink: /manual/rectify
----
+# Rectify
 
 The next step in the reduction process is to combine the wavelength solution with the backgroun subtracted images and then shift and combine the nod positions. If reducing Kband, be sure to use the merged wave_stack solution.  To do this we uncomment the following lines in the Driver.py file:
 

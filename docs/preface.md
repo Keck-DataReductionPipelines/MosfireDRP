@@ -1,8 +1,4 @@
----
-layout: page
-title: Preface
-permalink: /manual/preface
----
+# Preface
 
 This manual describes the installation and usage of the MOSFIRE data reduction pipeline on a unix-like computer. Although primarily tested and developed on a Mac, the pipeline operates on both OSX and Linux systems. In the section 4, we describe an installation procedure for a Mac OSX system. Later sections describe code usage, execution, and outputs.
 

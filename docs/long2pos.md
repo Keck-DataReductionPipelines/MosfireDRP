@@ -1,8 +1,4 @@
----
-layout: page
-title: Long2pos Reductions
-permalink: /manual/long2pos
----
+# Long2pos Reductions
 
 A special driver is provided for long2pos reductions. The driver can also be generated automatically.
 

@@ -1,8 +1,4 @@
----
-layout: page
-title: Spectral Extraction
-permalink: /manual/extract
----
+# Spectral Extraction
 
 ## Interactive Spectral Extraction Instructions
 

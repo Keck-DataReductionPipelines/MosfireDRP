@@ -1,8 +1,4 @@
----
-layout: page
-title: Wavelength Calibration – K band
-permalink: /manual/wavelengthK
----
+# Wavelength Calibration (K)
 
 The night sky lines at the red end of the K-band are too faint to achieve small-fraction of a pixel RMS wavelength calibration. You will have to observe a Neon and Argon arc lamps during your afternoon calibrations. By default, the calibration script at the observatory is setup to acquire both the Ne and Argon arcs.
 

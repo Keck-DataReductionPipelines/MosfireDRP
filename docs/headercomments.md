@@ -1,8 +1,4 @@
----
-layout: page
-title: A Word About Header Comments
-permalink: /manual/headercomments
----
+# Header Comments
 
 Files produced by the DRP have a series of information in the FITS header that helps users determine the pedigree of files involved in the reduction. Since many files go into reductions, FITS headers are enormous and some documentation about them is useful.
 

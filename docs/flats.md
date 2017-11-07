@@ -1,8 +1,4 @@
----
-layout: page
-title: Flats
-permalink: /manual/flats
----
+# Flats
 
 The first action the driver file will take is to generate a pixel flat and slit edge tracing. To initiate the flat generation, uncomment the line below in the 
 Driver.py file: 

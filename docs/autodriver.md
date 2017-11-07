@@ -1,8 +1,4 @@
----
-layout: page
-title: Automatic generation of the driver file
-permalink: /manual/autodriver
----
+# AutoDriver
 
 The pipeline is able to produce a driver file automatically for most cases, thus removing the need to copy one of the standard files and manually edit it.
 

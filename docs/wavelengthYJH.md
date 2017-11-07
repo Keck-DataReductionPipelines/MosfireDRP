@@ -1,8 +1,4 @@
----
-layout: page
-title: Wavelength Calibration – Y, J, and H bands
-permalink: /manual/wavelengthYJH
----
+# Wavelength Calibration (Y, J, H)
 
 In the shorter wavebands, when using the recommended exposure times, the wavelength calibration is performed on night sky lines. The mospy Wavelength module is responsbile for these operations. See the example driver file in section 7.
 

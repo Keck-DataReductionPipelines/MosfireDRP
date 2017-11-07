@@ -1,8 +1,4 @@
----
-layout: page
-title: Handle
-permalink: /manual/handle
----
+# Handle
 
 Now that you have data to reduce, we need to set up the pipeline with the appropriate files so that the drp knows what files to use in the reduction. The handle step will parses the FITS header information and determine what files are associated with each of your masks. 
 
