@@ -59,5 +59,4 @@ distribute-*.tar.gz
 
 /.project
 
-# Jekyll site
-_site/
+site/
