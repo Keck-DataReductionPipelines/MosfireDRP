@@ -1,0 +1,1 @@
+pandoc -o MOSFIRE_DRP_Manual.pdf manual.md changes.md preface.md installing.md retrieve.md handle.md autodriver.md driver.md flats.md wavelengthYJH.md wavelengthK.md background.md rectify.md extract.md long2pos.md longslit.md headercomments.md hints.md

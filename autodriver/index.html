@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Automatic Generation of the Driver File - MOSFIRE DRP Documentation</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Automatic Generation of the Driver File";
+    var mkdocs_page_input_path = "autodriver.md";
+    var mkdocs_page_url = "/autodriver/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> MOSFIRE DRP Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">DRP Manual</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../manual/">Contents</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../changes/">Changes</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../preface/">Preface</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../installing/">Installing</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../retrieve/">Retrieve Your Data</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../handle/">Handle</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Automatic Generation of the Driver File</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#autodriver">AutoDriver</a></li>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../driver/">The driver.py File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../flats/">Flats</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthYJH/">Wavelength Calibration – Y, J, and H Bands</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthK/">Wavelength Calibration – K Band</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../background/">Background Subtraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../rectify/">Rectify</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../extract/">Spectral Extraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../long2pos/">Long2pos Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../longslit/">Longslit Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../headercomments/">A Word About Header Comments</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../hints/">Some Hints</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">MOSFIRE DRP Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>DRP Manual &raquo;</li>
+        
+      
+    
+    <li>Automatic Generation of the Driver File</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="autodriver">AutoDriver</h1>
+<p>The pipeline is able to produce a driver file automatically for most cases, thus removing the need to copy one of the standard files and manually edit it.</p>
+<p>To generate the driver file, go to the directory where your Offset files live, and where the reduction is going to happen and type:</p>
+<pre><code>mospy AutoDriver
+</code></pre>
+<p>This will generate a file called Driver.py, which you should inspect before running it. Highly specialized cases such as particular combinations of sky lines and arcs might not be dealt with correctly. Note that the automatic generation of the driver file works for long2pos and longslit as well.</p>
+<p>To handle special cases, the automatic generation of the driver file makes a number of assumptions, that might not be correct for your science case.</p>
+<ol>
+<li>If either Ar.txt or Ne.txt or both are available, they are being used.</li>
+<li>If the band is K, and FlatThermal.txtis available, it is used</li>
+<li>For long2pos: if no arcs are available, only specphot in non spectrophotometric mode can be reduced and the pipeline will attempt to use the sky lines. Note that is likely to fail, as sky lines are too faint in short exposures for an accurate wavelength determination. The spectrophotometric mode contains wide slits that cannot be reduced using sky lines only.</li>
+<li>In longslit, the pipeline will try to determine the size of the slit using the mask name. For example, if the maskname is LONGSLIT-3x0.7, the pipeline assumes that you have used 3 slits to generate the longslit and that they are centered around the middle line of the detector.</li>
+<li>If any of the mandatory observations are missing (such as the flat fields), the pipeline will still generate a Driver.py file, but it will contain warnings about the missing files, and it will NOT run correctly.</li>
+<li>If multiple observations of different stars are done in long2pos or in longslit mode, the pipeline will generate multiple driver files, one for each object. If the same object is observed multiple times during the same night, all the observations will end up in the same driver file. If you are observing a telluric standard at different times and you need to have separate spectra, you need to manually create Offset files and Driver files.</li>
+</ol>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../driver/" class="btn btn-neutral float-right" title="The driver.py File">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../handle/" class="btn btn-neutral" title="Handle"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../handle/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../driver/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/require.js"></script>
+      <script src="../search/search.js"></script>
+
+</body>
+</html>

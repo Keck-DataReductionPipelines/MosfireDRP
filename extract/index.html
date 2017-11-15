@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Spectral Extraction - MOSFIRE DRP Documentation</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Spectral Extraction";
+    var mkdocs_page_input_path = "extract.md";
+    var mkdocs_page_url = "/extract/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> MOSFIRE DRP Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">DRP Manual</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../manual/">Contents</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../changes/">Changes</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../preface/">Preface</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../installing/">Installing</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../retrieve/">Retrieve Your Data</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../handle/">Handle</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../autodriver/">Automatic Generation of the Driver File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../driver/">The driver.py File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../flats/">Flats</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthYJH/">Wavelength Calibration – Y, J, and H Bands</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthK/">Wavelength Calibration – K Band</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../background/">Background Subtraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../rectify/">Rectify</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Spectral Extraction</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#spectral-extraction">Spectral Extraction</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#interactive-spectral-extraction-instructions">Interactive Spectral Extraction Instructions</a></li>
+        
+            <li><a class="toctree-l4" href="#spectral-extraction-results">Spectral Extraction Results</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../long2pos/">Long2pos Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../longslit/">Longslit Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../headercomments/">A Word About Header Comments</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../hints/">Some Hints</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">MOSFIRE DRP Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>DRP Manual &raquo;</li>
+        
+      
+    
+    <li>Spectral Extraction</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="spectral-extraction">Spectral Extraction</h1>
+<h2 id="interactive-spectral-extraction-instructions">Interactive Spectral Extraction Instructions</h2>
+<p>The final step is to extract a 1D spectrum for each object in each slit.  The final line of the <code>Driver.py</code> (or equivalent) file will looks something like this:</p>
+<pre><code>Extract.extract_spectra(maskname, band, interactive=(not bypassflag))
+</code></pre>
+
+<p>This will iterate through all the slits for this mask-band combination and if the interactive flag is set, then it will show a plot of the spatial profile of each slit (collapsed in the spectral direction).  By default, the software will make a guess at one aperture for each slit.  The apertures are indicated by a yellow shaded region and their center position and half width in pixels is annotated near the top of each shaded region.</p>
+<p><img alt="Screenshot" src="../extract1.png" title="Screenshot of a spatial profile with a single aperture defined." /></p>
+<p>The apertures define the pixels which will be used as input to the optimal spectral extraction (Horne 1986) algorithm.  Having wide a wide aperture should not add additional noise as that will be optimized during the spectral extraction step.  The apertures are shown here in order for the user to verify 1) that there is no overlap between adjacent objects, 2) that the apertures are wide enough to reasonably encompass all flux from the object, and 3) that all objects have properly defined apertures.</p>
+<p>The user can add, modify, or delete apertures interactively using this plot window.</p>
+<p>To delete an existing aperture: place the mouse near the center of the aperture and press the "d" key.</p>
+<p>To add an aperture by fitting a gaussian to the profile: place the mouse near the peak of the profile and press the "g" key.  The half width of the aperture will be set at 5 times the sigma of the fitted gaussian.</p>
+<p><img alt="Screenshot" src="../extract2.png" title="Screenshot of a spatial profile with a second aperture added by hitting the 'g' key." /></p>
+<p>To add an aperture manually: place the mouse in the X position where the new aperture should be centered and press the "a" key.  Then type the half width (in pixels) for that aperture in response to the query in the terminal.</p>
+<p>To modify the half width of an existing aperture: place the mouse near the center of the aperture and press the "w" key.  Then type the half width (in pixels) for that aperture in response to the query in the terminal.</p>
+<p>To modify the center position of an existing aperture: place the mouse near the center of the aperture and press the "p" key.  Then type the position (in pixels) for that aperture in response to the query in the terminal.</p>
+<p>When you are done adding or removing apertures, close the interactive plot window by clicking the close button in the upper right corner (or by whatever method is typical for your OS or windowing system) or press the "q" or "n" keys (for "quit" or "next" respectively).</p>
+<h2 id="spectral-extraction-results">Spectral Extraction Results</h2>
+<p>Whether you used the interactive tool for spectral extraction or allowed the software to automatically guess at the apertures to extract, the software will output both a FITS version of the resulting 1D spectrum and an PNG plot.</p>
+<p>These filenames will have the form:</p>
+<pre><code>[maskname]_[band]_[targetname]_[aperture].png
+[maskname]_[band]_[targetname]_1D_[aperture].fits
+</code></pre>
+
+<p>where <code>[aperture]</code> is a two digit integer indication which aperture for that slit this corresponds to (zero based).  If the apertures were determined automatically by the software, then only one aperture will have been generated for each slit, so all files will end in <code>_00.png</code> or <code>_1D_00.fits</code>.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../long2pos/" class="btn btn-neutral float-right" title="Long2pos Reductions">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../rectify/" class="btn btn-neutral" title="Rectify"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../rectify/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../long2pos/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/require.js"></script>
+      <script src="../search/search.js"></script>
+
+</body>
+</html>

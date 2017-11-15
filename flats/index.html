@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Flats - MOSFIRE DRP Documentation</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Flats";
+    var mkdocs_page_input_path = "flats.md";
+    var mkdocs_page_url = "/flats/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> MOSFIRE DRP Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">DRP Manual</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../manual/">Contents</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../changes/">Changes</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../preface/">Preface</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../installing/">Installing</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../retrieve/">Retrieve Your Data</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../handle/">Handle</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../autodriver/">Automatic Generation of the Driver File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../driver/">The driver.py File</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Flats</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#flats">Flats</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#k-band-flats">K-band flats</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthYJH/">Wavelength Calibration – Y, J, and H Bands</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthK/">Wavelength Calibration – K Band</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../background/">Background Subtraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../rectify/">Rectify</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../extract/">Spectral Extraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../long2pos/">Long2pos Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../longslit/">Longslit Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../headercomments/">A Word About Header Comments</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../hints/">Some Hints</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">MOSFIRE DRP Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>DRP Manual &raquo;</li>
+        
+      
+    
+    <li>Flats</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="flats">Flats</h1>
+<p>The first action the driver file will take is to generate a pixel flat and slit edge tracing. To initiate the flat generation, uncomment the line below in the 
+Driver.py file: </p>
+<pre><code>#Flats.handle_flats('Flat.txt', maskname, band, flatops)
+</code></pre>
+<p>and in your xterm run the DRP </p>
+<pre><code>&gt; mospy Driver.py
+</code></pre>
+<p>Example output from the xterm session</p>
+<pre><code>&gt; mospy Driver.py
+... Truncated output ...
+Flat written to combflat_2d_H.fits
+
+00] Finding Slit Edges for BX113 ending at 1901. Slit composed of 3 CSU slits
+01] Finding Slit Edges for BX129 ending at 1812. Slit composed of 2 CSU slits
+02] Finding Slit Edges for xS15 ending at 1768. Slit composed of 1 CSU slits
+Skipping (wavelength pixel): 10
+03] Finding Slit Edges for BX131 ending at 1680. Slit composed of 2 CSU slits
+</code></pre>
+<p>The slit names output to the screen should look familiar as they originated from the mask design process. The output files from this process are the following:</p>
+<table>
+<thead>
+<tr>
+<th>Filename</th>
+<th>Contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>combflat_2d_J.fits</code></td>
+<td>FITS image of the flats</td>
+</tr>
+<tr>
+<td><code>flatcombine.lst</code></td>
+<td>The list of files used in the creation of the flat. Contains the full path name to the files.</td>
+</tr>
+<tr>
+<td><code>pixelflat_2d_J.fits</code></td>
+<td>FITS image of the normalized flat. This is the flat used in other redution steps.</td>
+</tr>
+<tr>
+<td><code>slit-edges_J.npy</code></td>
+<td>File containing the slit edge information</td>
+</tr>
+<tr>
+<td><code>slit-edges_J.reg</code></td>
+<td>DS9 regions file that may be overlayed to show the locations of the slits.</td>
+</tr>
+</tbody>
+</table>
+<p>At the end, check the output in ds9. For example:</p>
+<pre><code>&gt; ds9 pixelflat_2d_H.fits -region slit-edges_H.reg
+</code></pre>
+<p>The regions file overlayed on the pixelflat image should look something like:</p>
+<p><img alt="Screenshot" src="../image2.png" title="ds9 screenshot" /></p>
+<p>The green lines must trace the edge of the slit. If they don’t, then the flat step failed. All values should be around 1.0. There are some big features in the detector that you will become familiar with over time.</p>
+<h2 id="k-band-flats">K-band flats</h2>
+<p>At K-band, the dome is hot enough that light is detected at the longest wavelengths at a level of a few hundred counts. Little to no light is seen at the shortest wavelengths. The light from the dome is not entering MOSFIRE at the same angles that the light from the spot illuminated on the dome by the dome lights. Some observers may wish to correct for this difference by subtracting the thermal flat emission from the dome flat emission before normalizing the flats. To complete this flat subtraction, you use the optional keyword lampsofflist in the flat process as seen in the command below:</p>
+<pre><code>Flats.handle_flats('Flat.txt', maskname, band, flatops, lampOffList='FlatThermal.txt')
+</code></pre>
+<p>If thermal flats were included in your calibration sequence (default behavior for K-band), then the FlatThermal.txt file should be populated with a list of thermal flats. Use FlatThermal.txt as the list or modify it as you see necessary.</p>
+<p>The outputs from the flat process will include two additional files. </p>
+<ul>
+<li>combflat_lamps_off_2d_K.fits</li>
+<li>combflat_lamps_on_2d_K.fits</li>
+</ul>
+<p>and now the combflat_2d_K.fits being the difference between the two files.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../wavelengthYJH/" class="btn btn-neutral float-right" title="Wavelength Calibration – Y, J, and H Bands">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../driver/" class="btn btn-neutral" title="The driver.py File"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../driver/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../wavelengthYJH/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/require.js"></script>
+      <script src="../search/search.js"></script>
+
+</body>
+</html>
