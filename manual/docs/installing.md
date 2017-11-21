@@ -17,10 +17,6 @@ The pipeline requires the following python modules:
 
 Install Anaconda as per the instructions on the [Anaconda web site](https://www.continuum.io/downloads).
 
-Once anaconda is installed, you can use the `conda` command line tool to get the other packages you will need.  Begin by updating conda itself by running:
-
-    conda update conda
-
 Now we will create a conda [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) specifically for the MOSFIRE DRP.  Rather than specify everything on the command line, we will get the specification for the environment from the Anaconda Cloud service:
 
     conda env create joshwalawender/mospy_2016
