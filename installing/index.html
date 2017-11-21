@@ -83,6 +83,8 @@
         
             <li><a class="toctree-l4" href="#download-and-install-the-drp">Download and Install the DRP</a></li>
         
+            <li><a class="toctree-l4" href="#alternate-methods-of-installing-python">Alternate Methods of Installing Python</a></li>
+        
         </ul>
     
 
@@ -194,6 +196,32 @@
 <li>scipy</li>
 </ul>
 <h2 id="installing-python">Installing python</h2>
+<h3 id="using-anaconda-cloud-and-conda-environments">Using Anaconda Cloud and Conda Environments</h3>
+<p>Install Anaconda as per the instructions on the <a href="https://www.continuum.io/downloads">Anaconda web site</a>.</p>
+<p>Once anaconda is installed, you can use the <code>conda</code> command line tool to get the other packages you will need.  Begin by updating conda itself by running:</p>
+<pre><code>conda update conda
+</code></pre>
+<p>Now we will create a conda <a href="https://conda.io/docs/user-guide/tasks/manage-environments.html">environment</a> specifically for the MOSFIRE DRP.  Rather than specify everything on the command line, we will get the specification for the environment from the Anaconda Cloud service:</p>
+<pre><code>conda env create joshwalawender/mospy_2016
+</code></pre>
+<p>Now we will invoke that environment:</p>
+<pre><code>source activate mospy_2016
+</code></pre>
+<p>Now we will install the DRP itself.  From now on, if you want to run the DRP, first invoke the <code>mospy_2016</code> environment using <code>source activate mospy_2016</code>.</p>
+<h2 id="download-and-install-the-drp">Download and Install the DRP</h2>
+<p>Download the zip file of the released master branch from the <a href="https://github.com/Keck-DataReductionPipelines/MosfireDRP">github page</a> for the DRP, or directly from <a href="https://github.com/Keck-DataReductionPipelines/MosfireDRP/archive/master.zip">this link</a>.</p>
+<p>Move the zip file to a location on your computer where you want the source code to reside, then unzip the file:</p>
+<pre><code>unzip MosfireDRP-master.zip
+</code></pre>
+<p>Change in to the resulting <code>MosfireDRP-master/</code> directory:</p>
+<pre><code>cd MosfireDRP-master
+</code></pre>
+<p>Run the install program:</p>
+<pre><code>python setup.py install
+</code></pre>
+<p>The executable <code>mospy</code> should now be in your path.  If you used the Anaconda based install, it will be in the Anaconda bin directory (e.g. <code>~/anaconda2/bin/mospy</code>).</p>
+<h2 id="alternate-methods-of-installing-python">Alternate Methods of Installing Python</h2>
+<p>Note, these are no longer the recommended methods of installing the DRP as they do not gauranttee that the various package versions are compatible with the DRP.</p>
 <h3 id="using-the-anaconda-distribution">Using the Anaconda Distribution</h3>
 <p>Install Anaconda as per the instructions on the <a href="https://www.continuum.io/downloads">Anaconda web site</a>.  The pipeline currently only runs on python 2.7, so download and install that version, not the python 3.x version.</p>
 <p>Once anaconda is installed, you can use the <code>conda</code> command line tool to get the other packages you will need.  Begin by updating conda itself by running:</p>
@@ -213,18 +241,6 @@
 pip install astropy
 pip install ccdproc
 </code></pre>
-<h2 id="download-and-install-the-drp">Download and Install the DRP</h2>
-<p>Download the zip file of the released master branch from the <a href="https://github.com/Keck-DataReductionPipelines/MosfireDRP">github page</a> for the DRP, or directly from <a href="https://github.com/Keck-DataReductionPipelines/MosfireDRP/archive/master.zip">this link</a>.</p>
-<p>Move the zip file to a location on your computer where you want the source code to reside, then unzip the file:</p>
-<pre><code>unzip MosfireDRP-master.zip
-</code></pre>
-<p>Change in to the resulting <code>MosfireDRP-master/</code> directory:</p>
-<pre><code>cd MosfireDRP-master
-</code></pre>
-<p>Run the install program:</p>
-<pre><code>python setup.py install
-</code></pre>
-<p>The executable <code>mospy</code> should now be in your path.  If you used the Anaconda based install, it will be in the Anaconda bin directory (e.g. <code>~/anaconda2/bin/mospy</code>).</p>
               
             </div>
           </div>
