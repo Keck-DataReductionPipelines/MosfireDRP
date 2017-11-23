@@ -119,8 +119,8 @@ def make():
             try:
                 c.execute(insert_sql, tuple(values))
             except:
-                print "Query failed on:"
-                print insert_sql
+                print("Query failed on:")
+                print(insert_sql)
                 traceback.print_exc()
                 #sys.exit()
                  
@@ -169,7 +169,7 @@ def sql_for_mask_filter_flats(db, maskname, filter):
     order by fdate, number
             '''.format(maskname, filter)
 
-    print "Flat Query is:", query
+    print("Flat Query is:", query)
     cursor = db.execute(query)
     return cursor.fetchall()
 
@@ -185,7 +185,7 @@ def sql_for_mask_filter_spectra(db, maskname, filter):
 
             '''.format(maskname, filter)
     
-    #print "DB Query is: ", query
+    #print("DB Query is: ", query
     cur = db.execute(query)
     return cur.fetchall()
 
@@ -199,7 +199,7 @@ def sql_for_mask_filter_date(db, maskname, filter, date):
     order by fdate, number
     '''.format(maskname, filter, date)
 
-    print "DB Query is: ", query
+    print("DB Query is: ", query)
     cur = db.execute(query)
 
     return cur.fetchall()
@@ -389,7 +389,7 @@ def plan_to_python(plans):
 
             pos = scis[i].keys()
             if len(pos) != 2:
-                print "Only handling A/B subtraction currently"
+                print("Only handling A/B subtraction currently")
                 continue
 
             wavecombine += \
@@ -480,7 +480,7 @@ def longslits():
 
 
     else:
-        print "Not enough arguments"
+        print("Not enough arguments")
         sys.exit()
 
     res = {
@@ -540,13 +540,13 @@ def masks():
             print(boldunderline_ansi("{0:45s} {1:4s}".format(maskname, filter)))
 
             if filter == 'Dark':
-                print "  Dark frames not fully supported yet"
+                print("  Dark frames not fully supported yet")
                 continue
 
             FL = sql_for_mask_filter_flats(db, maskname, filter)
 
-            print "%i flats on %i nights " % (len(FL), len(set([str(S[1]) for
-                S in FL])))
+            print("%i flats on %i nights " % (len(FL), len(set([str(S[1]) for
+                S in FL]))))
 
             this_plan["flatlist"] = [str("m%s_%4.4i.fits" % (f[1],f[2])) for f
                     in FL]
@@ -618,7 +618,7 @@ def masks():
 
 commands = [make, masks, longslits]
 def usage():
-    print """
+    print(""")
 Commands: """
 
     for command in commands:
@@ -633,7 +633,7 @@ if __name__ == '__main__':
         sys.exit()
 
     if sys.argv[2] == 'make':
-        print "Making database"
+        print("Making database")
         make()
     if sys.argv[2] == 'masks':
         masks()

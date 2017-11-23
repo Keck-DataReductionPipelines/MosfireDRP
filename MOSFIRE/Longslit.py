@@ -83,7 +83,7 @@ def imdiff(A, B, maskname, band, header, options):
 
     try: os.remove(dname)
     except:pass
-    print "Data Diff {0}-{1}".format(operand1,operand2)
+    print("Data Diff {0}-{1}".format(operand1,operand2))
     IO.imarith(operand1, '-', operand2, dname)
 
     ''' Now handle variance '''
@@ -93,11 +93,11 @@ def imdiff(A, B, maskname, band, header, options):
         A[1]["frameid"], B[1]["frameid"], imnumA, imnumB)
 
     
-    print "Var Sum {0}+{1}".format(operand1,operand2)
+    print("Var Sum {0}+{1}".format(operand1,operand2))
     IO.imarith(operand1, '+', operand2, "tmp_" + varname)
     try: os.remove(varname)
     except: pass
-    print "Var add RN {0}+{1}".format(operand1,RN_adu**2)
+    print("Var add RN {0}+{1}".format(operand1,RN_adu**2))
     IO.imarith("tmp_" + varname, '+', RN_adu**2, varname)
 
     try: os.remove("tmp_" + varname)
@@ -159,7 +159,7 @@ def go(maskname,
     wavename = Wavelength.filelist_to_wavename(filenames, band, maskname,
             wavoptions).rstrip(".fits")
 
-    print "Wavefile: {0}".format(wavefile)
+    print("Wavefile: {0}".format(wavefile))
     lamhdr, lamdat = IO.readfits(wavefile)
 
     positions = []

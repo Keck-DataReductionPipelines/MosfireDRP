@@ -48,13 +48,13 @@ import pdb
 
 import MOSFIRE
 from MOSFIRE import Fit, IO, Options, CSU, Wavelength, Filters, Detector
-from MosfireDrpLog import debug, info, warning, error
+from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 __version__ = 0.1
 
 #from IPython.Shell import IPShellEmbed
 #start_shell = IPShellEmbed()
 
-def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold=450,lampOffList=None,longslit=None):
+def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold=450,lampOffList=None,longslit=None, verbose=False):
     '''
     handle_flats is the primary entry point to the Flats module.
 
@@ -85,6 +85,8 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         raise IOError('No flat files found')
     # Print the filenames to Standard-out
     for flat in flatlist:
+        if verbose==True:
+            print(str(flat))
         debug(str(flat))
 
     #Determine if flat files headers are in agreement
@@ -95,7 +97,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         except: bs0 = bs
 
         if np.any(bs0.pos != bs.pos):
-            print "bs0: "+str(bs0.pos)+" bs: "+str(bs.pos)
+            print("bs0: "+str(bs0.pos)+" bs: "+str(bs.pos))
             error("Barset do not seem to match")
             raise Exception("Barsets do not seem to match")
 
@@ -104,7 +106,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
                     "%s in file %s" % (band, hdr["filter"], fname))
             raise Exception("Filter name %s does not match header filter name "
                     "%s in file %s" % (band, hdr["filter"], fname))
-        for i in xrange(len(bpos)):
+        for i in range(len(bpos)):
             b = hdr["B{0:02d}POS".format(i+1)]
             if bpos[i] == -1:
                 bpos[i] = b
@@ -118,6 +120,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
 
     # Imcombine the lamps ON flats
     info("Attempting to combine files in {}".format(flatlist))
+    if verbose==True: print("Attempting to combine files in {}".format(flatlist))
     out = os.path.join("combflat_2d_{:s}.fits".format(band))
     IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
 
@@ -125,6 +128,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     if lampOffList != None: 
         #Retrieve the list of files to use for flat creation. 
         info("Attempting to combine Lamps off files in {}".format(lampOffList))
+        if verbose==True: print("Attempting to combine Lamps off files in {}".format(lampOffList))
         lampOffList = IO.list_file_to_strings(lampOffList)
         for flat in lampOffList:
             debug(str(flat))
@@ -136,22 +140,27 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         IO.imarith(file_on, '-', file_off, file_on_save)
 
     debug("Combined '%s' to '%s'" % (flatlist, maskname))
+    if verbose==True: print("Combined '%s' to '%s'" % (flatlist, maskname))
 #     info("Combined flats for '%s'" % (maskname))
     path = "combflat_2d_%s.fits" % band
     (header, data) = IO.readfits(path, use_bpm=True)
     info("Flat written to %s" % path)
+    if verbose==True: print("Flat written to %s" % path)
 
     # Edge Trace
     if bs.long_slit:
         info( "Long slit mode recognized")
+        if verbose==True: print( "Long slit mode recognized")
         info( "Central row position:   "+str(longslit["row_position"]))
         info( "Upper and lower limits: "+str(longslit["yrange"][0])+" "+str(longslit["yrange"][1]))
         results = find_longslit_edges(data,header, bs, options, edgeThreshold=edgeThreshold, longslit=longslit)
     elif bs.long2pos_slit:
         info( "Long2pos mode recognized")
+        if verbose==True: print( "Long2pos mode recognized")
         results = find_long2pos_edges(data,header, bs, options, edgeThreshold=edgeThreshold, longslit=longslit)
     else:
         info('Finding slit edges in {}'.format(path))
+        if verbose==True: print('Finding slit edges in {}'.format(path))
         results = find_and_fit_edges(data, header, bs, options,edgeThreshold=edgeThreshold)
     results[-1]["maskname"] = maskname
     results[-1]["band"] = band
@@ -166,6 +175,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
          make_pixel_flat(data, results, options, out, flatlist, lampsOff=False)
 
     info( "Pixel flat took {0:6.4} s".format(time.time()-tick))
+    if verbose==True: print( "Pixel flat took {0:6.4} s".format(time.time()-tick))
 
     
 
@@ -196,8 +206,9 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
     slitno = 0
     for result in results[0:-1]:
         slitno += 1
-
-        hdu.header.set("targ%2.2i" % slitno, result["Target_Name"])
+        try:
+            hdu.header.set("targ%2.2i" % slitno, result["Target_Name"])
+        except ValueError: hdu.header.set("targ%2.2i" % slitno, str(result["Target_Name"],  'utf-8'))
 
         bf = result["bottom"]
         tf = result["top"]
@@ -488,7 +499,7 @@ def fit_edge_poly(xposs, xposs_missing, yposs, order):
     V = fun(pix)
     if np.abs(V.max() - V.min()) > 10:
         info ("Forcing a horizontal slit edge")
-        print "Forcing a horizontal slit edge"
+        print("Forcing a horizontal slit edge")
         tmp = yposs_ok[ok]
         fun = np.poly1d(np.median(tmp))
         #fun = np.poly1d(np.median(yposs[ok]))
@@ -519,13 +530,13 @@ def find_long2pos_edges(data, header, bs, options, edgeThreshold=450,longslit=No
             y=longslit["yrange"][1]
         except:
             error ("Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y))
-            print "Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y)
+            print("Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y))
 
 
     # Count and check that the # of objects in the SSL matches that of the MSL
     # This is purely a safety check
     numslits = np.zeros(len(ssl))
-    for i in xrange(len(ssl)):
+    for i in range(len(ssl)):
         slit = ssl[i]
         M = np.where(slit["Target_Name"] == bs.msl["Target_in_Slit"])
 
@@ -586,7 +597,7 @@ def find_long2pos_edges(data, header, bs, options, edgeThreshold=450,longslit=No
         result["hpps"] = hpps
         result["ok"] = ok
         results.append(result)
-        #print "And the top is"+str(result["top"])
+        #print("And the top is"+str(result["top"]))
 
     results.append({"version": options["version"]})
     return results
@@ -615,13 +626,13 @@ def find_longslit_edges(data, header, bs, options, edgeThreshold=450,longslit=No
             y=longslit["yrange"][1]
         except:
             error("Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y))
-            print "Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y)
+            print("Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y))
 
 
     # Count and check that the # of objects in the SSL matches that of the MSL
     # This is purely a safety check
     numslits = np.zeros(len(ssl))
-    for i in xrange(len(ssl)):
+    for i in range(len(ssl)):
         slit = ssl[i]
         M = np.where(slit["Target_Name"] == bs.msl["Target_in_Slit"])
 
@@ -632,7 +643,6 @@ def find_longslit_edges(data, header, bs, options, edgeThreshold=450,longslit=No
     # now begin steps outline above
     results = []
     result = {}
-
     result["Target_Name"] = ssl[0]["Target_Name"]
 
     # 1 Defines a polynomial of degree 0, which is a constant, with the value of the top of the slit
@@ -752,7 +762,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
     # Count and check that the # of objects in the SSL matches that of the MSL
     # This is purely a safety check
     numslits = np.zeros(len(ssl))
-    for i in xrange(len(ssl)):
+    for i in range(len(ssl)):
         slit = ssl[i]
         M = np.where(slit["Target_Name"] == bs.msl["Target_in_Slit"])
 
@@ -799,7 +809,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
 
     # build an array of values containing the lower edge of the slits
     
-    for target in xrange(len(ssl)):        
+    for target in range(len(ssl)):        
     # target is the slit number
         edge -= DY * numslits[target]
         initial_edges=np.append(initial_edges,int(edge))
@@ -816,7 +826,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
     #for k in np.arange(0, len(spatial_centers)):
     #    slit_values = np.append(slit_values,np.mean(vertical_profile[spatial_centers[k]-3:spatial_centers[k]+3]))
     
-    for target in xrange(len(ssl)):
+    for target in range(len(ssl)):
 
         y -= DY * numslits[target]
         y = max(y, 1)
@@ -932,7 +942,7 @@ class FitCheck:
 
     def draw(self):
 
-        print self.edgeno
+        print(self.edgeno)
 
         pos = 0
         dy = 8
@@ -948,7 +958,7 @@ class FitCheck:
         pl.clf()
         start = 0
         dy = 512
-        for i in xrange(2048/dy):
+        for i in range(2048/dy):
             pl.subplot(2048/dy,1,i+1)
             pl.xlim(start, start+dy)
 
@@ -980,7 +990,7 @@ class FitCheck:
             if False:
                 L = top-bot
                 Lx = len(edge["xposs"])
-                for i in xrange(Lx):
+                for i in range(Lx):
                     xp = edge["xposs"][i]
                     frac1 = (edge["top"](xp)-bot-1)/L
                     pl.axvline(xp,ymin=frac1)
@@ -996,14 +1006,14 @@ class FitCheck:
         x = event.xdata
         y = event.ydata
 
-        print kp
+        print(kp)
 
         if kp == 'n': 
             self.edgeno += 1
 
             if self.edgeno > len(self.edges):
                 self.edgeno = len(self.edges)
-                print "done"
+                print("done")
             else:
                 self.draw()
 
@@ -1011,7 +1021,7 @@ class FitCheck:
             self.edgeno -= 1
             if self.edgeno < 2:
                 self.edgeno = 2
-                print "Beginning" 
+                print("Beginning" )
             else:
                 self.draw()
 
@@ -1031,7 +1041,7 @@ class TestFlatsFunctions(unittest.TestCase):
                     dtype=np.float) / 7.02)
 
             for i in range(len(ssl)):
-                    print ssl[i]["Target_Name"], numslits[i]
+                    print(ssl[i]["Target_Name"], numslits[i])
 
 if __name__ == '__main__':
     unittest.main()
