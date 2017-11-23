@@ -54,7 +54,7 @@ __version__ = 0.1
 #from IPython.Shell import IPShellEmbed
 #start_shell = IPShellEmbed()
 
-def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold=450,lampOffList=None,longslit=None, verbose=False):
+def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold=450,lampOffList=None,longslit=None):
     '''
     handle_flats is the primary entry point to the Flats module.
 
@@ -85,8 +85,6 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         raise IOError('No flat files found')
     # Print the filenames to Standard-out
     for flat in flatlist:
-        if verbose==True:
-            print(str(flat))
         debug(str(flat))
 
     #Determine if flat files headers are in agreement
@@ -120,7 +118,6 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
 
     # Imcombine the lamps ON flats
     info("Attempting to combine files in {}".format(flatlist))
-    if verbose==True: print("Attempting to combine files in {}".format(flatlist))
     out = os.path.join("combflat_2d_{:s}.fits".format(band))
     IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
 
@@ -128,7 +125,6 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     if lampOffList != None: 
         #Retrieve the list of files to use for flat creation. 
         info("Attempting to combine Lamps off files in {}".format(lampOffList))
-        if verbose==True: print("Attempting to combine Lamps off files in {}".format(lampOffList))
         lampOffList = IO.list_file_to_strings(lampOffList)
         for flat in lampOffList:
             debug(str(flat))
@@ -140,27 +136,22 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         IO.imarith(file_on, '-', file_off, file_on_save)
 
     debug("Combined '%s' to '%s'" % (flatlist, maskname))
-    if verbose==True: print("Combined '%s' to '%s'" % (flatlist, maskname))
 #     info("Combined flats for '%s'" % (maskname))
     path = "combflat_2d_%s.fits" % band
     (header, data) = IO.readfits(path, use_bpm=True)
     info("Flat written to %s" % path)
-    if verbose==True: print("Flat written to %s" % path)
 
     # Edge Trace
     if bs.long_slit:
         info( "Long slit mode recognized")
-        if verbose==True: print( "Long slit mode recognized")
         info( "Central row position:   "+str(longslit["row_position"]))
         info( "Upper and lower limits: "+str(longslit["yrange"][0])+" "+str(longslit["yrange"][1]))
         results = find_longslit_edges(data,header, bs, options, edgeThreshold=edgeThreshold, longslit=longslit)
     elif bs.long2pos_slit:
         info( "Long2pos mode recognized")
-        if verbose==True: print( "Long2pos mode recognized")
         results = find_long2pos_edges(data,header, bs, options, edgeThreshold=edgeThreshold, longslit=longslit)
     else:
         info('Finding slit edges in {}'.format(path))
-        if verbose==True: print('Finding slit edges in {}'.format(path))
         results = find_and_fit_edges(data, header, bs, options,edgeThreshold=edgeThreshold)
     results[-1]["maskname"] = maskname
     results[-1]["band"] = band
@@ -206,6 +197,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
     slitno = 0
     for result in results[0:-1]:
         slitno += 1
+        #There seems to be a bit of an issue with this on Longslits, where it is being read as bites not as str
         try:
             hdu.header.set("targ%2.2i" % slitno, result["Target_Name"])
         except ValueError: hdu.header.set("targ%2.2i" % slitno, str(result["Target_Name"],  'utf-8'))
