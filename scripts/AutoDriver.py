@@ -20,9 +20,9 @@ class Driver:
         self.offsetFiles = []
         allowedTypes = ['slitmask', 'longslit', 'long2pos', 'long2pos_specphot']
         if self.type not in allowedTypes:
-            print "Unknown driver type"
+            print("Unknown driver type")
         else:
-            print "Generating automatic driver file "+outputFile
+            print("Generating automatic driver file "+outputFile)
             self.target = open(outputFile,'w')
             self.import_section()
 
@@ -214,12 +214,12 @@ class Driver:
                 self.waveName = "lambda_solution_"+str(Wavelength.filelist_to_wavename(waveFiles, self.band, self.maskName,""))
             else:
                 # we have no arcs. For the time being, we can try with sky lines but this only works with long2pos specphot
-                print "#####################################################################################################"
-                print "WARNING: There are no arc calibration files"
-                print "         The pipeline will try to use sky lines but this only works if the observation is long enough"
-                print "         and if you are only using long2pos. It will NOT work on long2pos_specphot"
-                print "         Please contact the MosfireDRP team to obtain a standard wavelength solution"
-                print "#####################################################################################################" 
+                print("#####################################################################################################")
+                print("WARNING: There are no arc calibration files")
+                print("         The pipeline will try to use sky lines but this only works if the observation is long enough")
+                print("         and if you are only using long2pos. It will NOT work on long2pos_specphot")
+                print("         Please contact the MosfireDRP team to obtain a standard wavelength solution")
+                print("#####################################################################################################" )
                 self.addLine("obsfiles = obsfiles_posAnarrow + obsfiles_posCnarrow")
                 self.addLine("Wavelength.imcombine(obsfiles, maskname, band, waveops)")
                 self.addLine("Wavelength.fit_lambda_interactively(maskname, band, obsfiles ,waveops,longslit=longslit, noninteractive=noninteractiveflag)")
@@ -337,10 +337,10 @@ def OffsetPairs():
                 if tname in targets_and_offsets:
                     tmp=targets_and_offsets[tname]
                     tmp.append(float(off_array[0]))
-                    #print "adding new offset to target "+str(tname)
+                    #print("adding new offset to target "+str(tname))
                     targets_and_offsets[tname]=tmp
                 else:
-                    #print "creating new offset set for target "+str(tname)
+                    #print("creating new offset set for target "+str(tname))
                     targets_and_offsets[tname]=[float(off_array[0]),]
 
         return targets_and_offsets,type
@@ -414,7 +414,7 @@ def SetupFiles(target=None, offsets=None, type=None):
 
 #set noninteractive variable
 if len(sys.argv) > 3:
-    print "Usage: mospy AutoDriver [True|False]"
+    print("Usage: mospy AutoDriver [True|False]")
     sys.exit()
 
 noninteractiveval=False
@@ -424,14 +424,14 @@ if len(sys.argv) == 3:
     elif str(sys.argv[2]) in ("f", "F" "false", "False"):
         noninteractiveval=False
     else:
-        print "Usage: mospy AutoDriver [True|False]"
+        print("Usage: mospy AutoDriver [True|False]")
         sys.exit()
 
 targets_and_offsets,type = OffsetPairs()
 
 
 if 'slitmask' in targets_and_offsets:
-    print "slitmask mode"
+    print("slitmask mode")
     mydriver=Driver("Driver.py","slitmask")
     mydriver.printHeader()    
     obsLines,obsFiles,specphot = SetupFiles('slitmask',targets_and_offsets['slitmask'],type)   
@@ -448,7 +448,7 @@ if 'slitmask' in targets_and_offsets:
 elif type is 'long2pos' or type is 'longslit':
     Targets = targets_and_offsets.keys()
     for target in Targets:
-        print str(type)+" mode"
+        print(str(type)+" mode")
         obsLines,obsFiles,specphot = SetupFiles(target,targets_and_offsets[target],type)
         if type is 'longslit':
             mydriver=Driver("Longslit_"+str(target)+".py","longslit")
