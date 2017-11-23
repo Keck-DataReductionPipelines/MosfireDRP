@@ -182,6 +182,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         solution = all_solutions[0][i_slit]
         header = EPS[0].copy()
         obj = header['OBJECT']
+        #Again some weirdness with Longslit target names
         try:
             target_name = str(bs.ssl[-(i_slit+1)]['Target_Name'], 'utf-8')
         except TypeError:

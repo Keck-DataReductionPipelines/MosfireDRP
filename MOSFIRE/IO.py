@@ -344,16 +344,13 @@ returns ['file1', 'file2', 'file3']
     for fname in filelist:
         debug( "Loading: %s" % fname)
         inputs = np.genfromtxt(fname,dtype=str)
-        #inputs = np.loadtxt(fname, dtype=[("f", "S100")])
         path = ""
         start_index = 0
-        #print(inputs[0])
         if len(inputs):
             if os.path.isabs(inputs[0][0]):
                 path = inputs[0]
                 start_index = 1
             for i in range(start_index, len(inputs)):
-                #print(inputs[i])
                 output.append(os.path.join(path, inputs[i]))
 
     return output
