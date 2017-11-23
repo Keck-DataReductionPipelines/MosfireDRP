@@ -154,7 +154,7 @@ def rename_files(wavenames, maskname, band, wavops):
             b = os.path.join(path, fname % (band, "")) + gz(a)
             os.rename(a, b)
         except: 
-            print "Ignoring renaming of: ", fname
+            print("Ignoring renaming of: ", fname)
             pass
     
 
@@ -205,7 +205,7 @@ def handle_combine(wavenames, maskname, band, wavops):
     N = len(wavenames)
     assert(N > 0)
 
-    print "Starting"
+    print("Starting")
 
     if N == 1:  rename_files(wavenames, maskname, band, wavops)
     if N > 1:   stack_files(wavenames, maskname, band, wavops)

@@ -17,7 +17,7 @@ from scipy import interpolate as II
 
 import MOSFIRE
 from MOSFIRE import CSU, Fit, IO, Options, Filters, Detector, Wavelength
-from MosfireDrpLog import debug, info, warning, error
+from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 
 #from IPython.Shell import IPShellEmbed
 #ipshell = IPShellEmbed()
@@ -113,7 +113,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
         shifts = np.zeros(len(files))
 
     warnings.filterwarnings('ignore')
-    for i in xrange(len(files)):
+    for i in range(len(files)):
         fname = files[i]
         thishdr, data, bs = IO.readmosfits(fname, options, extension=extension)
         itimes[i,:,:] = thishdr["truitime"]
@@ -235,7 +235,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
     
     if new_from_chuck and not standard:
         if len(files) >= 5:
-            print "Sigclip CRR"
+            print("Sigclip CRR")
             srt = np.argsort(electrons, axis=0, kind='quicksort')
             shp = el_per_sec.shape
             sti = np.ogrid[0:shp[0], 0:shp[1], 0:shp[2]]
@@ -250,7 +250,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
             std = np.std(el_per_sec[1:-1,:,:], axis = 0)
 
             drop = np.where( (el_per_sec > (mean+std*4)) | (el_per_sec < (mean-std*4)) )
-            print "dropping: ", len(drop[0])
+            print("dropping: ", len(drop[0]))
             electrons[drop] = 0.0
             itimes[drop] = 0.0
 
@@ -263,7 +263,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
             warning( "Cosmic Ray Rejection.")
             # the "if false" line disables cosmic ray rejection"
             if False: 
-                for i in xrange(len(files)):
+                for i in range(len(files)):
                     el = electrons[i,:,:]
                     it = itimes[i,:,:]
                     el_mf = scipy.signal.medfilt(el, 5)
@@ -323,7 +323,7 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
             warning( "Cosmic Ray Rejection.")
             # the "if false" line disables cosmic ray rejection"
             if False: 
-                for i in xrange(len(files)):
+                for i in range(len(files)):
                      el = electrons[i,:,:]
                      it = itimes[i,:,:]
                      # calculate the median image
@@ -445,7 +445,7 @@ def handle_background(filelist, wavename, maskname, band_name, options,
 
     i = 0
     header = pf.Header()
-    for i in xrange(len(filelist)):
+    for i in range(len(filelist)):
         fl = filelist[i]
         files = IO.list_file_to_strings(fl)
         info("Combining observation files listed in {}".format(fl))
@@ -480,7 +480,7 @@ def handle_background(filelist, wavename, maskname, band_name, options,
 
     bs = bss[0]
 
-    for i in xrange(num_outputs):
+    for i in range(num_outputs):
         posname0 = plan[i][0]
         posname1 = plan[i][1]
         info("Handling %s - %s" % (posname0, posname1))
@@ -489,7 +489,7 @@ def handle_background(filelist, wavename, maskname, band_name, options,
         itime = np.mean([times[posname0], times[posname1]], axis=0)
 
         p = Pool()
-        solutions = p.map(background_subtract_helper, xrange(len(bs.ssl)))
+        solutions = p.map(background_subtract_helper, list(range(len(bs.ssl))))
         p.close()
 
         write_outputs(solutions, itime, header, maskname, band, plan[i], options, target=target)
@@ -551,7 +551,7 @@ def write_outputs(solutions, itime, header, maskname, band_name, plan, options, 
     rectified_itime = np.zeros((2048, nspec), dtype=np.float32)
 
     from scipy.interpolate import interp1d
-    for i in xrange(2048):
+    for i in range(2048):
         ll = lam[1][i,:]
         ss = sky_sub_out[i,:]
 

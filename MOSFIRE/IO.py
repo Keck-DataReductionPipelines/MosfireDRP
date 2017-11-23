@@ -22,9 +22,8 @@ import shutil
 import ccdproc
 
 import MOSFIRE
-import CSU
-import Options
-from MosfireDrpLog import debug, info, warning, error
+from MOSFIRE import CSU, Options
+from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 
 theBPM = None # the Bad pixel mask
 
@@ -37,6 +36,7 @@ def badpixelmask():
         hdulist = pf.open(path)
         header = hdulist[0].header
         theBPM = hdulist[0].data
+        hdulist.close()
 
     return theBPM
 
@@ -117,7 +117,7 @@ def load_lambdaslit(fnum, maskname, band, options):
 
     fn = "lambda_solution_{0}.fits".format(fnum)
 
-    print fn
+    print(fn)
 
     ret = readfits(fn, options)
     if ret[0]['filter'] != band:
@@ -216,7 +216,7 @@ def readfits(path, use_bpm=False):
     if use_bpm:
         theBPM = badpixelmask()
         data = np.ma.masked_array(data, theBPM, fill_value=0)
-
+    hdulist.close()
     return (header, data)
 
 
@@ -266,7 +266,7 @@ def read_drpfits(maskname, fname, options):
 
         output.append(hdu.data)
 
-
+    hdulist.close()
     return output
 
 def fname_to_date_tuple(fname):
@@ -343,16 +343,18 @@ returns ['file1', 'file2', 'file3']
 
     for fname in filelist:
         debug( "Loading: %s" % fname)
-        inputs = np.loadtxt(fname, dtype= [("f", "S100")])
+        inputs = np.genfromtxt(fname,dtype=str)
+        #inputs = np.loadtxt(fname, dtype=[("f", "S100")])
         path = ""
         start_index = 0
+        #print(inputs[0])
         if len(inputs):
             if os.path.isabs(inputs[0][0]):
-                path = inputs[0][0]
+                path = inputs[0]
                 start_index = 1
-
-            for i in xrange(start_index, len(inputs)):
-                output.append(os.path.join(path, inputs[i][0]))
+            for i in range(start_index, len(inputs)):
+                #print(inputs[i])
+                output.append(os.path.join(path, inputs[i]))
 
     return output
 
@@ -472,12 +474,13 @@ def readmosfits(fname, options, extension=None):
 
     bs = CSU.Barset()
     bs.set_header(header, ssl=ssl, msl=msl, asl=asl, targs=targs)
+    hdulist.close()
 
     return (header, data, bs)
 
 def readscitbl(path):
 
-    print path
+    print(path)
 
     hdulist = pf.open(path)
     header = hdulist[0].header
@@ -488,7 +491,7 @@ def readscitbl(path):
         asl = hdulist[4].data
     except:
         warning("Improper MOSFIRE FITS File: %s" % path)
-
+    hdulist.close()
     return header, targs, ssl, msl, asl
 
 
@@ -570,7 +573,8 @@ def imarith(operand1, op, operand2, result):
 
     hdu = pf.PrimaryHDU(data=data, header=header)
     hdu.writeto(result)
-
+    hdulist1.close()
+    hdulist2.close()
 
 def imcombine(filelist, out, options, method="average", reject="none",\
               lsigma=3, hsigma=3, mclip=False,\

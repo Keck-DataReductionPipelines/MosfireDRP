@@ -20,7 +20,7 @@ import pdb
 
 import MOSFIRE
 from MOSFIRE import Background, CSU, Fit, IO, Options, Filters, Detector, Wavelength
-from MosfireDrpLog import debug, info, warning, error
+from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 
 
 def handle_rectification(maskname, in_files, wavename, band_pass, files, options,
@@ -178,12 +178,14 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
     x, x, bs = IO.readmosfits(files[0], options)
     
 
-    for i_slit in xrange(len(solutions)):
+    for i_slit in range(len(solutions)):
         solution = all_solutions[0][i_slit]
         header = EPS[0].copy()
         obj = header['OBJECT']
-
-        target_name = bs.ssl[-(i_slit+1)]['Target_Name']
+        try:
+            target_name = str(bs.ssl[-(i_slit+1)]['Target_Name'], 'utf-8')
+        except TypeError:
+            target_name = bs.ssl[-(i_slit+1)]['Target_Name']
         header['OBJECT'] = target_name
 
         pixel_dist = np.float(bs.ssl[-(i_slit+1)]['Target_to_center_of_slit_distance'])/0.18
@@ -221,7 +223,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         tms = solution["itime_img"]
 
 
-        for i_solution in xrange(1,len(all_solutions)):
+        for i_solution in range(1,len(all_solutions)):
             info("Combining solution %i" %i_solution)
             solution = all_solutions[i_solution][i_slit]
             img += solution["eps_img"]
@@ -320,7 +322,7 @@ def r_interpol(ls, ss, lfid, tops, top, shift_pix=0, pad=[0,0], fill_value=0.0):
     L = np.double(len(lfid))
     
     # First interpolate onto a common wavelength grid
-    for i in xrange(S[0]):
+    for i in range(S[0]):
 
         ll = ls[i,:]
         sp = ss[i,:]
@@ -338,7 +340,7 @@ def r_interpol(ls, ss, lfid, tops, top, shift_pix=0, pad=[0,0], fill_value=0.0):
     f = II.interp1d(ls[10, :], vert_shift, bounds_error=False, 
         fill_value = fill_value)
 
-    for i in xrange(output.shape[1]):
+    for i in range(output.shape[1]):
         to_shift = f(fidl[i])
         x = np.arange(output.shape[0])
         y = II.interp1d(x, output[:, i], bounds_error=False,
@@ -377,7 +379,7 @@ def handle_rectification_helper(edgeno):
     vv = vars[1][bot:top, :].filled(np.inf)
     it  = itimes[1][bot:top, :].filled(0.0)
 
-    lmid = ll[ll.shape[0]/2,:]
+    lmid = ll[ll.shape[0]//2,:]
     hpp = Filters.hpp[band]
 
     minl = lmid[0] if lmid[0]>hpp[0] else hpp[0]
