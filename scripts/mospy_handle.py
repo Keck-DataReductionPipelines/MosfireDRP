@@ -14,14 +14,14 @@ import glob
 from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 
 if len(sys.argv) < 3:
-    print '''Usage: mospy handle [target]'''
+    print('''Usage: mospy handle [target]''')
     sys.exit()
 
 ## Output the file list to a text file for later examination
 if os.path.exists('filelist.txt'):
     debug('Removing old filelist.txt')
     os.remove('filelist.txt')
-fl = open('filelist.txt', 'write')
+fl = open('filelist.txt', 'w')
 
 
 files = []
@@ -36,7 +36,7 @@ for fname in files:
 
     try:
         header = IO.readheader(fname)
-    except IOError, err:
+    except IOError:#, err:
         fl.write("Couldn't IO %s\n" % fname)
         continue
     except:
@@ -97,7 +97,7 @@ for fname in files:
         align = True
 
     if maskname.find('LONGSLIT') != -1:
-#         print "longslit file"
+#         print("longslit file")
         align = False
 
     if maskname.find('long2pos') != -1:
@@ -160,14 +160,14 @@ for fname in files:
     elif header['mgtname'] == 'mirror':
         masks[maskname][date][filter]['Image'].append(fname)
     elif offset != 0:
-#         print "offset is now:"+str(offset)
+#         print("offset is now:"+str(offset))
         if frameid in ["A", "B", "A'", "B'"]:
             if offset in masks[maskname][date][filter]: 
                 masks[maskname][date][filter][offset].append((fname, itime))
-#                 print "adding file to existing offset file"
+#                 print("adding file to existing offset file")
             else: 
                 masks[maskname][date][filter][offset] = [(fname, itime)]
-#                 print "creating new offset file"
+#                 print("creating new offset file")
         else:
             fl.write('{} has unexpected FRAMEID: {}\n'.format(fname, frameid))
     else:
@@ -196,7 +196,7 @@ def handle_file_list(output_file, files):
     '''Write a list of paths to MOSFIRE file to output_file.'''
 
     if os.path.isfile(output_file):
-        print "%s: already exists, skipping" % output_file 
+        print("%s: already exists, skipping" % output_file )
 #         pass
 
     if len(files) > 0:
