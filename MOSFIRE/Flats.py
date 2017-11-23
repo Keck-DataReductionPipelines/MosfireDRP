@@ -166,8 +166,6 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
          make_pixel_flat(data, results, options, out, flatlist, lampsOff=False)
 
     info( "Pixel flat took {0:6.4} s".format(time.time()-tick))
-    if verbose==True: print( "Pixel flat took {0:6.4} s".format(time.time()-tick))
-
     
 
 def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
