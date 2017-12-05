@@ -161,7 +161,7 @@ for fname in files:
         masks[maskname][date][filter]['Image'].append(fname)
     elif offset != 0:
 #         print "offset is now:"+str(offset)
-        if frameid in ["A", "B", "A'", "B'"]:
+        if frameid in ["A", "B", "A'", "B'","D","C", "E"]:
             if offset in masks[maskname][date][filter]: 
                 masks[maskname][date][filter][offset].append((fname, itime))
 #                 print "adding file to existing offset file"

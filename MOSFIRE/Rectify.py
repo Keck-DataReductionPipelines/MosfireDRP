@@ -24,7 +24,7 @@ from MosfireDrpLog import debug, info, warning, error
 
 
 def handle_rectification(maskname, in_files, wavename, band_pass, files, options,
-        commissioning_shift=3.0, target='default'):
+        commissioning_shift=3.0, target='default', plan=None):
     '''Handle slit rectification and coaddition.
 
     Args:
@@ -100,12 +100,15 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
     if len(set(posnames)) is 1:
         plans = [['A']]
     else:
-        plans = Background.guess_plan_from_positions(set(posnames))
+        if plan is None:
+            plans = Background.guess_plan_from_positions(set(posnames))
+        else:
+            plans = plan
 
     all_shifts = []
-    for plan in plans:
+    for myplan in plans:
         to_append = []
-        for pos in plan:
+        for pos in myplan:
             to_append.append(postoshift[pos])
 
         all_shifts.append(to_append)
