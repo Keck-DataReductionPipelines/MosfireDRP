@@ -209,7 +209,6 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
             hpps = [0, Detector.npix[0]]
 
         xs = np.arange(hpps[0], hpps[1])
-
         top = pixel_min(tf(xs))
         bottom = pixel_max(bf(xs))
 
@@ -225,7 +224,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
         v = np.poly1d(np.polyfit(xs,v,
             options['flat-field-order']))(xs).ravel()
 
-        for i in np.arange(bottom-1, top+1):
+        for i in np.arange(bottom-1, top):
             flat[i,hpps[0]:hpps[1]] = v
 
     info("Producing Pixel Flat...")
