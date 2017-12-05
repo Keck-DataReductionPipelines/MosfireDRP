@@ -11,5 +11,3 @@ The support team includes:
 * Marc Kassis, Luca Rizzi, Jim Lyke, and Josh Walawender at W. M. Keck Observatory
 * Chuck Steidel at Caltech
 * Tuan Do at UCLA
-
-For direct communication with the support and development team, please email [mosfiredrp@gmail.com](mailto:mosfiredrp@gmail.com)

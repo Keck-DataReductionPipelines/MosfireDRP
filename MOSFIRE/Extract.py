@@ -576,7 +576,7 @@ def optimal_extraction(image, variance_image, aperture_table,
         if fitsfileout:
             bn, ext = os.path.splitext(fitsfileout)
             fitsfilename = '{}_{:02d}{}'.format(bn, i, ext)
-            hdulist.writeto(fitsfilename, clobber=True)
+            hdulist.writeto(fitsfilename, overwrite=True)
 
 
 ##-------------------------------------------------------------------------
