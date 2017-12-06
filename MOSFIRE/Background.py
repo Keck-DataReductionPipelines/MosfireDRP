@@ -1,4 +1,6 @@
+from __future__ import division
 
+from past.utils import old_div
 import os
 import sys
 import time
@@ -132,10 +134,10 @@ def imcombine(files, maskname, options, flat, outname=None, shifts=None,
 
         header["imfno%3.3i" % (fnum)] =  (fname, "img%3.3i file name" % fnum)
 
-        map(lambda x: rem_header_key(header, x), ["CTYPE1", "CTYPE2", "WCSDIM",
+        list(map(lambda x: rem_header_key(header, x), ["CTYPE1", "CTYPE2", "WCSDIM",
             "CD1_1", "CD1_2", "CD2_1", "CD2_2", "LTM1_1", "LTM2_2", "WAT0_001",
             "WAT1_001", "WAT2_001", "CRVAL1", "CRVAL2", "CRPIX1", "CRPIX2",
-            "RADECSYS"])
+            "RADECSYS"]))
 
         for card in header.cards:
             if card == '': continue
@@ -657,7 +659,7 @@ def background_subtract_helper(slitno):
     ss = slit[train_roi].flatten()
     ys = Y[train_roi].flatten()
 
-    dl = np.ma.median(np.diff(lslit[lslit.shape[0]/2,:]))
+    dl = np.ma.median(np.diff(lslit[old_div(lslit.shape[0]/2),:]))
     if dl == 0:
         return {"ok": False}
 
@@ -678,7 +680,7 @@ def background_subtract_helper(slitno):
 
     # 3
     pp = np.poly1d([1.0])
-    ss = (slit[train_roi] / pp(Y[train_roi])).flatten()
+    ss = (old_div(slit[train_roi] / pp(Y[train_roi]))).flatten()
     ss = ss[sort]
 
     knotstart = max(hpps[0], min(ls[OK])) + 5
