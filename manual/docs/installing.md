@@ -11,34 +11,42 @@ The pipeline requires the following python modules:
 * ccdproc
 * scipy
 
-## Installing python
+## Installing Python
 
 ### Using Anaconda Cloud and Conda Environments
 
 Install Anaconda as per the instructions on the [Anaconda web site](https://www.continuum.io/downloads).
 
-Now we will create a conda [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) specifically for the MOSFIRE DRP.  Rather than specify everything on the command line, we will get the specification for the environment from the Anaconda Cloud service:
+Now we will create a conda [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) specifically for the MOSFIRE DRP.  Rather than specify everything on the command line, we will get the specification for the environment from the Anaconda Cloud service.  There are two specifications, one for linux (tested on a CentOS 7 system) and one for macOS (tested on macOS 10.12.6).  Get the one appropriate for your system using one of the commands below:
 
-    conda env create joshwalawender/mospy_2016
+    conda env create KeckObservatory/mospy_2016_linux
+
+or
+
+    conda env create KeckObservatory/mospy_2016_macOS
 
 Now we will invoke that environment:
 
-    source activate mospy_2016
+    source activate mospy_2016_linux
 
-Now we will install the DRP itself.  From now on, if you want to run the DRP, first invoke the `mospy_2016` environment using `source activate mospy_2016`.
+or
+
+    source activate mospy_2016_macOS
+
+Now we will install the DRP itself.  From now on, if you want to run the DRP, first invoke the appropriate environment using `source activate mospy_2016_linux` or `source activate mospy_2016_macOS`.
 
 
 ## Download and Install the DRP
 
-Download the zip file of the released master branch from the [github page](https://github.com/Keck-DataReductionPipelines/MosfireDRP) for the DRP, or directly from [this link](https://github.com/Keck-DataReductionPipelines/MosfireDRP/archive/master.zip).
+Download the zip file of the released version from [GitHub](https://github.com/Keck-DataReductionPipelines/MosfireDRP/releases/download/Release2016A/MosfireDRP-2016release.zip).
 
 Move the zip file to a location on your computer where you want the source code to reside, then unzip the file:
 
-    unzip MosfireDRP-master.zip
+    unzip MosfireDRP-2016release.zip
 
-Change in to the resulting ```MosfireDRP-master/``` directory:
+Change in to the resulting ```MosfireDRP-2016release/``` directory:
 
-    cd MosfireDRP-master
+    cd MosfireDRP-2016release
 
 Run the install program:
 
@@ -53,23 +61,15 @@ Note, these are no longer the recommended methods of installing the DRP as they 
 
 ### Using the Anaconda Distribution
 
-Install Anaconda as per the instructions on the [Anaconda web site](https://www.continuum.io/downloads).  The pipeline currently only runs on python 2.7, so download and install that version, not the python 3.x version.
+Install Anaconda as per the instructions on the [Anaconda web site](https://www.continuum.io/downloads).  The pipeline currently (2016 release) only runs on python 2.7, so download and install that version, not the python 3.x version.
 
-Once anaconda is installed, you can use the `conda` command line tool to get the other packages you will need.  Begin by updating conda itself by running:
+To generate an environment similar to the one in the recommended anaconda cloud based install, you can use the following command:
 
-    conda update conda
+```
+conda create --no-default-packages -c astropy -n mospy_2016 python=2.7.13 astropy=2.0.2 ccdproc=1.3.0 ipython=5.4.1 numpy=1.11.2 scipy=0.18.1 PyQt=5.6.0
+```
 
-If you like, you can now update all packages which are out of date by running:
-
-    conda update --all
-
-Install [ccdproc](http://ccdproc.readthedocs.io/en/latest/index.html) (an "astropy affiliated" package) using the astropy channel:
-
-    conda install -c astropy ccdproc
-
-You should now have all the requirements to run the 2016 version of the MOSFIRE DRP.
-
-Note: An Anaconda-based install has been tested on both Mac OS X 10.11.5 ("El Capitan") and on linux: Cent OS 7 (64-bit).
+You should now have all the requirements to run the MOSFIRE DRP.  This should work on any anaconda install, even if the pre-packaged linux and macOS environments are incompatible with your machine.
 
 ### Using Other Python Install Methods
 
