@@ -156,7 +156,7 @@ def bar_to_slit(x):
     if (x < 1) or (x > numbars):
         error("Not indexing CSU properly")
         raise MismatchError("Not indexing CSU properly")
-    return int(x+1)/2
+    return int(x+1)//2
 
 def to_ds9_region(poss, dash=1, color="green", label=True):
     s = []
@@ -178,7 +178,7 @@ def to_ds9_region(poss, dash=1, color="green", label=True):
     return s
 
 
-class Barset:
+class Barset(object):
     '''Barset provides convenience functions around a CSU slitmask'''
 
     pos = [] 
