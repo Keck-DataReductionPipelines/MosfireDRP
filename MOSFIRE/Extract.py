@@ -306,7 +306,7 @@ class ApertureEditor(object):
             self.set_width(id=id)
         elif event.key == 'p':
             id = self.determine_id(event)
-            self.set_position(id=id)
+            self.set_position(id=id, pos=event.xdata)
         elif event.key == 'g':
             self.fit_trace(event.xdata, event.ydata/abs(event.ydata))
         elif event.key == 'd':
