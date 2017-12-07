@@ -338,7 +338,7 @@ class ApertureEditor(object):
 ##-------------------------------------------------------------------------
 ## Find Stellar Traces
 ##-------------------------------------------------------------------------
-def find_apertures(hdu, guesses=[], title=None, interactive=True,
+def find_apertures(hdu, guesses=[], width=10, title=None, interactive=True,
                    maskname=''):
     '''Finds targets in spectra by simply collapsing the 2D spectra in the
     wavelength direction and fitting Gaussian profiles to the positional profile
@@ -368,7 +368,6 @@ def find_apertures(hdu, guesses=[], title=None, interactive=True,
         if snr > 5:
             ap.fit_trace(pos, amp)
         else:
-            width = 10
             ap.add_aperture(pos, width)
     else:
         for guess in guesses:
@@ -582,7 +581,8 @@ def optimal_extraction(image, variance_image, aperture_table,
 ##-------------------------------------------------------------------------
 ## Extract Spectra Function
 ##-------------------------------------------------------------------------
-def extract_spectra(maskname, band, interactive=True, target='default'):
+def extract_spectra(maskname, band, interactive=True, width=10,
+                    target='default'):
 
     if target == 'default':
         ## Get objectnames from slit edges
@@ -610,7 +610,7 @@ def extract_spectra(maskname, band, interactive=True, target='default'):
     for i,eps_file in enumerate(eps_files):
         objectname = objectnames[i]
         eps = fits.open(eps_file, 'readonly')[0]
-        aperture_tables[objectname] = find_apertures(eps, title=objectname,
+        aperture_tables[objectname] = find_apertures(eps, width=width, title=objectname,
                                                      interactive=interactive,
                                                      maskname=maskname,
                                                      )

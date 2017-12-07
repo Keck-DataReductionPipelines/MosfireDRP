@@ -266,14 +266,14 @@ class Driver:
 
     def printExtraction(self):
         if self.type is 'slitmask':
-            self.addLine('Extract.extract_spectra(maskname, band, interactive=(not noninteractiveflag))')
+            self.addLine('Extract.extract_spectra(maskname, band, width=10, interactive=(not noninteractiveflag))')
         elif self.type is 'longslit':
-            self.addLine('Extract.extract_spectra(maskname, band, target=target, interactive=(not noninteractiveflag))')
+            self.addLine('Extract.extract_spectra(maskname, band, width=10, target=target, interactive=(not noninteractiveflag))')
         elif self.type is 'long2pos':
-            self.addLine('Extract.extract_spectra(maskname, band, target=target_posAnarrow, interactive=(not noninteractiveflag))')
-            self.addLine('Extract.extract_spectra(maskname, band, target=target_posCnarrow, interactive=(not noninteractiveflag))')
+            self.addLine('Extract.extract_spectra(maskname, band, width=10, target=target_posAnarrow, interactive=(not noninteractiveflag))')
+            self.addLine('Extract.extract_spectra(maskname, band, width=10, target=target_posCnarrow, interactive=(not noninteractiveflag))')
         elif self.type is 'long2pos_specphot':
-            self.addLine('Extract.extract_spectra(maskname, band, target=target, interactive=(not noninteractiveflag))')
+            self.addLine('Extract.extract_spectra(maskname, band, width=10, target=target, interactive=(not noninteractiveflag))')
 
 
     def printHeader(self):
