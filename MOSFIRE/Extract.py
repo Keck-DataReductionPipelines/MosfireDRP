@@ -366,8 +366,10 @@ def find_apertures(hdu, guesses=[], width=10, title=None, interactive=True,
         snr = amp/std
         # If SNR is strong, fit a gaussian, if not, just blindly add an aperture
         if snr > 5:
+            info('  Using trace to determine extraction aperture')
             ap.fit_trace(pos, amp)
         else:
+            info('  Could not find strong trace, adding aperture blindly')
             ap.add_aperture(pos, width)
     else:
         for guess in guesses:
