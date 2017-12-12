@@ -1,7 +1,5 @@
 #!/usr/env/python
 
-from __future__ import division, print_function
-
 ## Import General Tools
 import os
 import sys
@@ -109,7 +107,7 @@ class ApertureEditor(object):
         self.header = hdu.header
         self.data = np.ma.MaskedArray(data=hdu.data, mask=np.isnan(hdu.data))
         self.ydata = np.mean(self.data, axis=1)
-        self.xdata = range(0,len(self.ydata), 1)
+        self.xdata = list(range(0,len(self.ydata), 1))
         self.interactive = interactive
         if self.interactive:
             self.fig = pl.figure()
@@ -483,10 +481,10 @@ def optimal_extraction(image, variance_image, aperture_table,
 
     ## Replace old WCS in header with the collapsed WCS
     w = worig.dropaxis(1)
-    for key in worig.to_header().keys():
-        if key in header.keys():
+    for key in list(worig.to_header().keys()):
+        if key in list(header.keys()):
             header.remove(key)
-    for key in w.to_header().keys():
+    for key in list(w.to_header().keys()):
         if key in ['PC1_1', 'CRVAL1']:
             header.set(key, w.to_header()[key]*1e10, 
                        w.to_header().comments[key])
@@ -636,6 +634,8 @@ def extract_spectra(maskname, band, interactive=True, target='default'):
             except Exception as e:
                 warning('Failed to extract spectra for {}'.format(objectname))
                 warning(e)
+            #eps.close()
+            #sig.close()
 
 
 if __name__ == "__main__":

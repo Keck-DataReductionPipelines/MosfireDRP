@@ -152,7 +152,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         EPS[0]["ORIGFILE"] = fname
 
         tock = time.time()
-        sols = range(len(edges)-1,-1,-1)
+        sols = list(range(len(edges)-1,-1,-1))
 
         shifts = all_shifts[cntr]
         cntr += 1
@@ -204,7 +204,7 @@ def handle_rectification(maskname, in_files, wavename, band_pass, files, options
         header["ctype1"] = "AWAV"
         header["cunit1"] = "Angstrom"
         header["crval1"] = ll[0]
-        header["crval2"] = -solution["eps_img"].shape[0]/2 - pixel_dist
+        header["crval2"] = -solution["eps_img"].shape[0]//2 - pixel_dist
         header["crpix1"] = 1
         header["crpix2"] = 1
         header["cdelt1"] = ll[1]-ll[0]

@@ -193,7 +193,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
 
         header.set("imfno%2.2i" % (i), fname)
 
-        for key in header.keys():
+        for key in list(header.keys()):
             try: val = header[key]
             except KeyError: 
                 warning("Header should have key '%s' but does not" % key)
@@ -212,7 +212,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
                 warning("File %s uses mask '%s' but the stack is of '%s'" %
                     (fname, thishdr["maskname"], maskname))
 
-        for key in header.keys():
+        for key in list(header.keys()):
             val = header[key]
 
             if key in thishdr:
@@ -1458,7 +1458,7 @@ def xcor_known_lines(lines, ll, spec, spec0, options):
         dxs.append(fit.params[1])
         sigs.append(fit.params[2])
 
-    return map(np.array, [dxs, sigs])
+    return list(map(np.array, [dxs, sigs]))
 
 
 def find_known_lines(lines, ll, spec, options):
@@ -1516,7 +1516,7 @@ def find_known_lines(lines, ll, spec, options):
         sxs.append(lsf.perror[1])
         sigmas.append(lsf.params[2])
         
-    return map(np.array, [xs, sxs, sigmas])
+    return list(map(np.array, [xs, sxs, sigmas]))
 
 def fit_chebyshev_to_lines(xs, sxs, lines, options):
     """Fit a chebyshev function to the best fit determined lines.
@@ -2020,9 +2020,9 @@ class InteractiveSolution:
 
         if (kp == 'h') or (kp == '?'):
             info("Commands Desc")
-            for key, value in actions.items():
+            for key, value in list(actions.items()):
                 info("%8s %s" % (key, value.__doc__))
-            for key, value in actions_mouseless.items():
+            for key, value in list(actions_mouseless.items()):
                 info("%8s %s" % (key, value.__doc__))
 
         if kp in actions_mouseless:
@@ -2315,7 +2315,7 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
             mads.append(np.median(np.abs(delt)))
 
 
-        cfits, sds, mads = map(np.array, [cfits, sds, mads])
+        cfits, sds, mads = list(map(np.array, [cfits, sds, mads]))
         #model = construct_model(cfits, positions, sds)
 
         assert(len(positions) == len(cfits))
@@ -2601,8 +2601,8 @@ def plot_data_quality(maskname, fname, options):
     for solution in solutions:
         sol_2d = solution["2d"]
         info("Slit: {0}".format(solution["slitno"]))
-        ff = filter(filter_fun, sol_2d)
-        ar = np.array(map(lambda x: x[0], ff))
+        ff = list(filter(filter_fun, sol_2d))
+        ar = np.array([x[0] for x in ff])
 
         if len(ar) == 0: continue
 

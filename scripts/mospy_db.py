@@ -92,7 +92,7 @@ def make():
             vals = "?,?,?,"
             values = [p, fdate, number]
 
-            for key in hdr.keys():
+            for key in list(hdr.keys()):
 
                 if key == 'COMMENT': continue
 
@@ -132,7 +132,7 @@ def find_continuous(data):
     # http://stackoverflow.com/questions/2154249/identify-groups-of-continuous-numbers-in-a-list
     ranges = []
     for k, g in groupby(enumerate(data), lambda (i,x):i-x):
-        group = map(itemgetter(1), g)
+        group = list(map(itemgetter(1), g))
         ranges.append((group[0], group[-1]))
     return ranges
 
@@ -354,7 +354,7 @@ def plan_to_python(plans):
             for observation in date["observations"]:
                 obs_wave = []
                 obs_sci = {}
-                offsets = observation["offsets"].keys()
+                offsets = list(observation["offsets"].keys())
 
 
                 if (len(offsets) == 1) and offsets[0] is 'Unknown':
@@ -373,7 +373,7 @@ def plan_to_python(plans):
 
 
         wavecombine = ""
-        for i in xrange(len(waves)):
+        for i in range(len(waves)):
             wavecombine += "Wavelength.imcombine(wavenames[%i], maskname, " \
                 "band, waveops)\n" % (i)
             if i == 0:
@@ -387,7 +387,7 @@ def plan_to_python(plans):
             wavecombine += "Wavelength.apply_lambda_simple(maskname, band, " \
                     " wavenames[%i], waveops)\n" % i
 
-            pos = scis[i].keys()
+            pos = list(scis[i].keys())
             if len(pos) != 2:
                 print("Only handling A/B subtraction currently")
                 continue
@@ -475,7 +475,7 @@ def longslits():
 
         print("")
         print("--- SUMMARY ---")
-        for key, value in objs.iteritems():
+        for key, value in objs.items():
             print("{0:10s}: {1:5g} frames".format(key, len(value)))
 
 
@@ -600,7 +600,7 @@ def masks():
                     this_date["observations"].append(this_observation)
 
                 for observation in this_date["observations"]:
-                    for k,v in observation["offsets"].iteritems():
+                    for k,v in observation["offsets"].items():
                         print("\tOffset {0:5s} has {1:3g} frames ({2}-{3}) "
                             "total exptime is {4:5g} s".format(str(k),
                                 len(v["fname"]), v["start/stop"][0],

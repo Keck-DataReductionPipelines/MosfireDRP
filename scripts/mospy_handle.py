@@ -235,13 +235,13 @@ def handle_date_and_filter(mask, date, filter, mask_info):
     except OSError:
         pass
 
-    for type in mask_info.keys():
+    for type in list(mask_info.keys()):
         handle_file_list(os.path.join(path, type + ".txt"), mask_info[type])
 
 
-for mask in masks.keys():
-    for date in masks[mask].keys():
-        for filter in masks[mask][date].keys():
+for mask in list(masks.keys()):
+    for date in list(masks[mask].keys()):
+        for filter in list(masks[mask][date].keys()):
             handle_date_and_filter(mask, date, filter, masks[mask][date][filter])
 
 

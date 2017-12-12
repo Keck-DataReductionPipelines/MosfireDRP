@@ -296,7 +296,7 @@ def save_ds9_edges(results, options):
             ds9 += "line(%f, %f, %f, %f) # fixed=1 edit=0 move=0 rotate=0 delete=0\n" % (sx, sy, ex, ey)
 
 
-            if i == W/2:
+            if i == W//2:
                     ds9 += " # text={S%2.0i (%s)}" % (S, 
                                     res["Target_Name"])
 
@@ -419,7 +419,7 @@ def find_edge_pair(data, y, roi_width, edgeThreshold=450):
             xposs_bot.append(xp)
             yposs_bot.append(y - roi_width + offset)
 
-            between = offset + width/2
+            between = offset + width//2
             if 0 < between < len(v)-1:
                 start = int(np.max([0, between-2]))
                 stop = int(np.min([len(v),between+2]))
@@ -446,8 +446,8 @@ def find_edge_pair(data, y, roi_width, edgeThreshold=450):
             info("Skipping wavelength pixel): %i" % (xp))
 
     
-    return map(np.array, (xposs_bot, xposs_bot_missing, yposs_bot, xposs_top,
-        xposs_top_missing, yposs_top, yposs_bot_scatters))
+    return list(map(np.array, (xposs_bot, xposs_bot_missing, yposs_bot, xposs_top,
+        xposs_top_missing, yposs_top, yposs_bot_scatters)))
 
 def fit_edge_poly(xposs, xposs_missing, yposs, order):
     '''
@@ -909,7 +909,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
 
     return results
 
-class FitCheck:
+class FitCheck(object):
     flat = None
     bs = None
     edges = None
@@ -947,8 +947,8 @@ class FitCheck:
         pl.clf()
         start = 0
         dy = 512
-        for i in range(2048/dy):
-            pl.subplot(2048/dy,1,i+1)
+        for i in range(2048//dy):
+            pl.subplot(2048//dy,1,i+1)
             pl.xlim(start, start+dy)
 
             if i == 0: pl.title("edge %i] %s|%s" % (edgeno,
@@ -981,11 +981,11 @@ class FitCheck:
                 Lx = len(edge["xposs"])
                 for i in range(Lx):
                     xp = edge["xposs"][i]
-                    frac1 = (edge["top"](xp)-bot-1)/L
+                    frac1 = (edge["top"](xp)-bot-1)//L
                     pl.axvline(xp,ymin=frac1)
 
                 for xp in edgeprev["xposs"]: 
-                    frac2 = (edgeprev["bottom"](xp)-bot)/L
+                    frac2 = (edgeprev["bottom"](xp)-bot)//L
                     pl.axvline(xp,ymax=frac2)
 
             start += dy

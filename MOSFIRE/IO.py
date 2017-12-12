@@ -688,7 +688,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
                 result = c.average_combine()
             elif method == 'median':
                 result = c.median_combine()
-            for key in ccdlist[0].header.keys():
+            for key in list(ccdlist[0].header.keys()):
                 header_entry = ccdlist[0].header[key]
                 if key != 'COMMENT':
                     result.header[key] = (header_entry,

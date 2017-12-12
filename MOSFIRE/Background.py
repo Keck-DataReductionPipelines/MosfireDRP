@@ -1,6 +1,3 @@
-from __future__ import division
-
-from past.utils import old_div
 import os
 import sys
 import time
@@ -659,7 +656,7 @@ def background_subtract_helper(slitno):
     ss = slit[train_roi].flatten()
     ys = Y[train_roi].flatten()
 
-    dl = np.ma.median(np.diff(lslit[old_div(lslit.shape[0]/2),:]))
+    dl = np.ma.median(np.diff(lslit[lslit.shape[0]//2,:]))
     if dl == 0:
         return {"ok": False}
 
@@ -680,7 +677,7 @@ def background_subtract_helper(slitno):
 
     # 3
     pp = np.poly1d([1.0])
-    ss = (old_div(slit[train_roi] / pp(Y[train_roi]))).flatten()
+    ss = (slit[train_roi] / pp(Y[train_roi])).flatten()
     ss = ss[sort]
 
     knotstart = max(hpps[0], min(ls[OK])) + 5
