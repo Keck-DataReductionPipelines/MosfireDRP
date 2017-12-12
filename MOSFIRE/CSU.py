@@ -24,8 +24,6 @@ bar pitch is 5.8 mm which is related to pixels using the demagnification
 and temperature scale.
 
 '''
-from __future__ import division
-from past.utils import old_div
 import MOSFIRE
 from MOSFIRE import Detector, IO
 import numpy as np

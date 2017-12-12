@@ -12,7 +12,7 @@ import time
 import sys
 import glob
 
-class Driver:
+class Driver(object):
 
     def __init__(self,outputFile,type):
         self.outputFile = outputFile
@@ -124,8 +124,8 @@ class Driver:
             numberOfSlits = int(self.maskName.lstrip("LONGSLIT-").split("x")[0])
             verticalOffset = 10 # this is the vertical offset to apply to each measurement to shift the position up in the detector. It seems to be around 10
             slitSizePixels = int(numberOfSlits*(2048/46))
-            slitTop = 1024+slitSizePixels/2+verticalOffset
-            slitBottom = 1024-slitSizePixels/2+verticalOffset
+            slitTop = 1024+slitSizePixels//2+verticalOffset
+            slitBottom = 1024-slitSizePixels//2+verticalOffset
             RowPosition = 1024+verticalOffset
             self.addLine("longslit = {'yrange':["+str(slitBottom)+","+str(slitTop)+"],'row_position':"+str(RowPosition)+",'mode':'longslit'}")
             
@@ -446,7 +446,7 @@ if 'slitmask' in targets_and_offsets:
     mydriver.printExtraction()
     mydriver.CloseFile()
 elif type is 'long2pos' or type is 'longslit':
-    Targets = targets_and_offsets.keys()
+    Targets = list(targets_and_offsets.keys())
     for target in Targets:
         print(str(type)+" mode")
         obsLines,obsFiles,specphot = SetupFiles(target,targets_and_offsets[target],type)
