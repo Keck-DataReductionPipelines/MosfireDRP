@@ -306,7 +306,7 @@ class ApertureEditor(object):
             self.set_width(id=id)
         elif event.key == 'p':
             id = self.determine_id(event)
-            self.set_position(id=id)
+            self.set_position(id=id, pos=event.xdata)
         elif event.key == 'g':
             self.fit_trace(event.xdata, event.ydata/abs(event.ydata))
         elif event.key == 'd':
@@ -338,7 +338,7 @@ class ApertureEditor(object):
 ##-------------------------------------------------------------------------
 ## Find Stellar Traces
 ##-------------------------------------------------------------------------
-def find_apertures(hdu, guesses=[], title=None, interactive=True,
+def find_apertures(hdu, guesses=[], width=10, title=None, interactive=True,
                    maskname=''):
     '''Finds targets in spectra by simply collapsing the 2D spectra in the
     wavelength direction and fitting Gaussian profiles to the positional profile
@@ -366,9 +366,10 @@ def find_apertures(hdu, guesses=[], title=None, interactive=True,
         snr = amp/std
         # If SNR is strong, fit a gaussian, if not, just blindly add an aperture
         if snr > 5:
+            info('  Using trace to determine extraction aperture')
             ap.fit_trace(pos, amp)
         else:
-            width = 10
+            info('  Could not find strong trace, adding aperture blindly')
             ap.add_aperture(pos, width)
     else:
         for guess in guesses:
@@ -576,13 +577,14 @@ def optimal_extraction(image, variance_image, aperture_table,
         if fitsfileout:
             bn, ext = os.path.splitext(fitsfileout)
             fitsfilename = '{}_{:02d}{}'.format(bn, i, ext)
-            hdulist.writeto(fitsfilename, clobber=True)
+            hdulist.writeto(fitsfilename, overwrite=True)
 
 
 ##-------------------------------------------------------------------------
 ## Extract Spectra Function
 ##-------------------------------------------------------------------------
-def extract_spectra(maskname, band, interactive=True, target='default'):
+def extract_spectra(maskname, band, interactive=True, width=10,
+                    target='default'):
 
     if target == 'default':
         ## Get objectnames from slit edges
@@ -610,7 +612,7 @@ def extract_spectra(maskname, band, interactive=True, target='default'):
     for i,eps_file in enumerate(eps_files):
         objectname = objectnames[i]
         eps = fits.open(eps_file, 'readonly')[0]
-        aperture_tables[objectname] = find_apertures(eps, title=objectname,
+        aperture_tables[objectname] = find_apertures(eps, width=width, title=objectname,
                                                      interactive=interactive,
                                                      maskname=maskname,
                                                      )
