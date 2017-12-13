@@ -7,8 +7,8 @@ from scipy.special import erf
 import scipy.optimize as optimize
 import numpy as np
 from matplotlib import pyplot as pl
-import nmpfit_mos as mpfit
-from MosfireDrpLog import debug, info, warning, error
+import MOSFIRE.nmpfit_mos as mpfit
+from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 
 # Following is to correct for old/new version of stsci python
 
@@ -16,7 +16,7 @@ from MosfireDrpLog import debug, info, warning, error
 ##     import pytools
 
 ## except ImportError: import stsci.tools.nmpfit as mpfit
-from MosfireDrpLog import debug, info, warning, error
+#from MosfireDrpLog import debug, info, warning, error
 import unittest
 
 def xcor(a,b,lags):

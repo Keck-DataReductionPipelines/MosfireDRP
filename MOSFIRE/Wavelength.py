@@ -70,7 +70,7 @@ from numpy.polynomial import chebyshev as CV
 
 
 from MOSFIRE import CSU, Fit, IO, Options, Filters, Detector
-from MosfireDrpLog import debug, info, warning, error
+from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 
 import pdb
 
@@ -153,7 +153,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
     header = None
 
 
-    for i in xrange(len(files)):
+    for i in range(len(files)):
         fname = files[i]
         thishdr, data, bs = IO.readmosfits(fname, options, extension=extension)
         info("Checking maskname and filter for {} {}/{}".format(fname, maskname, thishdr['filter']))
@@ -193,7 +193,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
 
         header.set("imfno%2.2i" % (i), fname)
 
-        for key in header.keys():
+        for key in list(header.keys()):
             try: val = header[key]
             except KeyError: 
                 warning("Header should have key '%s' but does not" % key)
@@ -212,7 +212,7 @@ def imcombine(files, maskname, bandname, options, extension=None):
                 warning("File %s uses mask '%s' but the stack is of '%s'" %
                     (fname, thishdr["maskname"], maskname))
 
-        for key in header.keys():
+        for key in list(header.keys()):
             val = header[key]
 
             if key in thishdr:
@@ -361,10 +361,10 @@ def fit_lambda(maskname,
     multicore = True
     if multicore:
         p = Pool()
-        solutions = p.map(fit_lambda_helper, range(len(bs.ssl)))
+        solutions = p.map(fit_lambda_helper, list(range(len(bs.ssl))))
         p.close()
     else:
-        solutions = map(fit_lambda_helper, range(len(bs.ssl)))
+        solutions = map(fit_lambda_helper, list(range(len(bs.ssl))))
 
     tick = time.time()
 
@@ -438,14 +438,14 @@ def apply_interactive(maskname, band, options, apply=None, to=None, neon=False,
 
     solutions = []
     pix = np.arange(2048)
-    for slitno in xrange(len(waves)):
+    for slitno in range(len(waves)):
         info("Slit number = "+str(slitno+1))
         csuslits = bs.scislit_to_csuslit(slitno+1)
 
         try:
             l = len(csuslits)
             if l > 1:
-                csuslit = csuslits[l/2]
+                csuslit = csuslits[l//2]
             else:
                 csuslit = csuslits[0]
         except:
@@ -513,7 +513,7 @@ def check_wavelength_roi(maskname, band, skyfiles, arcfiles, LROI, options, no_c
         raise Exception("Number of solutions is not equal to the LROI vector (%i!=%i)" % ( len(LROI), len(skysols)))
 
     MeanDiffs = []
-    for i in xrange(len(skysols)):
+    for i in range(len(skysols)):
         s = skysols[i]
         a = arcsols[i]
 
@@ -702,7 +702,7 @@ def find_pixel_offset(lam_sky, coeff_arc, LROI):
     RMSs = np.zeros(len(dpixs))
     
     xx = np.arange(2048)
-    for rms_cnt in xrange(len(dpixs)):
+    for rms_cnt in range(len(dpixs)):
         dpix = dpixs [rms_cnt]
         dl = lam_sky - CV.chebval(xx - dpix, coeff_arc)
         RMSs[rms_cnt] = np.sqrt(np.mean(dl[roi]**2))
@@ -760,7 +760,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
 
     fitpix = np.arange(0,2048,100)
     solutions = []
-    for i in xrange(len(SkyL)):
+    for i in range(len(SkyL)):
         slp = SkyL[i]["2d"]["positions"].astype(np.int)
         slc = SkyL[i]["2d"]["coeffs"]
         slm = SkyL[i]["2d"]["lambdaMAD"]
@@ -772,7 +772,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
 
         prev = 0
         dpixels = []
-        for j in xrange(len(slp)):
+        for j in range(len(slp)):
 
             if (slm[j] < 0.2) and (alm[j] < 0.2):
                 
@@ -811,7 +811,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
             if smooth == True:
                 xr = np.arange(len(slp))
 
-                for i in xrange(lams.shape[1]):
+                for i in range(lams.shape[1]):
                     ff = np.poly1d(Fit.polyfit_clip(xr, lams[slp, i], 3))
                     d = lams[slp,i] - ff(xr)
                     lams[slp, i] = ff(xr)
@@ -839,7 +839,7 @@ def apply_lambda_sky_and_arc(maskname, bandname, skynames, arcnames, LROIs,
 
     rectified = np.zeros((2048, nspec), dtype=np.float32)
 
-    for i in xrange(2048):
+    for i in range(2048):
         ll = lams[i,:]
         ss = skydata[i,:]
 
@@ -912,14 +912,14 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
     xs = []
     ys = []
     zs = []
-    for i in xrange(len(Ld)):
+    for i in range(len(Ld)):
         lp = Ld[i]["2d"]["positions"].astype(np.int)
         lc = Ld[i]["2d"]["coeffs"]
         lm = Ld[i]["2d"]["lambdaMAD"]
         info("Creating 2d wavelength map: Slit %i/%i" % (i+1, len(Ld)))
 
         prev = 0
-        for j in xrange(len(lp)):
+        for j in range(len(lp)):
             sigs[lp[j],:] = lm[j]
 
             if lm[j] < 0.18:
@@ -933,7 +933,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
 
         if smooth == True:
             xr = np.arange(len(lp))
-            for k in xrange(lams.shape[1]):
+            for k in range(lams.shape[1]):
                 ff = np.poly1d(Fit.polyfit_clip(xr, lams[lp, k], 3))
                 d = lams[lp,k] - ff(xr)
                 lams[lp, k] = ff(xr)
@@ -993,7 +993,7 @@ def apply_lambda_simple(maskname, bandname, wavenames, options,
 
     rectified = np.zeros((2048, nspec), dtype=np.float32)
 
-    for i in xrange(2048):
+    for i in range(2048):
         ll = lams[i,:]
         ss = data[i,:]
 
@@ -1303,7 +1303,6 @@ def guess_wavelength_solution(slitno, header, bs):
     band = header['filter'].rstrip()
     bmap = {"Y": 6, "J": 5, "H": 4, "K": 3}
     order = bmap[band]
-
     y0 = bs.csu_slit_to_pixel(slitno)
     csupos_mm = bs.csu_slit_center(slitno)
 
@@ -1372,7 +1371,7 @@ global color=red
     cidx = 0
 
 
-    for i in xrange(1,len(bs.ssl)+1):
+    for i in range(1,len(bs.ssl)+1):
         slits = bs.scislit_to_csuslit(i)
 
         info("Guessing: "+str(slits))
@@ -1459,7 +1458,7 @@ def xcor_known_lines(lines, ll, spec, spec0, options):
         dxs.append(fit.params[1])
         sigs.append(fit.params[2])
 
-    return map(np.array, [dxs, sigs])
+    return list(map(np.array, [dxs, sigs]))
 
 
 def find_known_lines(lines, ll, spec, options):
@@ -1517,7 +1516,7 @@ def find_known_lines(lines, ll, spec, options):
         sxs.append(lsf.perror[1])
         sigmas.append(lsf.params[2])
         
-    return map(np.array, [xs, sxs, sigmas])
+    return list(map(np.array, [xs, sxs, sigmas]))
 
 def fit_chebyshev_to_lines(xs, sxs, lines, options):
     """Fit a chebyshev function to the best fit determined lines.
@@ -1649,7 +1648,7 @@ class InteractiveSolution:
         self.sigma_clip = False
         self.xlim = self.xrng
         if solutions is None:
-            self.solutions = range(len(self.bs.ssl))
+            self.solutions = list(range(len(self.bs.ssl)))
         else:
             self.solutions = solutions
 
@@ -1675,12 +1674,11 @@ class InteractiveSolution:
         try:
             l = len(csuslits)
             if l > 1:
-                csuslit = csuslits[l/2]
+                csuslit = csuslits[l//2]
             else:
                 csuslit = csuslits[0]
         except:
             csuslit = csuslits
-
 
 #         info(str(csuslits)+" "+str(csuslit))
         info('CSU slits {} acting as slit number {}'.format(str(csuslits), str(csuslit)))
@@ -1763,7 +1761,7 @@ class InteractiveSolution:
             foundlams = CV.chebval(self.foundlines, self.cfit)
             ok = np.isfinite(self.foundlinesig) 
 
-            for i in xrange(len(self.linelist)):
+            for i in range(len(self.linelist)):
                 if not ok[i]: continue
                 D = (foundlams[i] - self.linelist[i])
                 pl.axvline(foundlams[i], color='orange', ymax=.75, ymin=.25,
@@ -1878,7 +1876,7 @@ class InteractiveSolution:
 
     def fastforward(self, x, y):
         """Fast forward to next uncalib obj """
-        for i in xrange(self.slitno+1, len(self.solutions)):
+        for i in range(self.slitno+1, len(self.solutions)):
             if type(self.solutions[i]) is int:
                 self.slitno = i-1
                 self.setup()
@@ -1993,7 +1991,6 @@ class InteractiveSolution:
         debug("STD: %1.2f MAD: %1.2f" % (self.STD, self.MAD))
         debug(str(self.cfit))
 
-
         self.solutions[self.slitno-1] = {"linelist": self.linelist, "MAD":
                 self.MAD, "foundlines": self.foundlines, "foundlinesig":
                 self.foundlinesig, "sol_1d": [deltas, cfit, sigmas], "STD":
@@ -2023,9 +2020,9 @@ class InteractiveSolution:
 
         if (kp == 'h') or (kp == '?'):
             info("Commands Desc")
-            for key, value in actions.items():
+            for key, value in list(actions.items()):
                 info("%8s %s" % (key, value.__doc__))
-            for key, value in actions_mouseless.items():
+            for key, value in list(actions_mouseless.items()):
                 info("%8s %s" % (key, value.__doc__))
 
         if kp in actions_mouseless:
@@ -2137,7 +2134,7 @@ def construct_model(slitno):
     cfit_coeffs = [c0coeff]
     cfit_funs = [c0fun]
 
-    for i in xrange(1, cfits.shape[1]):
+    for i in range(1, cfits.shape[1]):
         if i < 3: order = 1
         else: order = 1
         ci_coeff = Fit.polyfit_sigclip(cfits[ok,0], cfits[ok,i], order, nmad=3)
@@ -2152,7 +2149,7 @@ def construct_model(slitno):
     cpolys = []
     # Check the fits now
     if True:
-        for i in xrange(len(positions)):
+        for i in range(len(positions)):
             pos = positions[i]
             c0 = c0fun(pos)
             cs = [c0]
@@ -2318,7 +2315,7 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
             mads.append(np.median(np.abs(delt)))
 
 
-        cfits, sds, mads = map(np.array, [cfits, sds, mads])
+        cfits, sds, mads = list(map(np.array, [cfits, sds, mads]))
         #model = construct_model(cfits, positions, sds)
 
         assert(len(positions) == len(cfits))
@@ -2382,7 +2379,7 @@ def fit_to_coefficients(fits, pos, slitno=None):
 
     cs = np.zeros(funs.shape[0])
     cs[0] = np.poly1d(funs[0])(pos)
-    for i in xrange(1,len(cs)):
+    for i in range(1,len(cs)):
         cs[i] = np.poly1d(funs[i])(cs[0])
 
     return np.array(cs)
@@ -2443,7 +2440,7 @@ def mask_model(p, xs):
     coeffs = p[4:]
 
     vals = []
-    for i in xrange(len(coeffs)):
+    for i in range(len(coeffs)):
         x = np.array(xs[i]) - p[3]
         c = coeffs[i]
         y = p[0] + p[1] * x + p[2] * x*x + c
@@ -2469,8 +2466,8 @@ def plot_mask_fits(maskname, fname, options):
     outname = os.path.join(path, "mask_fit_%s.pdf" % fname)
     pp = PdfPages(outname)
 
-    for i in xrange(len(Lmask)):
-        print i
+    for i in range(len(Lmask)):
+        print(i)
         ll = Lmask[i]
         ls = Lslit[i]
         coeffs  = ls['2d']['coeffs']
@@ -2491,7 +2488,7 @@ def plot_mask_fits(maskname, fname, options):
         c0 = np.poly1d(fits[0])
         c0s = c0(pos)
 
-        for i in xrange(1,N):
+        for i in range(1,N):
             pl.subplot(int(nx),int(ny),i)
             f = np.poly1d(fits[i])
             pl.plot(pos, f(c0s), color='orange')
@@ -2604,8 +2601,8 @@ def plot_data_quality(maskname, fname, options):
     for solution in solutions:
         sol_2d = solution["2d"]
         info("Slit: {0}".format(solution["slitno"]))
-        ff = filter(filter_fun, sol_2d)
-        ar = np.array(map(lambda x: x[0], ff))
+        ff = list(filter(filter_fun, sol_2d))
+        ar = np.array([x[0] for x in ff])
 
         if len(ar) == 0: continue
 

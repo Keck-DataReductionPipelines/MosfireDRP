@@ -48,7 +48,7 @@ import pdb
 
 import MOSFIRE
 from MOSFIRE import Fit, IO, Options, CSU, Wavelength, Filters, Detector
-from MosfireDrpLog import debug, info, warning, error
+from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 __version__ = 0.1
 
 #from IPython.Shell import IPShellEmbed
@@ -95,7 +95,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
         except: bs0 = bs
 
         if np.any(bs0.pos != bs.pos):
-            print "bs0: "+str(bs0.pos)+" bs: "+str(bs.pos)
+            print("bs0: "+str(bs0.pos)+" bs: "+str(bs.pos))
             error("Barset do not seem to match")
             raise Exception("Barsets do not seem to match")
 
@@ -104,7 +104,7 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
                     "%s in file %s" % (band, hdr["filter"], fname))
             raise Exception("Filter name %s does not match header filter name "
                     "%s in file %s" % (band, hdr["filter"], fname))
-        for i in xrange(len(bpos)):
+        for i in range(len(bpos)):
             b = hdr["B{0:02d}POS".format(i+1)]
             if bpos[i] == -1:
                 bpos[i] = b
@@ -166,7 +166,6 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
          make_pixel_flat(data, results, options, out, flatlist, lampsOff=False)
 
     info( "Pixel flat took {0:6.4} s".format(time.time()-tick))
-
     
 
 def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
@@ -196,8 +195,10 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
     slitno = 0
     for result in results[0:-1]:
         slitno += 1
-
-        hdu.header.set("targ%2.2i" % slitno, result["Target_Name"])
+        #There seems to be a bit of an issue with this on Longslits, where it is being read as bites not as str
+        try:
+            hdu.header.set("targ%2.2i" % slitno, result["Target_Name"])
+        except ValueError: hdu.header.set("targ%2.2i" % slitno, str(result["Target_Name"],  'utf-8'))
 
         bf = result["bottom"]
         tf = result["top"]
@@ -208,7 +209,6 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
             hpps = [0, Detector.npix[0]]
 
         xs = np.arange(hpps[0], hpps[1])
-
         top = pixel_min(tf(xs))
         bottom = pixel_max(bf(xs))
 
@@ -224,7 +224,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
         v = np.poly1d(np.polyfit(xs,v,
             options['flat-field-order']))(xs).ravel()
 
-        for i in np.arange(bottom-1, top+1):
+        for i in np.arange(bottom-1, top):
             flat[i,hpps[0]:hpps[1]] = v
 
     info("Producing Pixel Flat...")
@@ -296,7 +296,7 @@ def save_ds9_edges(results, options):
             ds9 += "line(%f, %f, %f, %f) # fixed=1 edit=0 move=0 rotate=0 delete=0\n" % (sx, sy, ex, ey)
 
 
-            if i == W/2:
+            if i == W//2:
                     ds9 += " # text={S%2.0i (%s)}" % (S, 
                                     res["Target_Name"])
 
@@ -419,7 +419,7 @@ def find_edge_pair(data, y, roi_width, edgeThreshold=450):
             xposs_bot.append(xp)
             yposs_bot.append(y - roi_width + offset)
 
-            between = offset + width/2
+            between = offset + width//2
             if 0 < between < len(v)-1:
                 start = int(np.max([0, between-2]))
                 stop = int(np.min([len(v),between+2]))
@@ -446,8 +446,8 @@ def find_edge_pair(data, y, roi_width, edgeThreshold=450):
             info("Skipping wavelength pixel): %i" % (xp))
 
     
-    return map(np.array, (xposs_bot, xposs_bot_missing, yposs_bot, xposs_top,
-        xposs_top_missing, yposs_top, yposs_bot_scatters))
+    return list(map(np.array, (xposs_bot, xposs_bot_missing, yposs_bot, xposs_top,
+        xposs_top_missing, yposs_top, yposs_bot_scatters)))
 
 def fit_edge_poly(xposs, xposs_missing, yposs, order):
     '''
@@ -488,7 +488,7 @@ def fit_edge_poly(xposs, xposs_missing, yposs, order):
     V = fun(pix)
     if np.abs(V.max() - V.min()) > 10:
         info ("Forcing a horizontal slit edge")
-        print "Forcing a horizontal slit edge"
+        print("Forcing a horizontal slit edge")
         tmp = yposs_ok[ok]
         fun = np.poly1d(np.median(tmp))
         #fun = np.poly1d(np.median(yposs[ok]))
@@ -519,13 +519,13 @@ def find_long2pos_edges(data, header, bs, options, edgeThreshold=450,longslit=No
             y=longslit["yrange"][1]
         except:
             error ("Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y))
-            print "Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y)
+            print("Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y))
 
 
     # Count and check that the # of objects in the SSL matches that of the MSL
     # This is purely a safety check
     numslits = np.zeros(len(ssl))
-    for i in xrange(len(ssl)):
+    for i in range(len(ssl)):
         slit = ssl[i]
         M = np.where(slit["Target_Name"] == bs.msl["Target_in_Slit"])
 
@@ -586,7 +586,7 @@ def find_long2pos_edges(data, header, bs, options, edgeThreshold=450,longslit=No
         result["hpps"] = hpps
         result["ok"] = ok
         results.append(result)
-        #print "And the top is"+str(result["top"])
+        #print("And the top is"+str(result["top"]))
 
     results.append({"version": options["version"]})
     return results
@@ -615,13 +615,13 @@ def find_longslit_edges(data, header, bs, options, edgeThreshold=450,longslit=No
             y=longslit["yrange"][1]
         except:
             error("Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y))
-            print "Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y)
+            print("Longslit reduction mode is specified, but the row position has not been specified. Defaulting to "+str(y))
 
 
     # Count and check that the # of objects in the SSL matches that of the MSL
     # This is purely a safety check
     numslits = np.zeros(len(ssl))
-    for i in xrange(len(ssl)):
+    for i in range(len(ssl)):
         slit = ssl[i]
         M = np.where(slit["Target_Name"] == bs.msl["Target_in_Slit"])
 
@@ -632,7 +632,6 @@ def find_longslit_edges(data, header, bs, options, edgeThreshold=450,longslit=No
     # now begin steps outline above
     results = []
     result = {}
-
     result["Target_Name"] = ssl[0]["Target_Name"]
 
     # 1 Defines a polynomial of degree 0, which is a constant, with the value of the top of the slit
@@ -752,7 +751,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
     # Count and check that the # of objects in the SSL matches that of the MSL
     # This is purely a safety check
     numslits = np.zeros(len(ssl))
-    for i in xrange(len(ssl)):
+    for i in range(len(ssl)):
         slit = ssl[i]
         M = np.where(slit["Target_Name"] == bs.msl["Target_in_Slit"])
 
@@ -799,7 +798,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
 
     # build an array of values containing the lower edge of the slits
     
-    for target in xrange(len(ssl)):        
+    for target in range(len(ssl)):        
     # target is the slit number
         edge -= DY * numslits[target]
         initial_edges=np.append(initial_edges,int(edge))
@@ -816,7 +815,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
     #for k in np.arange(0, len(spatial_centers)):
     #    slit_values = np.append(slit_values,np.mean(vertical_profile[spatial_centers[k]-3:spatial_centers[k]+3]))
     
-    for target in xrange(len(ssl)):
+    for target in range(len(ssl)):
 
         y -= DY * numslits[target]
         y = max(y, 1)
@@ -910,7 +909,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
 
     return results
 
-class FitCheck:
+class FitCheck(object):
     flat = None
     bs = None
     edges = None
@@ -932,7 +931,7 @@ class FitCheck:
 
     def draw(self):
 
-        print self.edgeno
+        print(self.edgeno)
 
         pos = 0
         dy = 8
@@ -948,8 +947,8 @@ class FitCheck:
         pl.clf()
         start = 0
         dy = 512
-        for i in xrange(2048/dy):
-            pl.subplot(2048/dy,1,i+1)
+        for i in range(2048//dy):
+            pl.subplot(2048//dy,1,i+1)
             pl.xlim(start, start+dy)
 
             if i == 0: pl.title("edge %i] %s|%s" % (edgeno,
@@ -980,13 +979,13 @@ class FitCheck:
             if False:
                 L = top-bot
                 Lx = len(edge["xposs"])
-                for i in xrange(Lx):
+                for i in range(Lx):
                     xp = edge["xposs"][i]
-                    frac1 = (edge["top"](xp)-bot-1)/L
+                    frac1 = (edge["top"](xp)-bot-1)//L
                     pl.axvline(xp,ymin=frac1)
 
                 for xp in edgeprev["xposs"]: 
-                    frac2 = (edgeprev["bottom"](xp)-bot)/L
+                    frac2 = (edgeprev["bottom"](xp)-bot)//L
                     pl.axvline(xp,ymax=frac2)
 
             start += dy
@@ -996,14 +995,14 @@ class FitCheck:
         x = event.xdata
         y = event.ydata
 
-        print kp
+        print(kp)
 
         if kp == 'n': 
             self.edgeno += 1
 
             if self.edgeno > len(self.edges):
                 self.edgeno = len(self.edges)
-                print "done"
+                print("done")
             else:
                 self.draw()
 
@@ -1011,7 +1010,7 @@ class FitCheck:
             self.edgeno -= 1
             if self.edgeno < 2:
                 self.edgeno = 2
-                print "Beginning" 
+                print("Beginning" )
             else:
                 self.draw()
 
@@ -1031,7 +1030,7 @@ class TestFlatsFunctions(unittest.TestCase):
                     dtype=np.float) / 7.02)
 
             for i in range(len(ssl)):
-                    print ssl[i]["Target_Name"], numslits[i]
+                    print(ssl[i]["Target_Name"], numslits[i])
 
 if __name__ == '__main__':
     unittest.main()
