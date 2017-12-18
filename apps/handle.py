@@ -5,19 +5,24 @@ MOSFIRE 'handle' command:
 
 (c) npk - Dec 2013
 '''
-import MOSFIRE
 import MOSFIRE.IO as IO
 import os
 import numpy as np
-from astropy.io import fits as pf
 import sys
 import glob
 
-
+from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 
 if len(sys.argv) < 3:
-    print '''Usage: mospy handle [target]'''
+    print('''Usage: mospy handle [target]''')
     sys.exit()
+
+## Output the file list to a text file for later examination
+if os.path.exists('filelist.txt'):
+    debug('Removing old filelist.txt')
+    os.remove('filelist.txt')
+fl = open('filelist.txt', 'w')
+
 
 files = []
 for i in range(1, len(sys.argv)):
@@ -25,15 +30,17 @@ for i in range(1, len(sys.argv)):
 
 masks = {}
 
+
+info('Examining {} files'.format(len(files)))
 for fname in files:
 
     try:
-        header = MOSFIRE.IO.readheader(fname)
-    except IOError, err:
-        print "Couldn't IO %s" % fname
+        header = IO.readheader(fname)
+    except IOError:#, err:
+        fl.write("Couldn't IO %s\n" % fname)
         continue
     except:
-        print "%s is unreadable" % fname
+        fl.write("%s is unreadable\n" % fname)
         continue
 
     lamps = ""
@@ -45,21 +52,21 @@ for fname in files:
     except KeyError:
         lamps = "???"
         
-    header.update("lamps", lamps)
+    header['lamps'] = lamps
 
     try:
         if header["aborted"]:
-            header.update("object", "ABORTED")
+            header['object' ] = 'ABORTED'
     except:
-        print "Missing header file in: %s" % fname
+        fl.write("Missing header file in: %s\n" % fname)
 
     try:
-        print "%(datafile)12s %(object)40s %(truitime)6.1f s %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s" % (header)
+        fl.write("%(datafile)12s %(object)35s %(truitime)6.1fs %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s\n" % (header))
     except:
         try:
-            print "%(datafile)12s %(object)25s %(truitime)6.1f s %(lamps)3s %(filter)6s %(mgtname)7s" % (header)
+            fl.write("%(datafile)12s %(object)25s %(truitime)6.1fs %(lamps)3s %(filter)6s %(mgtname)7s\n" % (header))
         except:
-            print "%s Skipped" % fname
+            fl.write("%s Skipped\n" % fname)
             continue
 
 
@@ -70,6 +77,7 @@ for fname in files:
     yr,mn,dy = IO.fname_to_date_tuple(datafile)
     date = str(yr)+mn+str(dy)
     object = header['object']
+    frameid = header['FRAMEID'].strip()
 
     itime = header['truitime']
     grating_turret = header['mgtname']
@@ -89,7 +97,7 @@ for fname in files:
         align = True
 
     if maskname.find('LONGSLIT') != -1:
-        print "longslit file"
+#         print("longslit file")
         align = False
 
     if maskname.find('long2pos') != -1:
@@ -108,13 +116,20 @@ for fname in files:
     if filter not in masks[maskname][date]:
         masks[maskname][date][filter] = empty_files
 
+    # convert numbers such as 1.0 to 1, but leaves 1.5 as 1.5
+    # - added to match AutoDriver.py code
+    offset_hdr = float(header['YOFFSET'])
+    if offset_hdr % 1 == 0:
+        offsetvalue = int(offset_hdr)
+    else:
+        offsetvalue = offset_hdr
 
-    offset = 'Offset_' + str(header['YOFFSET'])
+    offset = 'Offset_' + str(offsetvalue)
     if (maskname.find('long2pos') != -1 and align is False) or maskname.find('LONGSLIT') != -1:
         # if the target name contains a /, replace it with _
         target_name = target.replace("/","_")
         # if the target name contains a space, remove it
-        target_name = target.replace(" ","")
+        target_name = target_name.replace(" ","")
         # add a posC and posA to the offset names
         position = ''
         if header['XOFFSET']>0:
@@ -145,13 +160,16 @@ for fname in files:
     elif header['mgtname'] == 'mirror':
         masks[maskname][date][filter]['Image'].append(fname)
     elif offset != 0:
-        print "offset is now:"+str(offset)
-        if offset in masks[maskname][date][filter]: 
-            masks[maskname][date][filter][offset].append((fname, itime))
-            print "adding file to existing offset file"
-        else: 
-            masks[maskname][date][filter][offset] = [(fname, itime)]
-            print "creating new offset file"
+#         print "offset is now:"+str(offset)
+        if frameid in ["A", "B", "A'", "B'","D","C", "E"]:
+            if offset in masks[maskname][date][filter]: 
+                masks[maskname][date][filter][offset].append((fname, itime))
+#                 print("adding file to existing offset file")
+            else: 
+                masks[maskname][date][filter][offset] = [(fname, itime)]
+#                 print("creating new offset file")
+        else:
+            fl.write('{} has unexpected FRAMEID: {}\n'.format(fname, frameid))
     else:
         masks[maskname][date][filter]['Unknown'].append(fname)
 
@@ -178,53 +196,52 @@ def handle_file_list(output_file, files):
     '''Write a list of paths to MOSFIRE file to output_file.'''
 
     if os.path.isfile(output_file):
-        print "%s: already exists, skipping" % output_file 
-        pass
+        print("%s: already exists, skipping" % output_file )
+#         pass
 
-    print "\t", output_file
-    f = open(output_file, "w")
-    f.write(descriptive_blurb())
-    if len(files) == 0:
-        f.close()
-        return
+    if len(files) > 0:
+        with open(output_file, "w") as f:
+            f = open(output_file, "w")
+            f.write(descriptive_blurb())
 
-    picker = lambda x: x
-    if len(files[0]) == 2: picker = lambda x: x[0]
+            picker = lambda x: x
+            if len(files[0]) == 2: picker = lambda x: x[0]
 
-    # Identify unique path to files:
-    paths = [os.path.dirname(picker(file)) for file in files]
-    paths = list(set(paths))
+            # Identify unique path to files:
+            paths = [os.path.dirname(picker(file)) for file in files]
+            paths = list(set(paths))
 
-    if len(paths) == 1:
-        path_to_all = paths[0]
-        converter = os.path.basename
-        f.write("%s # Abs. path to files [optional]\n" % path_to_all)
-    else:
-        converter = lambda x: x
+            if len(paths) == 1:
+                path_to_all = paths[0]
+                converter = os.path.basename
+                f.write("%s # Abs. path to files [optional]\n" % path_to_all)
+            else:
+                converter = lambda x: x
 
+            info('Writing {} files to {}'.format(len(files), output_file))
+            for path in files:
+                if len(path) == 2:
+                    to_write = "%s # %s s\n" % (converter(path[0]), path[1])
+                else:
+                    to_write = "%s\n" % converter(path)
+                f.write("%s" % to_write)
 
-    for path in files:
-        if len(path) == 2:  to_write = "%s # %s s\n" % (converter(path[0]), path[1])
-        else:               to_write = "%s\n" % converter(path)
-
-        f.write("%s" % to_write)
-            
-
-    f.close()
 
 def handle_date_and_filter(mask, date, filter, mask_info):
 
     path = os.path.join(mask,date,filter)
-    try: os.makedirs(path)
-    except OSError: pass
+    try:
+        os.makedirs(path)
+    except OSError:
+        pass
 
-    for type in mask_info.keys():
+    for type in list(mask_info.keys()):
         handle_file_list(os.path.join(path, type + ".txt"), mask_info[type])
 
 
-for mask in masks.keys():
-    for date in masks[mask].keys():
-        for filter in masks[mask][date].keys():
+for mask in list(masks.keys()):
+    for date in list(masks[mask].keys()):
+        for filter in list(masks[mask][date].keys()):
             handle_date_and_filter(mask, date, filter, masks[mask][date][filter])
 
 

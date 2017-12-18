@@ -27,16 +27,16 @@ else:
 
 
 
-#print "filename          object  exptime        maskname lamp  filt   Turret"
+#print("filename          object  exptime        maskname lamp  filt   Turret")
 for fname in files:
 
     try:
         header = MOSFIRE.IO.readheader(fname)
     except IOError, err:
-        print "Couldn't IO %s" % fname
+        print("Couldn't IO %s" % fname)
         continue
     except:
-        print "%s is unreadable" % fname
+        print("%s is unreadable" % fname)
         continue
 
     lamps = ""
@@ -54,13 +54,13 @@ for fname in files:
         if header["aborted"]:
             header.update("object", "ABORTED")
     except:
-        print "Missing header file in: %s" % fname
+        print("Missing header file in: %s" % fname)
 
     try:
-        print "%(datafile)12s %(object)40s %(truitime)6.1f s %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s" % (header)
+        print("%(datafile)12s %(object)40s %(truitime)6.1f s %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s" % (header))
     except:
         try:
-            print "%(datafile)12s %(object)25s %(truitime)6.1f s %(lamps)3s %(filter)6s %(mgtname)7s" % (header)
+            print("%(datafile)12s %(object)25s %(truitime)6.1f s %(lamps)3s %(filter)6s %(mgtname)7s" % (header))
         except:
-            print "%s Skipped" % fname
+            print("%s Skipped" % fname)
 
