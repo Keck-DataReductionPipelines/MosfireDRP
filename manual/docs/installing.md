@@ -50,7 +50,7 @@ Run the install program:
 
     python setup.py install
 
-The executable `mospy` should now be in your path.  If you used the Anaconda based install, it will be in the Anaconda bin directory (e.g. `~/anaconda/envs/mospy_2016_macos/bin/mospy`).
+The executable `mospy` should now be in your path.  If you used the Anaconda based install, it will be in the Anaconda bin directory (e.g. `~/anaconda/envs/mospy_2017_macos/bin/mospy`).
 
 
 ## Alternate Methods of Installing Python
