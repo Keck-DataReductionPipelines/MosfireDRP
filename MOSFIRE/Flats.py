@@ -810,7 +810,7 @@ def find_and_fit_edges(data, header, bs, options,edgeThreshold=450):
     # top and bottom values of the slit pixels
     spatial_centers = np.array([], dtype=np.int)
     for k in np.arange(0,len(initial_edges)-1):
-        spatial_centers = np.append(spatial_centers,(initial_edges[k]+initial_edges[k+1])/2)
+        spatial_centers = np.append(spatial_centers,(initial_edges[k]+initial_edges[k+1])//2)
     #slit_values=np.array([])
     #for k in np.arange(0, len(spatial_centers)):
     #    slit_values = np.append(slit_values,np.mean(vertical_profile[spatial_centers[k]-3:spatial_centers[k]+3]))

@@ -1650,6 +1650,7 @@ class InteractiveSolution:
         self.xrng[1] /= 0.99
         self.sigma_clip = False
         self.xlim = self.xrng
+        print('LYACheck line 1653: self.xlim', self.xlim)
         if solutions is None:
             self.solutions = list(range(len(self.bs.ssl)))
         else:
@@ -1770,7 +1771,8 @@ class InteractiveSolution:
                 self.ax1.text(foundlams[i], 1500, "%1.2f" % D, rotation='vertical',
                         size=10)
 
-            self.ax2.xlim(self.xlim)
+            self.ax2.set_xlim(self.xlim)
+            print('LYACheck line 1775: self.xlim', self.xlim)
             self.ax2.grid(True)
             #pl.axhline(0.1)
             #pl.axhline(-0.1)
@@ -1783,7 +1785,8 @@ class InteractiveSolution:
                 fmt = 'bo'
             self.ax2.plot(self.linelist[ok], (foundlams[ok] - self.linelist[ok]), 
                     fmt)
-            self.ax2.xlim(self.xlim)
+            print('LYACheck line 1788: self.xlim', self.xlim)
+            self.ax2.set_xlim(self.xlim)
 
 
 
@@ -1829,15 +1832,16 @@ class InteractiveSolution:
         pl.ion()
 
         ymax = self.ax1.get_ylim()[1]
-        self.ax1.xlim(self.xlim)
+        self.ax1.set_xlim(self.xlim)
+        print('LYACheck line 1836: self.xlim', self.xlim)
         if self.band == 'Y':
-            self.ax1.ylim([-100, 1000])
+            self.ax1.set_ylim([-100, 1000])
         else:
-            self.ax1.ylim([-1000, ymax*.8])
+            self.ax1.set_ylim([-1000, ymax*.8])
 
         if np.max(self.spec) < 200:
-            self.ax1.ylim([-100,500])
-        
+            self.ax1.set_ylim([-100,500])
+        pl.show()
         self.draw_done()
 
 
@@ -1863,15 +1867,17 @@ class InteractiveSolution:
         """Show the full spectrum"""
         self.xlim = self.xrng
         pl.ion()
-        self.ax1.xlim(self.xlim)
-        self.ax2.xlim(self.xlim)
+        print('LYACheck line 1870: self.xlim', self.xlim)
+        self.ax1.set_xlim(self.xlim)
+        self.ax2.set_xlim(self.xlim)
 
     def zoom(self, x, y):
         """Zoom/pan the view"""
         self.xlim = [x*.988,x/.988]
         pl.ion()
-        self.ax1.xlim(self.xlim)
-        self.ax2.xlim(self.xlim)
+        print('LYACheck line 1878: self.xlim', self.xlim)
+        self.ax1.set_xlim(self.xlim)
+        self.ax2.set_xlim(self.xlim)
 
     def fastforward(self, x, y):
         """Fast forward to next uncalib obj """
@@ -2487,13 +2493,8 @@ def plot_mask_fits(maskname, fname, options):
         c0 = np.poly1d(fits[0])
         c0s = c0(pos)
 
-<<<<<<< HEAD
         for i in range(1,N):
             pl.subplot(int(nx),int(ny),i)
-=======
-        for i in xrange(1,N):
-            ax = pl.subplot(int(nx),int(ny),i)
->>>>>>> 022e7709f9eb4fc7eac3a1a3169a5673015d5abd
             f = np.poly1d(fits[i])
             pl.plot(pos, f(c0s), color='orange')
             ylim = pl.ylim()
