@@ -7,12 +7,12 @@
 * Python3 compatibility!
 * Improved installation procedure uses anaconda cloud
 * The 1D spectral extraction code now provides the user the ability to set the default aperture width.
-* Revamped documentation
+* Revamped documentation using mkdocs
 
 ### Improvements and bug fixes
 
 * Fixed bug where 1D extraction apertures could not be interactively positioned.
-* Fixed Astropy deprecation warning related to clobber option
+* Fixed astropy deprecation warning related to clobber option
 * Fixed bug where slit nods with an odd number of positions would fail
 * Fixed numpy deprecation related to indexing arrays with non-integers
 * Fixed header info bug which would cause DS9 coordinates to display incorrectly
