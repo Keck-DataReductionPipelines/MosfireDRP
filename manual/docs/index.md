@@ -6,8 +6,4 @@ If you need help with the pipeline or to report a problem, please visit our [iss
 
 The currently release installation and reduction instructions are provided in the [DRP manual](manual).
 
-The support team includes:
-
-* Marc Kassis, Luca Rizzi, Jim Lyke, and Josh Walawender at W. M. Keck Observatory
-* Chuck Steidel at Caltech
-* Tuan Do at UCLA
+The support team currently includes: Luca Rizzi, Josh Walawender, Jim Lyke, Marc Kassis (W. M. Keck Observatory), Leo Alcorn (Texas A&M University), Chuck Steidel (Caltech), and Tuan Do (UCLA).
