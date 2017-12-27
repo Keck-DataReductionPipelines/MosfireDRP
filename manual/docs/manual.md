@@ -1,6 +1,6 @@
 # Table of Contents
 
-1. [Changes in Version 2016](changes)
+1. [Latest Changes](changes)
 2. [Preface](preface)
 3. [Installing the Data Reduction Pipeline](installing)
 4. [Retrieve Your Data](retrieve)
