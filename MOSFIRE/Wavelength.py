@@ -1639,6 +1639,7 @@ class InteractiveSolution:
         self.fig = fig
         self.ax1 = pl.subplot(2,1,1)
         self.ax2 = pl.subplot(2,1,2)
+        self.done = False
         self.outfilename = outfilename
         self.starting_pos = starting_pos
         self.noninteractive = noninteractive
@@ -1789,12 +1790,11 @@ class InteractiveSolution:
 
 
     def draw_done(self):
-        if not self.done: 
+        if self.done is False:
             return
-
-        mid = np.mean(self.xlim)*.99
-
-        self.ax1.text(mid, 0, 'Done!', size=32, color='red')
+        else:
+            mid = np.mean(self.xlim)*.99
+            self.ax1.text(mid, 0, 'Done!', size=32, color='red')
 
     def draw_vertical_line_marks(self):
         ymax = self.ax1.get_ylim()[1]
