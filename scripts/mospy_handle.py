@@ -26,7 +26,7 @@ fl = open('filelist.txt', 'write')
 
 files = []
 for i in range(1, len(sys.argv)):
-    files.extend(glob.iglob(sys.argv[i]))
+    files.extend(glob.iglob(os.path.abspath(sys.argv[i])))
 
 masks = {}
 
