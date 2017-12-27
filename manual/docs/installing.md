@@ -29,7 +29,7 @@ Now we will invoke that environment:
 
 or
 
-    source activate mospy_2017_macOS
+    source activate mospy_2017_macos
 
 Now we will install the DRP itself.  From now on, if you want to run the DRP, first invoke the appropriate environment using `source activate mospy_2017_linux` or `source activate mospy_2017_macos`.
 
