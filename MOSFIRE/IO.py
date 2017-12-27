@@ -27,6 +27,14 @@ from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 
 theBPM = None # the Bad pixel mask
 
+from astropy import __version__ as av
+if av in ['1.3', '1.3.0']:
+    err_str = 'Astropy {} is incompatible with MOSFIRE FITS files.'.format(av)
+    error(err_str)
+    error('Upgrade or downgrade astropy before running the MOSFIRE DRP.')
+    raise ImportError(err_str)
+
+
 def badpixelmask():
     global theBPM
 
