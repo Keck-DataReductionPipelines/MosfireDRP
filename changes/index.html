@@ -69,6 +69,8 @@
     
         <ul>
         
+            <li><a class="toctree-l4" href="#changes-in-version-2017">Changes in Version 2017</a></li>
+        
             <li><a class="toctree-l4" href="#changes-in-version-2016">Changes in Version 2016</a></li>
         
             <li><a class="toctree-l4" href="#changes-in-version-2015a">Changes in Version 2015A</a></li>
@@ -182,9 +184,25 @@
             <div class="section">
               
                 <h1 id="change-log">Change Log</h1>
-<p><strong>Important Note</strong>: The <a href="http://ssb.stsci.edu/ureka/">Ureka package has been deprecated</a> as of April 26, 2016.  As a result, the MOSFIRE pipeline has migrated to a version which is not dependent on IRAF/PyRAF, but only on python packages.  It should work with any python install which provides the required packages and versions.</p>
-<h2 id="changes-in-version-2016">Changes in Version 2016</h2>
+<h2 id="changes-in-version-2017">Changes in Version 2017</h2>
 <h3 id="new-features">New features</h3>
+<ul>
+<li>Python3 compatibility!</li>
+<li>Improved installation procedure uses anaconda cloud</li>
+<li>The 1D spectral extraction code now provides the user the ability to set the default aperture width.</li>
+<li>Revamped documentation using mkdocs</li>
+</ul>
+<h3 id="improvements-and-bug-fixes">Improvements and bug fixes</h3>
+<ul>
+<li>Fixed bug where 1D extraction apertures could not be interactively positioned.</li>
+<li>Fixed astropy deprecation warning related to clobber option</li>
+<li>Fixed bug where slit nods with an odd number of positions would fail</li>
+<li>Fixed numpy deprecation related to indexing arrays with non-integers</li>
+<li>Fixed header info bug which would cause DS9 coordinates to display incorrectly</li>
+</ul>
+<h2 id="changes-in-version-2016">Changes in Version 2016</h2>
+<p><strong>Important Note</strong>: The <a href="http://ssb.stsci.edu/ureka/">Ureka package has been deprecated</a> as of April 26, 2016.  As a result, the MOSFIRE pipeline has migrated to a version which is not dependent on IRAF/PyRAF, but only on python packages.  It should work with any python install which provides the required packages and versions.</p>
+<h3 id="new-features_1">New features</h3>
 <ul>
 <li>DRP is no longer dependent on IRAF/PyRAF<ul>
 <li>The use of IRAF's <code>geoxytran</code>, <code>imcombine</code>, and <code>imarith</code> tasks have been replaced with python equivalents.</li>
@@ -196,14 +214,14 @@
 <li>The DRP now performs optimal spectral extraction <a href="http://adsabs.harvard.edu/abs/1986PASP...98..609H">Horne 1986</a> and outputs a 1D spectrum.  Please note that this is intended as a quick look tool, not for final science use.</li>
 <li>The <code>handle</code> step now writes <code>filelist.txt</code> which contains a list of all the files processed by <code>handle</code> instead of printing that output to the screen.  The file also contains messages for files not categorized for processing explaining why.  In addition, <code>handle</code> now no longer writes list files with no content.  This is intended to make it easier to quickly see what files are available for reduction.</li>
 </ul>
-<h3 id="improvements-and-bug-fixes">Improvements and bug fixes</h3>
+<h3 id="improvements-and-bug-fixes_1">Improvements and bug fixes</h3>
 <ul>
 <li>Changed dependence on <code>pylab</code> to <code>matplotlib.pyplot</code></li>
 <li>Uses <code>astropy.io.fits</code> instead of <code>pyfits</code> when available</li>
 <li>Adjust log messages to send more to DEBUG instead of INFO.  Leads to less clutter in messages visible to user.</li>
 </ul>
 <h2 id="changes-in-version-2015a">Changes in Version 2015A</h2>
-<h3 id="new-features_1">New features</h3>
+<h3 id="new-features_2">New features</h3>
 <ul>
 <li>Reduction of long2pos and long2pos_specphot</li>
 <li>Reduction of longslit data</li>
@@ -212,7 +230,7 @@
 <li>Package-style installation as a Ureka sub-package</li>
 <li>Support for Ureka 1.5.1</li>
 </ul>
-<h3 id="improvements-and-bug-fixes_1">Improvements and bug fixes</h3>
+<h3 id="improvements-and-bug-fixes_2">Improvements and bug fixes</h3>
 <ul>
 <li>Fix incorrect determination of the slit parameters which prevented the use of large slits</li>
 <li>Fix incorrect determination of the average wavelength dispersion for the long2pos mode</li>
