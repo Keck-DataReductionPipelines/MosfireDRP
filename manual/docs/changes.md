@@ -1,8 +1,25 @@
 # Change Log
 
-__Important Note__: The [Ureka package has been deprecated](http://ssb.stsci.edu/ureka/) as of April 26, 2016.  As a result, the MOSFIRE pipeline has migrated to a version which is not dependent on IRAF/PyRAF, but only on python packages.  It should work with any python install which provides the required packages and versions.
+## Changes in Version 2017
+
+### New features
+
+* Python3 compatibility!
+* Improved installation procedure uses anaconda cloud
+* The 1D spectral extraction code now provides the user the ability to set the default aperture width.
+* Revamped documentation using mkdocs
+
+### Improvements and bug fixes
+
+* Fixed bug where 1D extraction apertures could not be interactively positioned.
+* Fixed astropy deprecation warning related to clobber option
+* Fixed bug where slit nods with an odd number of positions would fail
+* Fixed numpy deprecation related to indexing arrays with non-integers
+* Fixed header info bug which would cause DS9 coordinates to display incorrectly
 
 ## Changes in Version 2016
+
+__Important Note__: The [Ureka package has been deprecated](http://ssb.stsci.edu/ureka/) as of April 26, 2016.  As a result, the MOSFIRE pipeline has migrated to a version which is not dependent on IRAF/PyRAF, but only on python packages.  It should work with any python install which provides the required packages and versions.
 
 ### New features
 
