@@ -1635,7 +1635,11 @@ class InteractiveSolution:
         self.options = options
         self.linelist0 = linelist
         self.slitno = slitno
+        
         self.fig = fig
+        self.ax1=pl.subplot(2,1,1)
+        self.ax2=pl.subplot(2,1,2)
+        self.done=False
         self.outfilename = outfilename
         self.starting_pos = starting_pos
         self.noninteractive = noninteractive
@@ -1753,10 +1757,8 @@ class InteractiveSolution:
         
 
     def draw_found_lines(self):
-        pl.subplot(2,1,1)
-
-        pl.grid(True)
-        xmin, xmax, ymin, ymax = pl.axis()
+        self.ax1.grid(True) 
+        ymax = self.ax1.get_ylim()[1] 
         if self.foundlines is not None:
             foundlams = CV.chebval(self.foundlines, self.cfit)
             ok = np.isfinite(self.foundlinesig) 
@@ -1764,57 +1766,54 @@ class InteractiveSolution:
             for i in range(len(self.linelist)):
                 if not ok[i]: continue
                 D = (foundlams[i] - self.linelist[i])
-                pl.axvline(foundlams[i], color='orange', ymax=.75, ymin=.25,
+                self.ax1.axvline(foundlams[i], color='orange', ymax=.75, ymin=.25,
                         linewidth=1.5)
-                pl.text(foundlams[i], 1500, "%1.2f" % D, rotation='vertical',
+                self.ax1.text(foundlams[i], 1500, "%1.2f" % D, rotation='vertical',
                         size=10)
 
-            pl.subplot(2,1,2)
-            pl.xlim(self.xlim)
-            pl.grid(True)
+            self.ax2.set_xlim(self.xlim) 
+            self.ax2.grid(True) 
             #pl.axhline(0.1)
             #pl.axhline(-0.1)
-            pl.axhline(self.STD)
-            pl.axhline(-1*self.STD)
+            self.ax2.axhline(self.STD) 
+            self.ax2.axhline(-1*self.STD) 
 
-            if self.STD < 0.1: fmt = 'go'
-            else: fmt = 'bo'
-            pl.plot(self.linelist[ok], (foundlams[ok] - self.linelist[ok]), 
-                    fmt)
-            pl.xlim(self.xlim)
+            if self.STD < 0.1: 
+                fmt = 'go'
+            else: 
+                fmt = 'bo'
+            self.ax2.plot(self.linelist[ok], (foundlams[ok] - self.linelist[ok]), fmt)
+            self.ax2.set_xlim(self.xlim)
 
 
 
     def draw_done(self):
-        if not self.done: 
+        if self.done is False:
             return
+        else:
+            mid = np.mean(self.xlim)*.99
 
-        mid = np.mean(self.xlim)*.99
-
-        pl.subplot(2,1,1)
-        pl.text(mid, 0, 'Done!', size=32, color='red')
+            self.ax1.text(mid, 0, 'Done!', size=32, color='red') 
 
     def draw_vertical_line_marks(self):
-        pl.subplot(2,1,1)
-        xmin, xmax, ymin, ymax = pl.axis()
+        ymax = self.ax1.get_ylim()[1] 
         i = 0
         for line in self.linelist:
-            pl.axvline(line, color='red', linewidth=.5)
-
-            pl.text(line, ymax*.75, "%5.1f" % (line), 
-                    rotation='vertical', color='black')
-
+            self.ax1.axvline(line, color='red', linewidth=.5) 
+            self.ax1.text(line, ymax*.75, "%5.1f" % (line), 
+                   rotation='vertical', color='black') 
             i = i+1
             fwl = self.options['fractional-wavelength-search']
-            pl.plot([line*fwl,line/fwl], [0,0], linewidth=2)
+            self.ax1.plot([line*fwl,line/fwl], [0,0], linewidth=2) 
 
     def redraw(self):
         pl.ion()
         pl.clf()
-
-        pl.subplot(2,1,1)
+        self.fig = self.fig
+        self.ax1=pl.subplot(2,1,1)
+        self.ax2=pl.subplot(2,1,2)
         pl.subplots_adjust(left=.1,right=.95,bottom=.1,top=.90)
-        pl.plot(self.ll, self.spec, linestyle='steps-mid')
+        self.ax1.plot(self.ll, self.spec, linestyle='steps-mid') 
 
         if self.MAD is None:
             pl.title("[%i] Press 'z' to zoom, 'x' to unzoom, 'c' to shift, " 
@@ -1828,16 +1827,18 @@ class InteractiveSolution:
         pl.ioff()
         self.draw_vertical_line_marks()
         self.draw_found_lines()
+        self.fig.show()
         pl.ion()
 
-        pl.subplot(2,1,1)
-        xmin, xmax, ymin, ymax = pl.axis()
-        pl.xlim(self.xlim)
-        if self.band == 'Y': pl.ylim([-100, 1000])
-        else: pl.ylim([-1000, ymax*.8])
+        ymax = self.ax1.get_ylim()[1] 
+        self.ax1.set_xlim(self.xlim) 
+        if self.band == 'Y': 
+            self.ax1.set_ylim([-100, 1000]) 
+        else: 
+            self.ax1.set_ylim([-1000, ymax*.8]) 
 
         if np.max(self.spec) < 200:
-            pl.ylim([-100,500])
+            self.ax1.set_ylim([-100,500]) 
         
         self.draw_done()
 
@@ -1864,15 +1865,15 @@ class InteractiveSolution:
         """Show the full spectrum"""
         self.xlim = self.xrng
         pl.ion()
-        pl.subplot(2,1,1) ; pl.xlim(self.xlim)
-        pl.subplot(2,1,2) ; pl.xlim(self.xlim)
+        self.ax1.set_xlim(self.xlim) 
+        self.ax2.set_xlim(self.xlim) 
 
     def zoom(self, x, y):
         """Zoom/pan the view"""
         self.xlim = [x*.988,x/.988]
         pl.ion()
-        pl.subplot(2,1,1) ; pl.xlim(self.xlim)
-        pl.subplot(2,1,2) ; pl.xlim(self.xlim)
+        self.ax1.set_xlim(self.xlim) 
+        self.ax2.set_xlim(self.xlim) 
 
     def fastforward(self, x, y):
         """Fast forward to next uncalib obj """
@@ -2489,7 +2490,7 @@ def plot_mask_fits(maskname, fname, options):
         c0s = c0(pos)
 
         for i in range(1,N):
-            pl.subplot(int(nx),int(ny),i)
+            ax = self.fig.add_subplot(int(nx),int(ny),i) 
             f = np.poly1d(fits[i])
             pl.plot(pos, f(c0s), color='orange')
             ylim = pl.ylim()
