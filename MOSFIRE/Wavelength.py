@@ -1650,7 +1650,6 @@ class InteractiveSolution:
         self.xrng[1] /= 0.99
         self.sigma_clip = False
         self.xlim = self.xrng
-        print('LYACheck line 1653: self.xlim', self.xlim)
         if solutions is None:
             self.solutions = list(range(len(self.bs.ssl)))
         else:
@@ -1772,7 +1771,6 @@ class InteractiveSolution:
                         size=10)
 
             self.ax2.set_xlim(self.xlim)
-            print('LYACheck line 1775: self.xlim', self.xlim)
             self.ax2.grid(True)
             #pl.axhline(0.1)
             #pl.axhline(-0.1)
@@ -1833,7 +1831,6 @@ class InteractiveSolution:
 
         ymax = self.ax1.get_ylim()[1]
         self.ax1.set_xlim(self.xlim)
-        print('LYACheck line 1836: self.xlim', self.xlim)
         if self.band == 'Y':
             self.ax1.set_ylim([-100, 1000])
         else:
@@ -1867,7 +1864,6 @@ class InteractiveSolution:
         """Show the full spectrum"""
         self.xlim = self.xrng
         pl.ion()
-        print('LYACheck line 1870: self.xlim', self.xlim)
         self.ax1.set_xlim(self.xlim)
         self.ax2.set_xlim(self.xlim)
 
@@ -1875,7 +1871,6 @@ class InteractiveSolution:
         """Zoom/pan the view"""
         self.xlim = [x*.988,x/.988]
         pl.ion()
-        print('LYACheck line 1878: self.xlim', self.xlim)
         self.ax1.set_xlim(self.xlim)
         self.ax2.set_xlim(self.xlim)
 
