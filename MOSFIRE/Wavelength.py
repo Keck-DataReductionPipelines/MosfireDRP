@@ -1636,9 +1636,6 @@ class InteractiveSolution:
         self.linelist0 = linelist
         self.slitno = slitno
         self.fig = fig
-        self.ax1 = pl.subplot(2,1,1)
-        self.ax2 = pl.subplot(2,1,2)
-        self.done = False
         self.outfilename = outfilename
         self.starting_pos = starting_pos
         self.noninteractive = noninteractive
@@ -1650,7 +1647,6 @@ class InteractiveSolution:
         self.xrng[1] /= 0.99
         self.sigma_clip = False
         self.xlim = self.xrng
-        print('LYACheck line 1653: self.xlim', self.xlim)
         if solutions is None:
             self.solutions = list(range(len(self.bs.ssl)))
         else:
@@ -1757,8 +1753,10 @@ class InteractiveSolution:
         
 
     def draw_found_lines(self):
-        self.ax1.grid(True)
-        ymax = self.ax1.get_ylim()[1]
+        pl.subplot(2,1,1)
+
+        pl.grid(True)
+        xmin, xmax, ymin, ymax = pl.axis()
         if self.foundlines is not None:
             foundlams = CV.chebval(self.foundlines, self.cfit)
             ok = np.isfinite(self.foundlinesig) 
@@ -1766,56 +1764,57 @@ class InteractiveSolution:
             for i in range(len(self.linelist)):
                 if not ok[i]: continue
                 D = (foundlams[i] - self.linelist[i])
-                self.ax1.axvline(foundlams[i], color='orange', ymax=.75, ymin=.25,
+                pl.axvline(foundlams[i], color='orange', ymax=.75, ymin=.25,
                         linewidth=1.5)
-                self.ax1.text(foundlams[i], 1500, "%1.2f" % D, rotation='vertical',
+                pl.text(foundlams[i], 1500, "%1.2f" % D, rotation='vertical',
                         size=10)
 
-            self.ax2.set_xlim(self.xlim)
-            print('LYACheck line 1775: self.xlim', self.xlim)
-            self.ax2.grid(True)
+            pl.subplot(2,1,2)
+            pl.xlim(self.xlim)
+            pl.grid(True)
             #pl.axhline(0.1)
             #pl.axhline(-0.1)
-            self.ax2.axhline(self.STD)
-            self.ax2.axhline(-1*self.STD)
+            pl.axhline(self.STD)
+            pl.axhline(-1*self.STD)
 
-            if self.STD < 0.1:
-                fmt = 'go'
-            else:
-                fmt = 'bo'
-            self.ax2.plot(self.linelist[ok], (foundlams[ok] - self.linelist[ok]), 
+            if self.STD < 0.1: fmt = 'go'
+            else: fmt = 'bo'
+            pl.plot(self.linelist[ok], (foundlams[ok] - self.linelist[ok]), 
                     fmt)
-            print('LYACheck line 1788: self.xlim', self.xlim)
-            self.ax2.set_xlim(self.xlim)
+            pl.xlim(self.xlim)
 
 
 
     def draw_done(self):
-        if self.done is False:
+        if not self.done: 
             return
-        else:
-            mid = np.mean(self.xlim)*.99
-            self.ax1.text(mid, 0, 'Done!', size=32, color='red')
+
+        mid = np.mean(self.xlim)*.99
+
+        pl.subplot(2,1,1)
+        pl.text(mid, 0, 'Done!', size=32, color='red')
 
     def draw_vertical_line_marks(self):
-        ymax = self.ax1.get_ylim()[1]
+        pl.subplot(2,1,1)
+        xmin, xmax, ymin, ymax = pl.axis()
         i = 0
         for line in self.linelist:
-            self.ax1.axvline(line, color='red', linewidth=.5)
+            pl.axvline(line, color='red', linewidth=.5)
 
-            self.ax1.text(line, ymax*.75, "%5.1f" % (line), 
+            pl.text(line, ymax*.75, "%5.1f" % (line), 
                     rotation='vertical', color='black')
 
             i = i+1
             fwl = self.options['fractional-wavelength-search']
-            self.ax1.plot([line*fwl,line/fwl], [0,0], linewidth=2)
+            pl.plot([line*fwl,line/fwl], [0,0], linewidth=2)
 
     def redraw(self):
         pl.ion()
         pl.clf()
 
+        pl.subplot(2,1,1)
         pl.subplots_adjust(left=.1,right=.95,bottom=.1,top=.90)
-        self.ax1.plot(self.ll, self.spec, linestyle='steps-mid')
+        pl.plot(self.ll, self.spec, linestyle='steps-mid')
 
         if self.MAD is None:
             pl.title("[%i] Press 'z' to zoom, 'x' to unzoom, 'c' to shift, " 
@@ -1831,17 +1830,15 @@ class InteractiveSolution:
         self.draw_found_lines()
         pl.ion()
 
-        ymax = self.ax1.get_ylim()[1]
-        self.ax1.set_xlim(self.xlim)
-        print('LYACheck line 1836: self.xlim', self.xlim)
-        if self.band == 'Y':
-            self.ax1.set_ylim([-100, 1000])
-        else:
-            self.ax1.set_ylim([-1000, ymax*.8])
+        pl.subplot(2,1,1)
+        xmin, xmax, ymin, ymax = pl.axis()
+        pl.xlim(self.xlim)
+        if self.band == 'Y': pl.ylim([-100, 1000])
+        else: pl.ylim([-1000, ymax*.8])
 
         if np.max(self.spec) < 200:
-            self.ax1.set_ylim([-100,500])
-        pl.show()
+            pl.ylim([-100,500])
+        
         self.draw_done()
 
 
@@ -1867,17 +1864,15 @@ class InteractiveSolution:
         """Show the full spectrum"""
         self.xlim = self.xrng
         pl.ion()
-        print('LYACheck line 1870: self.xlim', self.xlim)
-        self.ax1.set_xlim(self.xlim)
-        self.ax2.set_xlim(self.xlim)
+        pl.subplot(2,1,1) ; pl.xlim(self.xlim)
+        pl.subplot(2,1,2) ; pl.xlim(self.xlim)
 
     def zoom(self, x, y):
         """Zoom/pan the view"""
         self.xlim = [x*.988,x/.988]
         pl.ion()
-        print('LYACheck line 1878: self.xlim', self.xlim)
-        self.ax1.set_xlim(self.xlim)
-        self.ax2.set_xlim(self.xlim)
+        pl.subplot(2,1,1) ; pl.xlim(self.xlim)
+        pl.subplot(2,1,2) ; pl.xlim(self.xlim)
 
     def fastforward(self, x, y):
         """Fast forward to next uncalib obj """
@@ -2639,7 +2634,7 @@ def plot_data_quality(maskname, fname, options):
                 ))
 
         pl.clf()
-        ax = pl.subplot(2,2,1)
+        pl.subplot(2,2,1)
         pl.title("Slit {0}".format(solution["slitno"]))
         pl.scatter(pixels, alphas)
         pl.plot(pixels, alphamodel(pixels))
@@ -2648,20 +2643,20 @@ def plot_data_quality(maskname, fname, options):
         pl.xticks(rotation=90)
         pl.ylabel(r'$\alpha$')
 
-        ax = pl.subplot(2,2,2)
+        pl.subplot(2,2,2)
         pl.scatter(pixels, betas)
         pl.plot(pixels, betamodel(pixels))
         pl.xticks(rotation=90)
         pl.ylabel(r'$\beta$')
 
-        ax = pl.subplot(2,2,3)
+        pl.subplot(2,2,3)
         pl.scatter(pixels, gammas)
         pl.plot(pixels, gammamodel(pixels))
         pl.ylim([0,1e-12])
         pl.xticks(rotation=90)
         pl.ylabel(r'$\gamma$')
 
-        ax = pl.subplot(2,2,4)
+        pl.subplot(2,2,4)
         pl.scatter(pixels, deltas)
         pl.plot(pixels, deltamodel(pixels))
         pl.xticks(rotation=90)
@@ -2674,7 +2669,7 @@ def plot_data_quality(maskname, fname, options):
     [alpha_pixel, sinbeta_position, sinbeta_pixel, gamma_pixel, 
             delta_pixel] = param_guess_functions(band)
     pl.clf()
-    ax = pl.subplot(1,1,1)
+    pl.subplot(1,1,1)
     pl.scatter(all_pix, all_alphas, c=all_deltas)
     pl.plot(all_pix, alpha_pixel(all_pix), 'r')
 
