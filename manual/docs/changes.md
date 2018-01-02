@@ -1,6 +1,6 @@
 # Change Log
 
-## Changes in Version 2017
+## Changes in Version 2018
 
 ### New features
 
