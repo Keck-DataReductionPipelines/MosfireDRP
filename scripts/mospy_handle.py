@@ -28,6 +28,8 @@ files = []
 for i in range(1, len(sys.argv)):
     files.extend(glob.iglob(os.path.abspath(sys.argv[i])))
 
+files = [file for file in files if os.path.splitext(file)[1] != '.original']
+
 masks = {}
 
 
