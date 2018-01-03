@@ -81,4 +81,4 @@ Either comment out or copy the extract command for each desired output target (p
 
 After rectification, your output eps files for PosA and PosC narrow and wide will look like this:
 
-![Output long2pos_specphot images](image12.png "Output long2pos_specphot images")
+![Output long2pos_specphot images](image13.png "Output long2pos_specphot images")
