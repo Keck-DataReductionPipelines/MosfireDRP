@@ -1635,10 +1635,11 @@ class InteractiveSolution:
         self.options = options
         self.linelist0 = linelist
         self.slitno = slitno
+        
         self.fig = fig
-        self.ax1 = pl.subplot(2,1,1)
-        self.ax2 = pl.subplot(2,1,2)
-        self.done = False
+        self.ax1=pl.subplot(2,1,1)
+        self.ax2=pl.subplot(2,1,2)
+        self.done=False
         self.outfilename = outfilename
         self.starting_pos = starting_pos
         self.noninteractive = noninteractive
@@ -1756,8 +1757,8 @@ class InteractiveSolution:
         
 
     def draw_found_lines(self):
-        self.ax1.grid(True)
-        ymax = self.ax1.get_ylim()[1]
+        self.ax1.grid(True) 
+        ymax = self.ax1.get_ylim()[1] 
         if self.foundlines is not None:
             foundlams = CV.chebval(self.foundlines, self.cfit)
             ok = np.isfinite(self.foundlinesig) 
@@ -1770,20 +1771,18 @@ class InteractiveSolution:
                 self.ax1.text(foundlams[i], 1500, "%1.2f" % D, rotation='vertical',
                         size=10)
 
-            self.ax2.set_xlim(self.xlim)
-            self.ax2.grid(True)
+            self.ax2.set_xlim(self.xlim) 
+            self.ax2.grid(True) 
             #pl.axhline(0.1)
             #pl.axhline(-0.1)
-            self.ax2.axhline(self.STD)
-            self.ax2.axhline(-1*self.STD)
+            self.ax2.axhline(self.STD) 
+            self.ax2.axhline(-1*self.STD) 
 
-            if self.STD < 0.1:
+            if self.STD < 0.1: 
                 fmt = 'go'
-            else:
+            else: 
                 fmt = 'bo'
-            self.ax2.plot(self.linelist[ok], (foundlams[ok] - self.linelist[ok]), 
-                    fmt)
-            print('LYACheck line 1788: self.xlim', self.xlim)
+            self.ax2.plot(self.linelist[ok], (foundlams[ok] - self.linelist[ok]), fmt)
             self.ax2.set_xlim(self.xlim)
 
 
@@ -1793,27 +1792,28 @@ class InteractiveSolution:
             return
         else:
             mid = np.mean(self.xlim)*.99
-            self.ax1.text(mid, 0, 'Done!', size=32, color='red')
+
+            self.ax1.text(mid, 0, 'Done!', size=32, color='red') 
 
     def draw_vertical_line_marks(self):
-        ymax = self.ax1.get_ylim()[1]
+        ymax = self.ax1.get_ylim()[1] 
         i = 0
         for line in self.linelist:
-            self.ax1.axvline(line, color='red', linewidth=.5)
-
+            self.ax1.axvline(line, color='red', linewidth=.5) 
             self.ax1.text(line, ymax*.75, "%5.1f" % (line), 
-                    rotation='vertical', color='black')
-
+                   rotation='vertical', color='black') 
             i = i+1
             fwl = self.options['fractional-wavelength-search']
-            self.ax1.plot([line*fwl,line/fwl], [0,0], linewidth=2)
+            self.ax1.plot([line*fwl,line/fwl], [0,0], linewidth=2) 
 
     def redraw(self):
         pl.ion()
         pl.clf()
-
+        self.fig = self.fig
+        self.ax1=pl.subplot(2,1,1)
+        self.ax2=pl.subplot(2,1,2)
         pl.subplots_adjust(left=.1,right=.95,bottom=.1,top=.90)
-        self.ax1.plot(self.ll, self.spec, linestyle='steps-mid')
+        self.ax1.plot(self.ll, self.spec, linestyle='steps-mid') 
 
         if self.MAD is None:
             pl.title("[%i] Press 'z' to zoom, 'x' to unzoom, 'c' to shift, " 
@@ -1827,6 +1827,7 @@ class InteractiveSolution:
         pl.ioff()
         self.draw_vertical_line_marks()
         self.draw_found_lines()
+        self.fig.show()
         pl.ion()
 
         ymax = self.ax1.get_ylim()[1]
@@ -1837,8 +1838,8 @@ class InteractiveSolution:
             self.ax1.set_ylim([-1000, ymax*.8])
 
         if np.max(self.spec) < 200:
-            self.ax1.set_ylim([-100,500])
-        pl.show()
+            self.ax1.set_ylim([-100,500]) 
+        
         self.draw_done()
 
 
@@ -1864,16 +1865,16 @@ class InteractiveSolution:
         """Show the full spectrum"""
         self.xlim = self.xrng
         pl.ion()
-        self.ax1.set_xlim(self.xlim)
-        self.ax2.set_xlim(self.xlim)
+        self.ax1.set_xlim(self.xlim) 
+        self.ax2.set_xlim(self.xlim) 
 
     def zoom(self, x, y):
         """Zoom/pan the view"""
         self.xlim = [x*.988,x/.988]
         pl.ion()
-        self.ax1.set_xlim(self.xlim)
-        self.ax2.set_xlim(self.xlim)
-
+        self.ax1.set_xlim(self.xlim) 
+        self.ax2.set_xlim(self.xlim) 
+        
     def fastforward(self, x, y):
         """Fast forward to next uncalib obj """
         for i in range(self.slitno+1, len(self.solutions)):
@@ -2489,7 +2490,7 @@ def plot_mask_fits(maskname, fname, options):
         c0s = c0(pos)
 
         for i in range(1,N):
-            pl.subplot(int(nx),int(ny),i)
+            ax = self.fig.add_subplot(int(nx),int(ny),i) 
             f = np.poly1d(fits[i])
             pl.plot(pos, f(c0s), color='orange')
             ylim = pl.ylim()
@@ -2634,7 +2635,7 @@ def plot_data_quality(maskname, fname, options):
                 ))
 
         pl.clf()
-        ax = pl.subplot(2,2,1)
+        pl.subplot(2,2,1)
         pl.title("Slit {0}".format(solution["slitno"]))
         pl.scatter(pixels, alphas)
         pl.plot(pixels, alphamodel(pixels))
@@ -2643,20 +2644,20 @@ def plot_data_quality(maskname, fname, options):
         pl.xticks(rotation=90)
         pl.ylabel(r'$\alpha$')
 
-        ax = pl.subplot(2,2,2)
+        pl.subplot(2,2,2)
         pl.scatter(pixels, betas)
         pl.plot(pixels, betamodel(pixels))
         pl.xticks(rotation=90)
         pl.ylabel(r'$\beta$')
 
-        ax = pl.subplot(2,2,3)
+        pl.subplot(2,2,3)
         pl.scatter(pixels, gammas)
         pl.plot(pixels, gammamodel(pixels))
         pl.ylim([0,1e-12])
         pl.xticks(rotation=90)
         pl.ylabel(r'$\gamma$')
 
-        ax = pl.subplot(2,2,4)
+        pl.subplot(2,2,4)
         pl.scatter(pixels, deltas)
         pl.plot(pixels, deltamodel(pixels))
         pl.xticks(rotation=90)
@@ -2669,7 +2670,7 @@ def plot_data_quality(maskname, fname, options):
     [alpha_pixel, sinbeta_position, sinbeta_pixel, gamma_pixel, 
             delta_pixel] = param_guess_functions(band)
     pl.clf()
-    ax = pl.subplot(1,1,1)
+    pl.subplot(1,1,1)
     pl.scatter(all_pix, all_alphas, c=all_deltas)
     pl.plot(all_pix, alpha_pixel(all_pix), 'r')
 
