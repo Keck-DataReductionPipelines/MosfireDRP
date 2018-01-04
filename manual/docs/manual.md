@@ -17,6 +17,7 @@
 15. [Longslit Reductions](longslit)
 16. [A Word About Header Comments](headercomments)
 17. [Some Hints](hints)
+18. [Examples](example)
 
 The manual is also available in pdf form: [MOSFIRE_DRP_Manual.pdf](MOSFIRE_DRP_Manual.pdf)
 

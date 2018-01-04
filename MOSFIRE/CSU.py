@@ -24,13 +24,14 @@ bar pitch is 5.8 mm which is related to pixels using the demagnification
 and temperature scale.
 
 '''
-import Detector, IO
+import MOSFIRE
+from MOSFIRE import Detector, IO
 import numpy as np
 import unittest
 import os
 
 import pdb
-from MosfireDrpLog import debug, info, warning, error
+from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 
 from astropy.modeling import models
 import pickle
@@ -153,7 +154,7 @@ def bar_to_slit(x):
     if (x < 1) or (x > numbars):
         error("Not indexing CSU properly")
         raise MismatchError("Not indexing CSU properly")
-    return int(x+1)/2
+    return int(x+1)//2
 
 def to_ds9_region(poss, dash=1, color="green", label=True):
     s = []
@@ -175,7 +176,7 @@ def to_ds9_region(poss, dash=1, color="green", label=True):
     return s
 
 
-class Barset:
+class Barset(object):
     '''Barset provides convenience functions around a CSU slitmask'''
 
     pos = [] 
@@ -285,7 +286,6 @@ class Barset:
     def csu_slit_to_pixel(self, slit):
         '''Convert a CSU slit number to spatial pixel'''
         y0 = 2013
-
         if (slit < 1) or (slit > 46):
             error("The requested slit number (%i) does not exist" %
                     slit)

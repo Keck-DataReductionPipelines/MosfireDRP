@@ -92,7 +92,7 @@ def make():
             vals = "?,?,?,"
             values = [p, fdate, number]
 
-            for key in hdr.keys():
+            for key in list(hdr.keys()):
 
                 if key == 'COMMENT': continue
 
@@ -119,8 +119,8 @@ def make():
             try:
                 c.execute(insert_sql, tuple(values))
             except:
-                print "Query failed on:"
-                print insert_sql
+                print("Query failed on:")
+                print(insert_sql)
                 traceback.print_exc()
                 #sys.exit()
                  
@@ -132,7 +132,7 @@ def find_continuous(data):
     # http://stackoverflow.com/questions/2154249/identify-groups-of-continuous-numbers-in-a-list
     ranges = []
     for k, g in groupby(enumerate(data), lambda (i,x):i-x):
-        group = map(itemgetter(1), g)
+        group = list(map(itemgetter(1), g))
         ranges.append((group[0], group[-1]))
     return ranges
 
@@ -169,7 +169,7 @@ def sql_for_mask_filter_flats(db, maskname, filter):
     order by fdate, number
             '''.format(maskname, filter)
 
-    print "Flat Query is:", query
+    print("Flat Query is:", query)
     cursor = db.execute(query)
     return cursor.fetchall()
 
@@ -185,7 +185,7 @@ def sql_for_mask_filter_spectra(db, maskname, filter):
 
             '''.format(maskname, filter)
     
-    #print "DB Query is: ", query
+    #print("DB Query is: ", query
     cur = db.execute(query)
     return cur.fetchall()
 
@@ -199,7 +199,7 @@ def sql_for_mask_filter_date(db, maskname, filter, date):
     order by fdate, number
     '''.format(maskname, filter, date)
 
-    print "DB Query is: ", query
+    print("DB Query is: ", query)
     cur = db.execute(query)
 
     return cur.fetchall()
@@ -234,7 +234,6 @@ try:
     from astropy.io import fits as pf
 except:
     import pyfits as pf
-
 
 np.seterr(all="ignore")
 
@@ -281,7 +280,6 @@ try:
     from astropy.io import fits as pf
 except:
     import pyfits as pf
-
 
 np.seterr(all="ignore")
 
@@ -356,7 +354,7 @@ def plan_to_python(plans):
             for observation in date["observations"]:
                 obs_wave = []
                 obs_sci = {}
-                offsets = observation["offsets"].keys()
+                offsets = list(observation["offsets"].keys())
 
 
                 if (len(offsets) == 1) and offsets[0] is 'Unknown':
@@ -375,7 +373,7 @@ def plan_to_python(plans):
 
 
         wavecombine = ""
-        for i in xrange(len(waves)):
+        for i in range(len(waves)):
             wavecombine += "Wavelength.imcombine(wavenames[%i], maskname, " \
                 "band, waveops)\n" % (i)
             if i == 0:
@@ -389,9 +387,9 @@ def plan_to_python(plans):
             wavecombine += "Wavelength.apply_lambda_simple(maskname, band, " \
                     " wavenames[%i], waveops)\n" % i
 
-            pos = scis[i].keys()
+            pos = list(scis[i].keys())
             if len(pos) != 2:
-                print "Only handling A/B subtraction currently"
+                print("Only handling A/B subtraction currently")
                 continue
 
             wavecombine += \
@@ -477,12 +475,12 @@ def longslits():
 
         print("")
         print("--- SUMMARY ---")
-        for key, value in objs.iteritems():
+        for key, value in objs.items():
             print("{0:10s}: {1:5g} frames".format(key, len(value)))
 
 
     else:
-        print "Not enough arguments"
+        print("Not enough arguments")
         sys.exit()
 
     res = {
@@ -542,13 +540,13 @@ def masks():
             print(boldunderline_ansi("{0:45s} {1:4s}".format(maskname, filter)))
 
             if filter == 'Dark':
-                print "  Dark frames not fully supported yet"
+                print("  Dark frames not fully supported yet")
                 continue
 
             FL = sql_for_mask_filter_flats(db, maskname, filter)
 
-            print "%i flats on %i nights " % (len(FL), len(set([str(S[1]) for
-                S in FL])))
+            print("%i flats on %i nights " % (len(FL), len(set([str(S[1]) for
+                S in FL]))))
 
             this_plan["flatlist"] = [str("m%s_%4.4i.fits" % (f[1],f[2])) for f
                     in FL]
@@ -602,7 +600,7 @@ def masks():
                     this_date["observations"].append(this_observation)
 
                 for observation in this_date["observations"]:
-                    for k,v in observation["offsets"].iteritems():
+                    for k,v in observation["offsets"].items():
                         print("\tOffset {0:5s} has {1:3g} frames ({2}-{3}) "
                             "total exptime is {4:5g} s".format(str(k),
                                 len(v["fname"]), v["start/stop"][0],
@@ -620,7 +618,7 @@ def masks():
 
 commands = [make, masks, longslits]
 def usage():
-    print """
+    print(""")
 Commands: """
 
     for command in commands:
@@ -635,7 +633,7 @@ if __name__ == '__main__':
         sys.exit()
 
     if sys.argv[2] == 'make':
-        print "Making database"
+        print("Making database")
         make()
     if sys.argv[2] == 'masks':
         masks()

@@ -76,9 +76,9 @@ def audit(filename):
 
 
 def usage():
-    print """
+    print("""
     audit [filename]
-Commands: """
+Commands: """)
 
     print("\n")
 

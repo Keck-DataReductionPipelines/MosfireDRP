@@ -23,7 +23,7 @@ def array_to_tuple(A):
                         ys.append(y)
                         zs.append(A[x,y])
 
-        return map(np.array, (xs, ys, zs))
+        return list(map(np.array, (xs, ys, zs)))
 
 
 
