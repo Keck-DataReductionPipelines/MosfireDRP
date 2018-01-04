@@ -119,6 +119,12 @@
      <changefreq>daily</changefreq>
     </url>
         
+    <url>
+     <loc>/example/</loc>
+     <lastmod>2018-01-04</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
     
 
 </urlset>
