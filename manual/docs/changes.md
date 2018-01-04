@@ -7,7 +7,7 @@
 * Python3 compatibility!
 * Improved installation procedure uses anaconda cloud
 * The 1D spectral extraction code now provides the user the ability to set the default aperture width.
-* Revamped documentation using mkdocs
+* Revamped documentation using mkdocs including the addition of an examples section.
 
 __Note__: This release of the DRP is only tested and supported on python 3.6+.  If you must use python 2, use the 2016 release of the DRP.  We encourage all users to use python 3 and we make the install of python 3 easy using anaconda python and the anaconda cloud (see the installation instructions).
 
