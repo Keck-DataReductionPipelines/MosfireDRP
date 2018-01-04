@@ -21,3 +21,4 @@ pages:
         - 'Longslit Reductions': longslit.md
         - 'A Word About Header Comments': headercomments.md
         - 'Some Hints': hints.md
+        - 'Examples of Running the Pipeline': example.md
