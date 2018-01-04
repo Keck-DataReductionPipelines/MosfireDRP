@@ -4,7 +4,7 @@ Here we demonstrate three walkthroughs of how to run the MOSFIRE pipeline. We in
 
 ## Getting Started
 
-After downloading and unzipping all of the test data, make a directory in your preferred location to perform your reduction and run handle.
+After downloading and unzipping all of the test data, make a directory in your preferred location to perform your reduction and run [handle](handle).
 
     mkdir reduced
     cd reduced
@@ -20,14 +20,14 @@ You should see five new directories after handle is done.
 
 ## Longslit Reduction
 
-For more information on the reduction of longslits, go to the Longslit[link] section.
+For more information on the reduction of longslits, go to the [longslit][longslit] section.
 
 Move to the Longslit observation directory and copy the calibrations to the observation directory:
 
 	cd LONGSLIT-3x0.7/2012nov28/K
 	cp ../../../LONGSLIT-46x0.7/2013oct15/K/*.txt ./
 	
-Run the autodriver to create the driver file Longslit_HIP17971.py
+Run the [autodriver](autodriver) to create the driver file Longslit_HIP17971.py
 
 Edit the driver file so the y-range so it covers the range of the slit, and 'row_position' is not contaminated with the spectrum (you only want sky lines). Look at the files in Offset_-5_HIP17971.txt and Offset_5_HIP17971.txt to determine where these values should be.
 
@@ -35,15 +35,15 @@ Run the pipeline using:
 
 	mospy Longslit_HIP17971.py
 	
-You can run step by step by commenting out reduction steps in the driver file, or you can run all at once. First the pipeline will create a flat field, as described in the Flats section. Check out your combined and pixel flats to make sure they look reasonable, no odd edges to slits.
+You can run step by step by commenting out reduction steps in the driver file, or you can run all at once. First the pipeline will create a flat field, as described in the [Flats](flats) section. Check out your combined and pixel flats to make sure they look reasonable, no odd edges to slits.
 	
-We do not recommend non-interactive wavelength reductions unless you have a previous reliable wavelength solution in the same directory ("lambda_coeffs_wave_stack..."). Refer to the Wavelength Calibration sections (for H,J, and Y, or K band) for information on how to perform the interactive fit. In this case, we will be performing a K band solution, so check that section for more details.
+We do not recommend non-interactive wavelength reductions unless you have a previous reliable wavelength solution in the same directory ("lambda_coeffs_wave_stack..."). Refer to the Wavelength Calibration sections (for H,J, and Y, or K band) for information on how to perform the interactive fit. In this case, we will be performing a K band solution, so check that [section](wavelengthK) for more details.
 
-After rectification, the output (notably, HIP17971_K_eps.fits, HIP17971_K_itime.fits, HIP17971_K_sig.fits, HIP17971_K_snrs.fits) you get should look like this:
+After [background subtraction](background) and [rectification](rectify), the output (notably, HIP17971_K_eps.fits, HIP17971_K_itime.fits, HIP17971_K_sig.fits, HIP17971_K_snrs.fits) you get should look like this:
 
 ![Longslit DRP output](image10.png "Image showing the output of the DRP for a longslit.")
 
-For longslits with bright continuua (such as in this example), a spectral extraction if you should wish to perform one will be very simple. In the case of a bright continuum like this, you may or may not choose to perform the aperture selection manually, but we encourage manual control of the apertures whenever reasonable, even if just to check the aperture is correct.
+For longslits with bright continuua (such as in this example), a spectral [extraction](extract) if you should wish to perform one will be very simple. In the case of a bright continuum like this, you may or may not choose to perform the aperture selection manually, but we encourage manual control of the apertures whenever reasonable, even if just to check the aperture is correct.
 
 ## Slitmask Reduction
 
@@ -56,7 +56,7 @@ The driver file will be called Driver.py. Open the file to make sure there are n
 
 	mospy Driver.py
 	
-Again, we recommend a manual wavelength solution. Once the wavelength solution is propogated, we recommend checking the wavelength propagation by opening lambda_solution_wave_stack_H_m120910_0163-0176.fits to check that no slits are missing and as you check the intensity levels (which will be the wavelength values) for reasonable numbers for your filter (H band in this case).
+Again, we recommend a manual [wavelength solution](wavelengthYJH). Once the wavelength solution is propogated, we recommend checking the wavelength propagation by opening lambda_solution_wave_stack_H_m120910_0163-0176.fits to check that no slits are missing and as you check the intensity levels (which will be the wavelength values) for reasonable numbers for your filter (H band in this case).
 
 After rectification, the output whole masks will look like this:
 
@@ -70,7 +70,7 @@ Even with bright continuua like this slitmask has, we recommend manually control
 
 ## Long2pos_specphot Reduction
 
-Move to the long2pos_specphot directory. Since calibrations for long2pos can be used for long2pos_specphot, copy those calibration files to your long2pos_specphot directory:
+Move to the long2pos_specphot directory. Since calibrations for [long2pos](long2pos) can be used for long2pos_specphot, copy those calibration files to your long2pos_specphot directory:
 
 	cd long2pos_specphot/2017sep10/K
 	cp ../../../long2pos/2017sep29/K/*.txt ./
