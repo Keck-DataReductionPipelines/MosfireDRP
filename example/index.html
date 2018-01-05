@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Examples of Running the Pipeline - MOSFIRE DRP Documentation</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Examples of Running the Pipeline";
+    var mkdocs_page_input_path = "example.md";
+    var mkdocs_page_url = "/example/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> MOSFIRE DRP Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">DRP Manual</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../manual/">Contents</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../changes/">Changes</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../preface/">Preface</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../installing/">Installing</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../retrieve/">Retrieve Your Data</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../handle/">Handle</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../autodriver/">Automatic Generation of the Driver File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../driver/">The driver.py File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../flats/">Flats</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthYJH/">Wavelength Calibration – Y, J, and H Bands</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthK/">Wavelength Calibration – K Band</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../background/">Background Subtraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../rectify/">Rectify</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../extract/">Spectral Extraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../long2pos/">Long2pos Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../longslit/">Longslit Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../headercomments/">A Word About Header Comments</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../hints/">Some Hints</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Examples of Running the Pipeline</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#examples-of-running-the-pipeline">Examples of Running the Pipeline</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#getting-started">Getting Started</a></li>
+        
+            <li><a class="toctree-l4" href="#longslit-reduction">Longslit Reduction</a></li>
+        
+            <li><a class="toctree-l4" href="#slitmask-reduction">Slitmask Reduction</a></li>
+        
+            <li><a class="toctree-l4" href="#long2pos_specphot-reduction">Long2pos_specphot Reduction</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">MOSFIRE DRP Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>DRP Manual &raquo;</li>
+        
+      
+    
+    <li>Examples of Running the Pipeline</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="examples-of-running-the-pipeline">Examples of Running the Pipeline</h1>
+<p>Here we demonstrate three walkthroughs of how to run the MOSFIRE pipeline. We include a longslit reduction, a slitmask reduction, and a long2pos reduction in the H and K bands. Example datasets can be downloaded from this <a href="http://www2.keck.hawaii.edu/realpublic/inst/mosfire/example_dataset.zip">link</a>, and includes all three data types. Details of each step in the reduction process can be seen in the manual, so please read the previous sections in the manual to understand the reductions being performed on these data.</p>
+<h2 id="getting-started">Getting Started</h2>
+<p>After downloading and unzipping all of the test data, make a directory in your preferred location to perform your reduction and run <a href="../handle">handle</a>.</p>
+<pre><code>mkdir reduced
+cd reduced
+mospy handle /path/to/data/test_dataset/*.fits
+</code></pre>
+<p>You should see five new directories after handle is done.</p>
+<pre><code>LONGSLIT-3x0.7 &lt;-- Longslit observations
+LONGSLIT-46x0.7 &lt;-- Longslit calibrations
+MOSFIRE_DRP_MASK &lt;-- Slitmask calibrations and observations
+long2pos &lt;-- long2pos calibrations
+long2pos_specphot &lt;-- long2pos_specphot observations
+</code></pre>
+<h2 id="longslit-reduction">Longslit Reduction</h2>
+<p>For more information on the reduction of longslits, go to the [longslit][longslit] section.</p>
+<p>Move to the Longslit observation directory and copy the calibrations to the observation directory:</p>
+<pre><code>cd LONGSLIT-3x0.7/2012nov28/K
+cp ../../../LONGSLIT-46x0.7/2013oct15/K/*.txt ./
+</code></pre>
+<p>Run the <a href="../autodriver">autodriver</a> to create the driver file Longslit_HIP17971.py</p>
+<p>Edit the driver file so the y-range so it covers the range of the slit, and 'row_position' is not contaminated with the spectrum (you only want sky lines). Look at the files in Offset_-5_HIP17971.txt and Offset_5_HIP17971.txt to determine where these values should be.</p>
+<p>Run the pipeline using:</p>
+<pre><code>mospy Longslit_HIP17971.py
+</code></pre>
+<p>You can run step by step by commenting out reduction steps in the driver file, or you can run all at once. First the pipeline will create a flat field, as described in the <a href="../flats">Flats</a> section. Check out your combined and pixel flats to make sure they look reasonable, no odd edges to slits.</p>
+<p>We do not recommend non-interactive wavelength reductions unless you have a previous reliable wavelength solution in the same directory ("lambda_coeffs_wave_stack..."). Refer to the Wavelength Calibration sections (for H,J, and Y, or K band) for information on how to perform the interactive fit. In this case, we will be performing a K band solution, so check that <a href="../wavelengthK">section</a> for more details.</p>
+<p>After <a href="../background">background subtraction</a> and <a href="../rectify">rectification</a>, the output (notably, HIP17971_K_eps.fits, HIP17971_K_itime.fits, HIP17971_K_sig.fits, HIP17971_K_snrs.fits) you get should look like this:</p>
+<p><img alt="Longslit DRP output" src="../image10.png" title="Image showing the output of the DRP for a longslit." /></p>
+<p>For longslits with bright continuua (such as in this example), a spectral <a href="../extract">extraction</a> if you should wish to perform one will be very simple. In the case of a bright continuum like this, you may or may not choose to perform the aperture selection manually, but we encourage manual control of the apertures whenever reasonable, even if just to check the aperture is correct.</p>
+<h2 id="slitmask-reduction">Slitmask Reduction</h2>
+<p>Move to the MOSFIRE_DRP_MASK directory and run the autodriver:</p>
+<pre><code>cd MOSFIRE_DRP_MASK/2012sep10/H/
+mospy AutoDriver
+</code></pre>
+<p>The driver file will be called Driver.py. Open the file to make sure there are no abnormalities, and proceed to call Driver.py with either the full reduction, or step by step.</p>
+<pre><code>mospy Driver.py
+</code></pre>
+<p>Again, we recommend a manual <a href="../wavelengthYJH">wavelength solution</a>. Once the wavelength solution is propogated, we recommend checking the wavelength propagation by opening lambda_solution_wave_stack_H_m120910_0163-0176.fits to check that no slits are missing and as you check the intensity levels (which will be the wavelength values) for reasonable numbers for your filter (H band in this case).</p>
+<p>After rectification, the output whole masks will look like this:</p>
+<p><img alt="Slitmask DRP output" src="../image11.png" title="Image showing the output of the DRP for a slitmask." /></p>
+<p>And the entire mask (zoomed out) will look like this:</p>
+<p><img alt="Slitmask eps output" src="../image12.png" title="Image showing the eps image for a slitmask." /></p>
+<p>Even with bright continuua like this slitmask has, we recommend manually controlling the apertures in case secondary objects are in the slits. In the case of faint or emission line only objects, it might be necessary to manually enter where an aperture should be located and the width of the extraction.</p>
+<h2 id="long2pos_specphot-reduction">Long2pos_specphot Reduction</h2>
+<p>Move to the long2pos_specphot directory. Since calibrations for <a href="../long2pos">long2pos</a> can be used for long2pos_specphot, copy those calibration files to your long2pos_specphot directory:</p>
+<pre><code>cd long2pos_specphot/2017sep10/K
+cp ../../../long2pos/2017sep29/K/*.txt ./
+</code></pre>
+<p>Run the autodriver and open its output, Long2pos_ZW_TEL.py</p>
+<p>Either comment out or copy the extract command for each desired output target (positions A or C, wide or narrow). Then run the driver file step by step or as a full reduction.</p>
+<p>After rectification, your output eps files for PosA and PosC narrow and wide will look like this:</p>
+<p><img alt="Output long2pos_specphot images" src="../image13.png" title="Output long2pos_specphot images" /></p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../hints/" class="btn btn-neutral" title="Some Hints"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../hints/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/require.js"></script>
+      <script src="../search/search.js"></script>
+
+</body>
+</html>
