@@ -209,7 +209,7 @@ def make_pixel_flat(data, results, options, outfile, inputs, lampsOff=None):
             hpps = [0, Detector.npix[0]]
 
         xs = np.arange(hpps[0], hpps[1])
-        top = pixel_min(tf(xs))
+        top = min([pixel_min(tf(xs)),Detector.npix[0]])
         bottom = pixel_max(bf(xs))
 
         hdu.header.set("top%2.2i" % slitno, top)
