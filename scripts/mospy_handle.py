@@ -34,15 +34,17 @@ masks = {}
 
 
 info('Examining {} files'.format(len(files)))
+fl.write("{:12s}  {:11s}  {:35s} {:6s} {:35s} {:4s} {:6s} {:7s}\n".format('# File', 'UTC', 'OBJECT', 'ITIME', 'MASKNAME', 'LAMP', 'FILTER', 'GRATING'))
+
 for fname in files:
 
     try:
         header = IO.readheader(fname)
     except IOError:#, err:
-        fl.write("Couldn't IO %s\n" % fname)
+        fl.write("{:12s}  ERROR: Couldn't IO\n".format(os.path.split(fname)[1]))
         continue
     except:
-        fl.write("%s is unreadable\n" % fname)
+        fl.write("{:12s}  ERROR: unreadable\n".format(os.path.split(fname)[1]))
         continue
 
     lamps = ""
@@ -54,22 +56,23 @@ for fname in files:
     except KeyError:
         lamps = "???"
         
-    header['lamps'] = lamps
+    header['lamps'] = lamps.strip()
 
     try:
         if header["aborted"]:
             header['object' ] = 'ABORTED'
     except:
-        fl.write("Missing header file in: %s\n" % fname)
+        fl.write("{:12s}  ERROR: Missing header file\n".format(os.path.split(fname)[1]))
 
     try:
-        fl.write("%(datafile)12s %(UTC)11s %(object)35s %(truitime)6.1fs %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s\n" % (header))
+        fl.write('{:12s}  {:11s}  {:35s} {:<6.1f} {:35s} {:4s} {:6s} {:7s}\n'.format(
+                 header['datafile'], header['UTC'],
+                 '"{:s}"'.format(header['object']),
+                 header['truitime'], header['maskname'], header['lamps'],
+                 header['filter'], header['mgtname']))
+#         fl.write("%(datafile)12s %(UTC)11s %(object)35s %(truitime)6.1f %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s\n" % (header))
     except:
-        try:
-            fl.write("%(datafile)12s %(UTC)11s %(object)25s %(truitime)6.1fs %(lamps)3s %(filter)6s %(mgtname)7s\n" % (header))
-        except:
-            fl.write("%s Skipped\n" % fname)
-            continue
+        fl.write("{:12s}  ERROR: failed to format print data\n".format(os.path.split(fname)[1]))
 
 
     datafile = header['datafile'] + '.fits'
@@ -171,7 +174,8 @@ for fname in files:
                 masks[maskname][date][filter][offset] = [(fname, itime)]
 #                 print("creating new offset file")
         else:
-            fl.write('{} has unexpected FRAMEID: {}\n'.format(fname, frameid))
+            fl.write('  ERROR: unexpected FRAMEID "{:s}" for file {:s}\n'.format(
+                     frameid, os.path.split(fname)[1]))
     else:
         masks[maskname][date][filter]['Unknown'].append(fname)
 
