@@ -57,7 +57,8 @@ for fname in files:
             lamps += header["pwloca8"][0:2]
     except KeyError:
         lamps = "???"
-        
+    if lamps == "":
+        lamps = "off"
     header['lamps'] = lamps.strip()
 
     try:
