@@ -34,9 +34,9 @@ masks = {}
 
 
 info('Examining {} files'.format(len(files)))
-fl.write("{:12s}  {:11s}  {:18s}  {:35s} {:6s} {:35s} {:4s} {:6s} {:7s} {:7s}\n".format(
-         '# File', 'UTC', 'TARGNAME', 'OBJECT', 'ITIME', 'MASKNAME', 'LAMP',
-         'FILTER', 'GRATING', 'ERRORS?'))
+fl.write("{:12s}  {:11s}  {:18s}  {:35s} {:35s} {:6s} {:6s} {:4s} {:7s} {:7s}\n".format(
+         '# File', 'UTC', 'TARGNAME', 'MASKNAME', 'OBJECT', 'FILTER', 'ITIME',
+         'LAMP', 'GRATING', 'ERRORS?'))
 
 for fname in files:
 
@@ -68,12 +68,16 @@ for fname in files:
         fl.write("{:12s}  ERROR: Missing header file\n".format(os.path.split(fname)[1]))
 
     try:
-        fl.write('{:12s}  {:11s}  {:18s}  {:35s} {:<6.1f} {:35s} {:4s} {:6s} {:7s} '.format(
-                 header['datafile'], header['UTC'],
+        fl.write('{:12s}  {:11s}  {:18s}  {:35s} {:35s} {:6s} {:<6.1f} {:4s} {:7s} '.format(
+                 header['datafile'],
+                 header['UTC'],
                  '"{:s}"'.format(header['TARGNAME']),
+                 header['maskname'],
                  '"{:s}"'.format(header['object']),
-                 header['truitime'], header['maskname'], header['lamps'],
-                 header['filter'], header['mgtname']))
+                 header['filter'],
+                 header['truitime'],
+                 header['lamps'],
+                 header['mgtname']))
     except:
         fl.write("{:12s}  ERROR: failed to format print data\n".format(os.path.split(fname)[1]))
 
