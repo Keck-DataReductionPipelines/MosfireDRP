@@ -34,7 +34,9 @@ masks = {}
 
 
 info('Examining {} files'.format(len(files)))
-fl.write("{:12s}  {:11s}  {:35s} {:6s} {:35s} {:4s} {:6s} {:7s}\n".format('# File', 'UTC', 'OBJECT', 'ITIME', 'MASKNAME', 'LAMP', 'FILTER', 'GRATING'))
+fl.write("{:12s}  {:11s}  {:18s}  {:35s} {:6s} {:35s} {:4s} {:6s} {:7s} {:7s}\n".format(
+         '# File', 'UTC', 'TARGNAME', 'OBJECT', 'ITIME', 'MASKNAME', 'LAMP',
+         'FILTER', 'GRATING', 'ERRORS?'))
 
 for fname in files:
 
@@ -65,12 +67,12 @@ for fname in files:
         fl.write("{:12s}  ERROR: Missing header file\n".format(os.path.split(fname)[1]))
 
     try:
-        fl.write('{:12s}  {:11s}  {:35s} {:<6.1f} {:35s} {:4s} {:6s} {:7s}\n'.format(
+        fl.write('{:12s}  {:11s}  {:18s}  {:35s} {:<6.1f} {:35s} {:4s} {:6s} {:7s} '.format(
                  header['datafile'], header['UTC'],
+                 '"{:s}"'.format(header['TARGNAME']),
                  '"{:s}"'.format(header['object']),
                  header['truitime'], header['maskname'], header['lamps'],
                  header['filter'], header['mgtname']))
-#         fl.write("%(datafile)12s %(UTC)11s %(object)35s %(truitime)6.1f %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s\n" % (header))
     except:
         fl.write("{:12s}  ERROR: failed to format print data\n".format(os.path.split(fname)[1]))
 
@@ -174,12 +176,11 @@ for fname in files:
                 masks[maskname][date][filter][offset] = [(fname, itime)]
 #                 print("creating new offset file")
         else:
-            fl.write('  ERROR: unexpected FRAMEID "{:s}" for file {:s}\n'.format(
-                     frameid, os.path.split(fname)[1]))
+            fl.write('ERROR: unexpected FRAMEID "{:s}"'.format(frameid))
     else:
         masks[maskname][date][filter]['Unknown'].append(fname)
 
-
+    fl.write("\n")
 
 ##### Now handle mask dictionary
 
