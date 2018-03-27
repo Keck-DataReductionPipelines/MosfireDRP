@@ -63,10 +63,10 @@ for fname in files:
         fl.write("Missing header file in: %s\n" % fname)
 
     try:
-        fl.write("%(datafile)12s %(object)35s %(truitime)6.1fs %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s\n" % (header))
+        fl.write("%(datafile)12s %(UTC)11s %(object)35s %(truitime)6.1fs %(maskname)35s %(lamps)3s %(filter)4s %(mgtname)7s\n" % (header))
     except:
         try:
-            fl.write("%(datafile)12s %(object)25s %(truitime)6.1fs %(lamps)3s %(filter)6s %(mgtname)7s\n" % (header))
+            fl.write("%(datafile)12s %(UTC)11s %(object)25s %(truitime)6.1fs %(lamps)3s %(filter)6s %(mgtname)7s\n" % (header))
         except:
             fl.write("%s Skipped\n" % fname)
             continue
