@@ -1122,7 +1122,9 @@ def pick_linelist(header, neon=False, argon=False, short_exp = False):
              13421.579])
 
     if (band == 'K') and short_exp:
-        # remove: 19518.4784 , 19593.2626 ,  19618.5719 ,19678.046 ,19839.7764 ,20193.1799 ,20499.237 ,21279.1406 ,21580.5093 ,21711.1235 , 21873.507 ,22460.4183 ,22690.1765 ,22985.9156,23914.55, 24041.62,22742.1907 
+        # remove: 19518.4784 , 19593.2626 ,  19618.5719 ,19678.046 ,19839.7764 ,
+        # 20193.1799 ,20499.237 ,21279.1406 ,21580.5093 ,21711.1235 , 21873.507 
+        #,22460.4183 ,22690.1765 ,22985.9156,23914.55, 24041.62,22742.1907 
         lines = np.array([
         19642.4493 , 
         19701.6455 , 19771.9063 , 
@@ -1336,7 +1338,7 @@ def refine_wavelength_guess(wave,spec,linelist):
     """
 
     # find what is the average peak height to construct the reference
-    # spectrum template                                                                                                                          
+    # spectrum template
     peaks = signal.find_peaks_cwt(spec,np.array([2.0,4.0]),noise_perc=5.0,min_snr =1.5)
     avePeak = np.mean(spec[peaks])
 
@@ -1348,11 +1350,11 @@ def refine_wavelength_guess(wave,spec,linelist):
     corr = signal.correlate(spec,refSpec,mode='same')
     lags = np.arange(len(spec))-len(spec)/2
 
-    # peak velocity corresponding to the pixel peak                                                                                                  
+    # peak velocity corresponding to the pixel peak
     peakInd = np.argmax(corr)
     peakLag = lags[peakInd]
 
-    # return the number of pixels that need to be shifted                                                                                             
+    # return the number of pixels that need to be shifted
     return -peakLag
 
 def plot_mask_solution_ds9(fname, maskname, options):
@@ -2014,7 +2016,8 @@ class InteractiveSolution:
 
         actions_mouseless = {".": self.fastforward, "n": self.nextobject, "p":
                 self.prevobject, "q": self.quit, "r": self.reset, "f":
-                self.fit_event, "k": self.toggle_sigma_clip, "\\": self.fit_event, "b": self.toggle_noninteractive}
+                self.fit_event, "k": self.toggle_sigma_clip, "\\": self.fit_event,
+                "b": self.toggle_noninteractive}
 
         actions = { "c": self.shift, "d": self.drop_point,
                 "z": self.zoom, "x": self.unzoom, "s": self.savefig}
@@ -2324,13 +2327,13 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
                 sds, 'lambdaMAD': mads, "positions": np.array(positions)}
 
     """ Start of main section of fit_outwards """
-    pix = np.arange(2048.)
+#     pix = np.arange(2048.)
 
-    positions = np.concatenate((np.arange(start, top, 1), 
-        np.arange(start-1,bottom,-1)))
+#     positions = np.concatenate((np.arange(start, top, 1), 
+#         np.arange(start-1,bottom,-1)))
     positions = np.arange(bottom, top, 1)
     info("Computing 0 spectrum at %i" % start)
-    spec0 = np.ma.median(data[start-1:start+1, :], axis=0)
+#     spec0 = np.ma.median(data[start-1:start+1, :], axis=0)
     if data2 is not None:
             spec2 = np.ma.median(data2[start-1:start+1, :], axis=0)
     params = sweep(positions)
