@@ -44,7 +44,7 @@ def xcor(a,b,lags):
 def xcor_peak(a, b, lags):
     '''Return the peak position in units of lags'''
 
-    N = len(lags)
+#     N = len(lags)
     xcs = xcor(a, b, lags)
 
     return lags[np.argmax(xcs)]
