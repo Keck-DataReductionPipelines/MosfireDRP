@@ -2256,7 +2256,7 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
     pix = np.arange(2048.)
     linelist = lines
 
-    def fit_parameters(yhere):
+    def fit_parameters(yhere, guess=0):
         """
         Return chebyshev fit to a pixel column 
         2014 June 17 MK- Added a second set a variables to indicate that there
@@ -2268,7 +2268,8 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
 
         cfit = sol_1d[1]
         spec_here = np.ma.median(data[int(yhere)-2:int(yhere)+2, :], axis=0)
-        shift = Fit.xcor_peak(spec_here, spec0, lags)
+        shift = Fit.find_shift(spec_here, spec0, guess=guess)
+#         shift = Fit.xcor_peak(spec_here, spec0, lags)
         ll_here = CV.chebval(pix - shift, cfit)
         [xs, sxs, sigmas] = find_known_lines(linelist,
                                              ll_here, spec_here, options)
@@ -2276,7 +2277,8 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
         if data2 is not None:
             cfit2 = sol_1d2[1]
             spec_here2 = np.ma.median(data2[yhere-2:yhere+2, :], axis=0)
-            shift2 = Fit.xcor_peak(spec_here2, spec2, lags)
+            shift2 = Fit.find_shift(spec_here2, spec2, guess=guess)
+#             shift2 = Fit.xcor_peak(spec_here2, spec2, lags)
             ll_here2 = CV.chebval(pix - shift2, cfit2)
 
             [xs2, sxs2, sigmas2] = find_known_lines(linelist2,
@@ -2299,11 +2301,13 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
                                                          linelist, options)
 
         #if np.std(delt) < .01: pdb.set_trace()
-        debug("resid ang S%2.2i @ p%4.0i: %1.2f rms %1.2f mad [shift%2.0f]" % \
-                (slitno+1, yhere, np.std(delt), np.median(np.abs(delt)),
-                    shift))
+#         debug("resid ang S%2.2i @ p%4.0i: %1.2f rms %1.2f mad [shift%2.0f]" % \
+#                 (slitno+1, yhere, np.std(delt), np.median(np.abs(delt)),
+#                     shift))
+        debug(f"resid ang S{slitno+1:02d} @ p{yhere:4d}: {np.std(delt):4.2f} rms"\
+              +f" {np.median(np.abs(delt)):5.2f} mad [shift {shift:.1f} pix]")
 
-        return cfit, delt
+        return cfit, delt, shift
 
     def sweep(positions):
         ret = []
@@ -2311,8 +2315,16 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
         sds = []
         mads = []
 
+        lastshift = 0
+        lastposition = positions[0]
         for position in positions:
-            cfit, delt = fit_parameters(position)
+            if abs(position-lastposition) < 5:
+                guess = lastshift
+            else:
+                guess = 0
+            cfit, delt, shift = fit_parameters(position, guess=guess)
+            lastposition = position
+            lastshift = shift
 
             cfits.append(cfit)
             sds.append(np.std(delt))
@@ -2327,13 +2339,14 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
                 sds, 'lambdaMAD': mads, "positions": np.array(positions)}
 
     """ Start of main section of fit_outwards """
-#     pix = np.arange(2048.)
+    pix = np.arange(2048.)
 
-#     positions = np.concatenate((np.arange(start, top, 1), 
-#         np.arange(start-1,bottom,-1)))
-    positions = np.arange(bottom, top, 1)
+    positions = np.concatenate((np.arange(start, top, 1), 
+        np.arange(start-1,bottom,-1)))
+#     positions = np.arange(bottom, top, 1)
+
     info("Computing 0 spectrum at %i" % start)
-#     spec0 = np.ma.median(data[start-1:start+1, :], axis=0)
+    spec0 = np.ma.median(data[start-1:start+1, :], axis=0)
     if data2 is not None:
             spec2 = np.ma.median(data2[start-1:start+1, :], axis=0)
     params = sweep(positions)
