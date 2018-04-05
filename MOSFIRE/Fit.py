@@ -19,6 +19,37 @@ from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 #from MosfireDrpLog import debug, info, warning, error
 import unittest
 
+
+def find_shift(a, b, guess=0, maxshift=3):
+    '''Find the offset between two 1D arrays based on cross correlation.
+    
+    Intended to replace xcor and xcor_peak.
+    
+    Uses the following conditions for a point to be valid as consideration
+    for the shift result:
+    - second derivative of the correlation is negative (i.e. at local maxima)
+    - shift <= maxshift
+    
+    Works out to be about 2x speed as xcor_peak based on %timeit
+    '''
+    a = a.filled(0)
+    b = b.filled(0)
+    assert len(a) == len(b)
+    shifts = np.arange(len(a)) - len(a)/2
+    corr = np.correlate(a, b, mode='same')
+    first_derivative = np.gradient(corr)
+    second_derivative = np.gradient(first_derivative)
+
+    valid = np.where((second_derivative < 0) & (abs(shifts-guess) < maxshift))[0]
+
+    idx = np.argmax(corr[valid])
+    bestcorrindex = valid[idx]
+    shift = shifts[bestcorrindex]
+
+    return(shift)
+
+
+
 def xcor(a,b,lags):
 
     if len(a) != len(b):
