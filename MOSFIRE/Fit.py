@@ -23,14 +23,16 @@ import unittest
 def find_shift(a, b, guess=0, maxshift=3):
     '''Find the offset between two 1D arrays based on cross correlation.
     
-    Intended to replace xcor and xcor_peak.
+    Intended to replace xcor and xcor_peak.  Works out to be about 2x speed as
+    xcor_peak based on %timeit in ipython.
     
     Uses the following conditions for a point to be valid as consideration
     for the shift result:
     - second derivative of the correlation is negative (i.e. at local maxima)
     - shift <= maxshift
     
-    Works out to be about 2x speed as xcor_peak based on %timeit
+    Given those conditions are met, the highest cross correlation value gives
+    the best value for the shift (or offset) between the two arrays.
     '''
     a = a.filled(0)
     b = b.filled(0)
