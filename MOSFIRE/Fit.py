@@ -51,40 +51,6 @@ def find_shift(a, b, guess=0, maxshift=3):
     return(shift)
 
 
-
-def xcor(a,b,lags):
-
-    if len(a) != len(b):
-        error("cross correlation (xcor) requires a and b "
-                "to be of same length")
-        raise Exception(
-                "cross correlation (xcor) requires a and b "
-                "to be of same length")
-    cors = np.zeros(len(lags))
-
-    a_pad = np.zeros(len(a)+len(lags))
-    b_pad = np.zeros(len(b)+len(lags))
-
-    st = np.argmin(np.abs(lags))
-    a_pad[st:st+len(a)] = a
-    b_pad[st:st+len(b)] = b
-
-    for i in range(len(lags)):
-        cors[i] = np.correlate(a_pad, np.roll(b_pad, lags[i]), 'valid')
-
-    return cors
-
-def xcor_peak(a, b, lags):
-    '''Return the peak position in units of lags'''
-
-#     N = len(lags)
-    xcs = xcor(a, b, lags)
-
-    return lags[np.argmax(xcs)]
-
-
-
-
 # TODO: Document mpfit_* functions
 def mpfit_residuals(modelfun):
 
