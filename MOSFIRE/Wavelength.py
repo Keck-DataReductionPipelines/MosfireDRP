@@ -2264,10 +2264,11 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
         for the arc line data. We want to fit both Ne and
         Argon simultaneously.
         
-        """        
+        """
 
+        pmlines = 1
         cfit = sol_1d[1]
-        spec_here = np.ma.median(data[int(yhere)-2:int(yhere)+2, :], axis=0)
+        spec_here = np.ma.median(data[int(yhere)-pmlines:int(yhere)+pmlines, :], axis=0)
         shift = Fit.find_shift(spec_here, spec0, guess=guess)
 #         shift = Fit.xcor_peak(spec_here, spec0, lags)
         ll_here = CV.chebval(pix - shift, cfit)
@@ -2276,7 +2277,7 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
 
         if data2 is not None:
             cfit2 = sol_1d2[1]
-            spec_here2 = np.ma.median(data2[yhere-2:yhere+2, :], axis=0)
+            spec_here2 = np.ma.median(data2[yhere-pmlines:yhere+pmlines, :], axis=0)
             shift2 = Fit.find_shift(spec_here2, spec2, guess=guess)
 #             shift2 = Fit.xcor_peak(spec_here2, spec2, lags)
             ll_here2 = CV.chebval(pix - shift2, cfit2)
