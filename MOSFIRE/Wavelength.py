@@ -2206,6 +2206,33 @@ def construct_model(slitno):
 #
 # Two dimensional wavelength fitting
 #
+def smooth_solution(sol_2d, filter_size=7):
+    from scipy.signal import medfilt
+
+    s_coeffs = np.zeros(sol_2d['coeffs'].shape)
+    s_lambdaRMS = np.zeros(sol_2d['lambdaRMS'].shape)
+    s_lambdaMAD = np.zeros(sol_2d['lambdaMAD'].shape)
+    s_positions = np.zeros(sol_2d['positions'].shape)
+
+    for i,y in enumerate(sol_2d['positions']):
+        s_coeffs[int(y-min(sol_2d['positions']))] = sol_2d['coeffs'][i]
+        s_lambdaRMS[int(y-min(sol_2d['positions']))] = sol_2d['lambdaRMS'][i]
+        s_lambdaMAD[int(y-min(sol_2d['positions']))] = sol_2d['lambdaMAD'][i]
+        s_positions[int(y-min(sol_2d['positions']))] = sol_2d['positions'][i]
+
+    # for each of the coefficients, pass a median boxcar over it
+    info(f"Smoothing fit coefficients in Y direction")
+    for j in range(sol_2d['coeffs'].shape[1]):
+        s_coeffs[:,j] = medfilt(s_coeffs[:,j], kernel_size=filter_size)
+
+    sol_2d['coeffs'] = s_coeffs
+    sol_2d['lambdaRMS'] = s_lambdaRMS
+    sol_2d['lambdaMAD'] = s_lambdaMAD
+    sol_2d['positions'] = s_positions
+
+    return sol_2d
+
+
 def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
         slitno, linelist2=None, data2=None, sol_1d2=None):
     '''Fit Chebyshev polynomials across a slit bounded by bottom to top.
@@ -2351,6 +2378,10 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
     if data2 is not None:
             spec2 = np.ma.median(data2[start-1:start+1, :], axis=0)
     params = sweep(positions)
+
+    ## Smooth behavior of coefficients in Y direction
+    if options["smooth"] == True:
+        params = smooth_solution(params)
 
     return params
 
