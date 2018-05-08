@@ -1422,47 +1422,6 @@ def estimate_half_power_points(slitno, header, bs):
     return [ np.argmin(np.abs(ll-hpp[0])), np.argmin(np.abs(ll-hpp[1])) ]
 
 
-
-def xcor_known_lines(lines, ll, spec, spec0, options):
-    """
-    lines[N]: list of lines in wavelength units
-    ll[2048]: lambda vector
-    spec[2048]: spectrum vector (as function of lambda)
-    options: wavelength options
-    """
-    inf = np.inf
-    dxs = []
-    sigs = []
-
-    pix = np.arange(2048.)
-
-    for lam in lines:
-        f = options["fractional-wavelength-search"]
-        roi = np.where((f*lam < ll) & (ll < lam/f))[0]
-
-
-
-        if not roi.any():
-            dxs.append(inf)
-            sigs.append(inf)
-            continue
-        
-        lags = np.arange(-len(roi)/2, len(roi)/2)
-        cors = Fit.xcor(spec[roi], spec0[roi], lags)
-
-        fit = Fit.mpfitpeak(lags, cors)
-
-        if (fit.perror is None) or (fit.status < 0):
-            dxs.append(inf)
-            sigs.append(inf)
-            continue
-
-        dxs.append(fit.params[1])
-        sigs.append(fit.params[2])
-
-    return list(map(np.array, [dxs, sigs]))
-
-
 def find_known_lines(lines, ll, spec, options):
     """
     lines[N]: list of lines in wavelength units
@@ -2297,7 +2256,6 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
         cfit = sol_1d[1]
         spec_here = np.ma.median(data[int(yhere)-pmlines:int(yhere)+pmlines, :], axis=0)
         shift = Fit.find_shift(spec_here, spec0, guess=guess)
-#         shift = Fit.xcor_peak(spec_here, spec0, lags)
         ll_here = CV.chebval(pix - shift, cfit)
         [xs, sxs, sigmas] = find_known_lines(linelist,
                                              ll_here, spec_here, options)
@@ -2306,7 +2264,6 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
             cfit2 = sol_1d2[1]
             spec_here2 = np.ma.median(data2[yhere-pmlines:yhere+pmlines, :], axis=0)
             shift2 = Fit.find_shift(spec_here2, spec2, guess=guess)
-#             shift2 = Fit.xcor_peak(spec_here2, spec2, lags)
             ll_here2 = CV.chebval(pix - shift2, cfit2)
 
             [xs2, sxs2, sigmas2] = find_known_lines(linelist2,
