@@ -4,7 +4,7 @@ Before running the drp, you will need a set of spectroscopic data to reduce that
 
 If you need to retrieve your data, you may either use a secure copy (scp) assumine your data is still accessible from the Keck/MOSFIRE data directory (contact your SA if you need assistance) or use KOA –the Keck Observatory Archive to navigate to the KOA log in page. From there, KOA has forms where you specify the data to retrieve and will create a tar ball for you to download.
 
-A useful tool is the file translator script that will convert your KOA file names to the standard filenames as they were written to disk during your observing session (koa_translator). Again, your filenames must preserve the standard naming convention and the koa_translator script does this for you.
+A useful tool is the [KOA file translator script](https://www2.keck.hawaii.edu/koa/public/koa_translator) that will convert your KOA file names to the standard filenames as they were written to disk during your observing session (`koa_translator``). Again, your filenames must preserve the standard naming convention and the `koa_translator` script does this for you.
 
 If you do not have data of your own and wish to download the example:
 Grab the data from: [https://www2.keck.hawaii.edu/realpublic/inst/mosfire/DRP_Test_Case_Hband.zip](https://www2.keck.hawaii.edu/realpublic/inst/mosfire/DRP_Test_Case_Hband.zip).
