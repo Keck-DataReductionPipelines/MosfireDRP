@@ -497,6 +497,8 @@ def optimal_extraction(image, variance_image, aperture_table,
 
     spectra = []
     variances = []
+    spectra_std = []
+    variances_std = []
     for i,row in enumerate(aperture_table):
         pos = row['position']
         width = int(row['width'])
@@ -511,6 +513,8 @@ def optimal_extraction(image, variance_image, aperture_table,
                               mask=np.isnan(spectra2D[ymin:ymax,:]))
         info('  Performing standard extraction')
         f_std, V_std = standard_extraction(DmS, V)
+        spectra_std.append(f_std)
+        variances_std.append(V_std)
         info('  Forming initial spatial profile')
         P_init_data = np.array([row/f_std for row in DmS])
         P_init = np.ma.MaskedArray(data=P_init_data,\
@@ -533,19 +537,41 @@ def optimal_extraction(image, variance_image, aperture_table,
     spectra = np.ma.MaskedArray(data=np.array(spectra), mask=mask)
     variances = np.ma.MaskedArray(data=np.array(variances), mask=mask)
 
+    mask_std = np.isnan(np.array(spectra_std)) | np.isnan(np.array(variances_std))
+    spectra_std = np.ma.MaskedArray(data=np.array(spectra_std), mask=mask_std)
+    variances_std = np.ma.MaskedArray(data=np.array(variances_std), mask=mask_std)
+
     for i,row in enumerate(aperture_table):
         hdulist = fits.HDUList([])
         if plotfileout:
-            fig = pl.figure(figsize=(16,6))
+            fig = pl.figure(figsize=(16,10))
             wunit = getattr(u, w.to_header()['CUNIT1'])
 
         sp = spectra[i]
         hdulist.append(fits.PrimaryHDU(data=sp.filled(0), header=header))
         hdulist[0].header['APPOS'] = row['position']
+        hdulist[0].header['COMMENT'] = 'OPTIMALLY EXTRACTED SPECTRUM'
+
+        var = variances[i]
+        hdulist.append(fits.ImageHDU(data=var.filled(0), header=header))
+        hdulist[1].header['APPOS'] = row['position']
+        hdulist[1].header['COMMENT'] = 'VARIANCE DATA'
+
+        sp_std = spectra_std[i]
+        hdulist.append(fits.PrimaryHDU(data=sp_std.filled(0), header=header))
+        hdulist[2].header['APPOS'] = row['position']
+        hdulist[2].header['COMMENT'] = 'STANDARD EXTRACTION SPECTRUM'
+
+        var_std = variances_std[i]
+        hdulist.append(fits.ImageHDU(data=var_std.filled(0), header=header))
+        hdulist[3].header['APPOS'] = row['position']
+        hdulist[3].header['COMMENT'] = 'VARIANCE DATA FOR STANDARD EXTRACTION'
+
         if plotfileout:
-            sigma = np.sqrt(variances[i])
             pix = np.arange(0,sp.shape[0],1)
             wavelengths = w.wcs_pix2world(pix,1)[0]*wunit.to(u.micron)*u.micron
+            pl.subplot(2,1,1)
+            sigma = np.sqrt(variances[i])
             fillmin = sp-sigma
             fillmax = sp+sigma
             mask = np.isnan(fillmin) | np.isnan(fillmax) | np.isnan(sp)
@@ -557,10 +583,31 @@ def optimal_extraction(image, variance_image, aperture_table,
             pl.plot(wavelengths, sp, 'k-',
                     label='Spectrum for Aperture {} at {:.0f}'.format(i,
                           row['position']))
+            pl.title('Optimal Spectral Extraction')
             pl.xlabel('Wavelength (microns)')
             pl.ylabel('Flux (e-/sec)')
             pl.xlim(wavelengths.value.min(),wavelengths.value.max())
             pl.ylim(0,1.05*sp.max())
+            pl.legend(loc='best')
+
+            pl.subplot(2,1,2)
+            sigma_std = np.sqrt(variances_std[i])
+            fillmin_std = sp_std-sigma_std
+            fillmax_std = sp_std+sigma_std
+            mask_std = np.isnan(fillmin_std) | np.isnan(fillmax_std) | np.isnan(sp_std)
+            pl.fill_between(wavelengths[~mask_std], fillmin_std[~mask_std], fillmax_std[~mask_std],\
+                             label='uncertainty',\
+                             facecolor='black', alpha=0.2,\
+                             linewidth=0,\
+                             interpolate=True)
+            pl.plot(wavelengths, sp_std, 'k-',
+                    label='Spectrum for Aperture {} at {:.0f}'.format(i,
+                          row['position']))
+            pl.title('Standard Extraction')
+            pl.xlabel('Wavelength (microns)')
+            pl.ylabel('Flux (e-/sec)')
+            pl.xlim(wavelengths.value.min(),wavelengths.value.max())
+            pl.ylim(0,1.05*sp_std.max())
             pl.legend(loc='best')
 
             bn, ext = os.path.splitext(plotfileout)
@@ -568,10 +615,6 @@ def optimal_extraction(image, variance_image, aperture_table,
             pl.savefig(plotfilename, bbox_inches='tight')
             pl.close(fig)
 
-        var = variances[i]
-        hdulist.append(fits.ImageHDU(data=var.filled(0), header=header))
-        hdulist[1].header['APPOS'] = row['position']
-        hdulist[1].header['COMMENT'] = 'VARIANCE DATA'
         if fitsfileout:
             bn, ext = os.path.splitext(fitsfileout)
             fitsfilename = '{}_{:02d}{}'.format(bn, i, ext)
