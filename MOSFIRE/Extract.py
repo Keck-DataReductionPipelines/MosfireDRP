@@ -254,10 +254,9 @@ class ApertureEditor(object):
                                 facecolor='y', alpha=0.3,
                                 )
                 pl.text(ap['position']-ap['width']+1,
-                             self.ydata.max() + 0.05*yspan,
-                             'position={:.0f}\nwidth={:.0f}'.format(ap['position'],
-                                                                    ap['width']),
-                             )
+                        self.ydata.max() + 0.05*yspan,
+                        f"pos={ap['position']:.0f}\nwidth={ap['width']:.0f}",
+                        )
                 pl.draw()
             pl.show()
 
