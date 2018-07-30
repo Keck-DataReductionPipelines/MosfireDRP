@@ -25,5 +25,6 @@ wavelength = {
         "fractional-wavelength-search": 0.99935, # used in determining oned wavelength solutions
         "chebyshev-degree": 5, # polynomial order for fitting wavelengths
         "smooth": False, # smooth wavelength solution polynomial coefficients in Y direction
+        "smooth_scale": 15, # smoothing scale in pixels
 }
 
