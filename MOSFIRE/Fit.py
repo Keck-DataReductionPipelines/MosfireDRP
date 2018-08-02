@@ -48,7 +48,7 @@ def find_shift(a, b, guess=0, maxshift=3):
     bestcorrindex = valid[idx]
     shift = shifts[bestcorrindex]
 
-    return(shift)
+    return shift, shifts, corr
 
 
 # TODO: Document mpfit_* functions
