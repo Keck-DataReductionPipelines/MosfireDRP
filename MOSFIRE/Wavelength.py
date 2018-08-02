@@ -1421,8 +1421,95 @@ def estimate_half_power_points(slitno, header, bs):
     hpp = Filters.hpp[band]
     return [ np.argmin(np.abs(ll-hpp[0])), np.argmin(np.abs(ll-hpp[1])) ]
 
+def find_known_lines(lines, wavs, spec, options, yhere=None, plot=False):
+    """
+    lines[N]: list of lines in wavelength units
+    wavs[2048]: lambda vector
+    spec[2048]: spectrum vector (as function of lambda)
+    options: wavelength options
+    """
+    from astropy.modeling import models, fitting
 
-def find_known_lines(lines, ll, spec, options):
+    pix = np.arange(len(spec))
+    xinits = []
+    yinits = []
+    xs = []
+    sxs = []
+    sigmas = []
+    model = None
+    for line in lines:
+        lambda_frac = options["fractional-wavelength-search"]
+        roi = (lambda_frac*line < wavs) & (wavs < line/lambda_frac)
+        if roi.any():
+            linepix = (min(pix[roi]) + max(pix[roi]))/2
+            peak = max(spec[roi])
+            g_init = models.Gaussian1D(amplitude=peak, mean=linepix, stddev=1)
+            g_init.bounds['amplitude'] = (0.5*peak, None)
+            g_init.bounds['mean'] = (linepix*lambda_frac, linepix/lambda_frac)
+            g_init.bounds['stddev'] = (1,3)
+            fit_g = fitting.LevMarLSQFitter()
+            g = fit_g(g_init, pix, spec)
+
+            if fit_g.fit_info['ierr'] not in [1,2,3,4]:
+                xs.append(0.0)
+                xinits.append(linepix)
+                yinits.append(peak)
+                sxs.append(np.inf)
+            else:
+                try:
+                    pcov = fit_g.fit_info['cov_x']
+                    perr = np.sqrt(np.diag(pcov))
+                except ValueError:
+                    xs.append(0.0)
+                    xinits.append(linepix)
+                    yinits.append(peak)
+                    sxs.append(np.inf)
+                else:
+                    xs.append(g.mean.value)
+                    xinits.append(linepix)
+                    yinits.append(peak)
+                    sxs.append(perr[1])
+                    sigmas.append(g.stddev.value)
+                    if model is None:
+                        model = g
+                    else:
+                        model += g
+        else:
+            xs.append(0.0)
+            sxs.append(np.inf)
+    
+    residuals = spec-model(pix)
+    tot = np.ma.sum(np.ma.abs(residuals))
+    if plot is True:
+        from matplotlib import pyplot as pl
+        roi_plot = (min(lines) < wavs) & (wavs < max(lines))
+
+        pl.figure(figsize=(18,9))
+
+        pl.subplot(2,1,1)
+        if yhere is not None:
+            pl.title(f"Line {yhere:d}")
+        pl.plot(pix, spec, 'k-')
+        pl.plot(pix, model(pix), 'g-', alpha=0.7)
+        pl.xlim(min(pix[roi_plot]), max(pix[roi_plot]))
+        for i,xi in enumerate(xinits):
+            pl.plot([xi, xi], [yinits[i]+100, yinits[i]+1000], 'b-')
+
+        pl.subplot(2,1,2)
+        xmin = min(pix[roi_plot])
+        xmax = max(pix[roi_plot])
+        pl.title(f"Residuals = {tot:.0f}")
+        pl.plot(pix, residuals, 'b-')
+        pl.xlim(xmin, xmax)
+        pl.axvspan(xmin, xmax, ymin=1000, ymax=10000, facecolor='r', alpha=0.5)
+        pl.axvspan(xmin, xmax, ymin=-10000, ymax=-1000, facecolor='r', alpha=0.5)
+        pl.ylim(min([-100, residuals.min()-50]), max([900, residuals.max()+50]))
+        pl.show()
+    
+    return list(map(np.array, [xs, sxs, sigmas]))
+
+
+def find_known_lines_old(lines, ll, spec, options):
     """
     lines[N]: list of lines in wavelength units
     ll[2048]: lambda vector
@@ -1499,6 +1586,8 @@ def fit_chebyshev_to_lines(xs, sxs, lines, options):
                 "should be in angstrom")
         raise Exception("Units fed to this function are likely in micron but "
                 "should be in angstrom")
+
+#     import pdb; pdb.set_trace()
 
     cfit = CV.chebfit(xs[ok], lines[ok], options["chebyshev-degree"])
     delt = CV.chebval(xs[ok], cfit) - lines[ok]
@@ -2165,31 +2254,62 @@ def construct_model(slitno):
 #
 # Two dimensional wavelength fitting
 #
-def smooth_solution(sol_2d, filter_size=7):
+def fit_smooth_solution(sol_2d, order=3, top=None, bottom=None):
+    positions = sol_2d['positions']
+    if top is None:
+        top = max(positions)
+    if bottom is None:
+        bottom = min(positions)
+    all_positions = np.arange(bottom+1, top, 1)
+    coeffs = sol_2d['coeffs']
+        
+    s_sol_2d = {'coeffs': np.zeros((len(all_positions), sol_2d['coeffs'].shape[1])),
+                'positions': all_positions,
+                'delts': sol_2d['delts'],
+                'lambdaRMS': sol_2d['lambdaRMS'],
+                'lambdaMAD': sol_2d['lambdaMAD']}
+
+    from astropy.modeling import models, fitting
+    p_init = models.Polynomial1D(order)
+    fitter = fitting.LinearLSQFitter()
+    p0 = fitter(p_init, positions, coeffs[:,0])
+    p1 = fitter(p_init, positions, coeffs[:,1])
+    p2 = fitter(p_init, positions, coeffs[:,2])
+    p3 = fitter(p_init, positions, coeffs[:,3])
+    p4 = fitter(p_init, positions, coeffs[:,4])
+    p5 = fitter(p_init, positions, coeffs[:,5])
+
+    
+    s_sol_2d['coeffs'][:,0] = p0(all_positions)
+    s_sol_2d['coeffs'][:,1] = p1(all_positions)
+    s_sol_2d['coeffs'][:,2] = p2(all_positions)
+    s_sol_2d['coeffs'][:,3] = p3(all_positions)
+    s_sol_2d['coeffs'][:,4] = p4(all_positions)
+    s_sol_2d['coeffs'][:,5] = p5(all_positions)
+
+    return s_sol_2d
+
+
+def smooth_solution(sol_2d, filter_size=15):
     from scipy.signal import medfilt
 
     s_coeffs = np.zeros(sol_2d['coeffs'].shape)
-    s_lambdaRMS = np.zeros(sol_2d['lambdaRMS'].shape)
-    s_lambdaMAD = np.zeros(sol_2d['lambdaMAD'].shape)
-    s_positions = np.zeros(sol_2d['positions'].shape)
-
-    for i,y in enumerate(sol_2d['positions']):
-        s_coeffs[int(y-min(sol_2d['positions']))] = sol_2d['coeffs'][i]
-        s_lambdaRMS[int(y-min(sol_2d['positions']))] = sol_2d['lambdaRMS'][i]
-        s_lambdaMAD[int(y-min(sol_2d['positions']))] = sol_2d['lambdaMAD'][i]
-        s_positions[int(y-min(sol_2d['positions']))] = sol_2d['positions'][i]
+    sorted_order = np.argsort(sol_2d['positions'])
 
     # for each of the coefficients, pass a median boxcar over it
     info(f"Smoothing fit coefficients in Y direction")
     for j in range(sol_2d['coeffs'].shape[1]):
-        s_coeffs[:,j] = medfilt(s_coeffs[:,j], kernel_size=filter_size)
+        coeff = sol_2d['coeffs'][:,j][sorted_order]
+        smoothed_coeff = medfilt(coeff, kernel_size=filter_size)
+        s_coeffs[:,j] = smoothed_coeff[sol_2d['positions']-min(sol_2d['positions'])]
 
-    sol_2d['coeffs'] = s_coeffs
-    sol_2d['lambdaRMS'] = s_lambdaRMS
-    sol_2d['lambdaMAD'] = s_lambdaMAD
-    sol_2d['positions'] = s_positions
+    sol_2d_smoothed = {'coeffs': s_coeffs,
+                       'delts': sol_2d['delts'],
+                       'lambdaRMS': sol_2d['lambdaRMS'],
+                       'lambdaMAD': sol_2d['lambdaMAD'],
+                       "positions": sol_2d['positions']}
 
-    return sol_2d
+    return sol_2d_smoothed
 
 
 def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
@@ -2242,7 +2362,7 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
     pix = np.arange(2048.)
     linelist = lines
 
-    def fit_parameters(yhere, guess=0):
+    def fit_parameters(yhere, guess=0, pmlines=2):
         """
         Return chebyshev fit to a pixel column 
         2014 June 17 MK- Added a second set a variables to indicate that there
@@ -2252,18 +2372,20 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
         
         """
 
-        pmlines = 1
         cfit = sol_1d[1]
         spec_here = np.ma.median(data[int(yhere)-pmlines:int(yhere)+pmlines, :], axis=0)
-        shift = Fit.find_shift(spec_here, spec0, guess=guess)
+        shift, shifts, corr = Fit.find_shift(spec_here, spec0, guess=guess, maxshift=4*pmlines)
+
         ll_here = CV.chebval(pix - shift, cfit)
         [xs, sxs, sigmas] = find_known_lines(linelist,
-                                             ll_here, spec_here, options)
+                                             ll_here, spec_here, options, yhere=yhere)
+#         [xs2, sxs2, sigmas2] = find_known_lines_old(linelist,
+#                                              ll_here, spec_here, options)
 
         if data2 is not None:
             cfit2 = sol_1d2[1]
             spec_here2 = np.ma.median(data2[yhere-pmlines:yhere+pmlines, :], axis=0)
-            shift2 = Fit.find_shift(spec_here2, spec2, guess=guess)
+            shift2 = Fit.find_shift(spec_here2, spec2, guess=guess, maxshift=4*pmlines)
             ll_here2 = CV.chebval(pix - shift2, cfit2)
 
             [xs2, sxs2, sigmas2] = find_known_lines(linelist2,
@@ -2294,7 +2416,7 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
 
         return cfit, delt, shift
 
-    def sweep(positions):
+    def sweep(positions, step=1, pmlines=1):
         ret = []
         cfits = []
         sds = []
@@ -2303,11 +2425,11 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
         lastshift = 0
         lastposition = positions[0]
         for position in positions:
-            if abs(position-lastposition) < 5:
+            if abs(position-lastposition) < step*3:
                 guess = lastshift
             else:
                 guess = 0
-            cfit, delt, shift = fit_parameters(position, guess=guess)
+            cfit, delt, shift = fit_parameters(position, guess=guess, pmlines=pmlines)
             lastposition = position
             lastshift = shift
 
@@ -2326,21 +2448,40 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
     """ Start of main section of fit_outwards """
     pix = np.arange(2048.)
 
-    positions = np.concatenate((np.arange(start, top, 1), 
-        np.arange(start-1,bottom,-1)))
+    step = 1
+    positions = np.concatenate((np.arange(start, top, step), 
+        np.arange(start-1,bottom,-step)))
+#     positions = np.concatenate((np.arange(start, top, 1), 
+#         np.arange(start-1,bottom,-1)))
 #     positions = np.arange(bottom, top, 1)
 
     info("Computing 0 spectrum at %i" % start)
     spec0 = np.ma.median(data[start-1:start+1, :], axis=0)
     if data2 is not None:
-            spec2 = np.ma.median(data2[start-1:start+1, :], axis=0)
-    params = sweep(positions)
+        spec2 = np.ma.median(data2[start-1:start+1, :], axis=0)
+    params = sweep(positions, step=step, pmlines=1)
 
     ## Smooth behavior of coefficients in Y direction
     if options["smooth"] == True:
-        params = smooth_solution(params)
+#         params_s = smooth_solution(params, filter_size=options['smooth_scale'])
+        params_s = fit_smooth_solution(params, order=2, top=top, bottom=bottom)
+        params_s['smoothed'] = True
 
-    return params
+        pl.figure(figsize=(15,10))
+        for j in range(params_s['coeffs'].shape[1]): 
+            pl.subplot(3,2,j+1)
+            pl.title(f'Wavelength fit coefficient {j}')
+            pl.plot(params['positions'], params['coeffs'][:,j], 'ko')
+            pl.ylim(np.percentile(params['coeffs'][:,j], 1),
+                    np.percentile(params['coeffs'][:,j], 99))
+            s = np.argsort(params_s['positions'])
+            pl.plot(params_s['positions'][s], params_s['coeffs'][:,j][s], 'g-', alpha=0.5)
+        pl.show()
+
+    if options["smooth"] == True:
+        return params_s
+    else:
+        return params
 
 class NoSuchFit(Exception):
     pass
