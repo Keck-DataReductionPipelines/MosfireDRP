@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>A Word About Header Comments - MOSFIRE DRP Documentation</title>
+  <title>Installation - MOSFIRE DRP Documentation</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -17,8 +17,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "A Word About Header Comments";
-    var mkdocs_page_input_path = "headercomments.md";
+    var mkdocs_page_name = "Installation";
+    var mkdocs_page_input_path = "installing_2016.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -121,15 +121,9 @@
                     
     <a class="" href="../longslit/">Longslit Reductions</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="./">A Word About Header Comments</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#header-comments">Header Comments</a></li>
-    
-
-    </ul>
+    <a class="" href="../headercomments/">A Word About Header Comments</a>
                 </li>
                 <li class="">
                     
@@ -163,12 +157,8 @@
     <li><a href="..">Docs</a> &raquo;</li>
     
       
-        
-          <li>DRP Manual &raquo;</li>
-        
-      
     
-    <li>A Word About Header Comments</li>
+    <li>Installation</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -178,24 +168,63 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="header-comments">Header Comments</h1>
-<p>Files produced by the DRP have a series of information in the FITS header that helps users determine the pedigree of files involved in the reduction. Since many files go into reductions, FITS headers are enormous and some documentation about them is useful.</p>
-<p>The derived product FITS headers are organized as follows. The header of the first science file in the ‘A’ frame goes directly into the header. As the rest of the ‘A’ frames go into the header, the new keyword is checked against the current header. If the value of the keyword is different, a new keyword is added with the key postpended by _img### where ### is the file number. A special keyword called imfno### is created showing the full path to the file in the data reduction set. An example is shown below:</p>
-<p>![Screenshot](image9.png "ds9 output of the FITS header. Note that the first "A" frame file is located in /scr2/mosfire/2013nov26/m131126_0135.fits. The second file (#137) has a similar path. The keywords which follow from file #137 have different values than those in file #135 and are thus named KEY_img###.")</p>
-<p>ds9 output of the FITS header. Note that the first "A" frame file is located in /scr2/mosfire/2013nov26/m131126_0135.fits. The second file (#137) has a similar path. The keywords which follow from file #137 have different values than those in file #135 and are thus named KEY_img###.</p>
+                <h1 id="installation">Installation</h1>
+<h2 id="requirements">Requirements</h2>
+<p>The 2016 version of the pipeline no longer requires IRAF/PyRAF, so the installation should be simpler than previous versions.</p>
+<p>The pipeline requires the following python modules:</p>
+<ul>
+<li>numpy</li>
+<li>astropy</li>
+<li>ccdproc</li>
+<li>scipy</li>
+</ul>
+<h2 id="installing-python">Installing Python</h2>
+<h3 id="using-anaconda-cloud-and-conda-environments">Using Anaconda Cloud and Conda Environments</h3>
+<p>Install Anaconda as per the instructions on the <a href="https://www.continuum.io/downloads">Anaconda web site</a>.</p>
+<p>Now we will create a conda <a href="https://conda.io/docs/user-guide/tasks/manage-environments.html">environment</a> specifically for the MOSFIRE DRP.  Rather than specify everything on the command line, we will get the specification for the environment from the Anaconda Cloud service.  There are two specifications, one for linux (tested on a CentOS 7 system) and one for macOS (tested on macOS 10.12.6).  Get the one appropriate for your system using one of the commands below:</p>
+<pre><code>conda env create KeckObservatory/mospy_2016_linux
+</code></pre>
+<p>or</p>
+<pre><code>conda env create KeckObservatory/mospy_2016_macOS
+</code></pre>
+<p>Now we will invoke that environment:</p>
+<pre><code>source activate mospy_2016_linux
+</code></pre>
+<p>or</p>
+<pre><code>source activate mospy_2016_macOS
+</code></pre>
+<p>Now we will install the DRP itself.  From now on, if you want to run the DRP, first invoke the appropriate environment using <code>source activate mospy_2016_linux</code> or <code>source activate mospy_2016_macOS</code>.</p>
+<h2 id="download-and-install-the-drp">Download and Install the DRP</h2>
+<p>Download the zip file of the released version from <a href="https://github.com/Keck-DataReductionPipelines/MosfireDRP/releases/download/Release2016A/MosfireDRP-2016release.zip">GitHub</a>.</p>
+<p>Move the zip file to a location on your computer where you want the source code to reside, then unzip the file:</p>
+<pre><code>unzip MosfireDRP-2016release.zip
+</code></pre>
+<p>Change in to the resulting <code>MosfireDRP-2016release/</code> directory:</p>
+<pre><code>cd MosfireDRP-2016release
+</code></pre>
+<p>Run the install program:</p>
+<pre><code>python setup.py install
+</code></pre>
+<p>The executable <code>mospy</code> should now be in your path.  If you used the Anaconda based install, it will be in the Anaconda bin directory (e.g. <code>~/anaconda2/bin/mospy</code>).</p>
+<h2 id="alternate-methods-of-installing-python">Alternate Methods of Installing Python</h2>
+<p>Note, these are no longer the recommended methods of installing the DRP as they do not gauranttee that the various package versions are compatible with the DRP.</p>
+<h3 id="using-the-anaconda-distribution">Using the Anaconda Distribution</h3>
+<p>Install Anaconda as per the instructions on the <a href="https://www.continuum.io/downloads">Anaconda web site</a>.  The pipeline currently (2016 release) only runs on python 2.7, so download and install that version, not the python 3.x version.</p>
+<p>To generate an environment similar to the one in the recommended anaconda cloud based install, you can use the following command:</p>
+<pre><code>conda create --no-default-packages -c astropy -n mospy_2016 python=2.7.13 astropy=2.0.2 ccdproc=1.3.0 ipython=5.4.1 numpy=1.11.2 scipy=0.18.1 PyQt=5.6.0
+</code></pre>
+
+<p>You should now have all the requirements to run the MOSFIRE DRP.  This should work on any anaconda install, even if the pre-packaged linux and macOS environments are incompatible with your machine.</p>
+<h3 id="using-other-python-install-methods">Using Other Python Install Methods</h3>
+<p>The DRP support group recommends the anaconda python install and has tested the DRP using that installer, but if an appropriate version of python (e.g. python 2.7) is installed via some other package manager (e.g. apt-get, brew, yum, etc.), then you should be able to install the python package dependencies using either that package manager (if they are available via that package manager) or using <code>pip</code>.  For example:</p>
+<pre><code>pip install numpy
+pip install astropy
+pip install ccdproc
+</code></pre>
               
             </div>
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="../hints/" class="btn btn-neutral float-right" title="Some Hints">Next <span class="icon icon-circle-arrow-right"></span></a>
-      
-      
-        <a href="../longslit/" class="btn btn-neutral" title="Longslit Reductions"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>
@@ -219,10 +248,6 @@
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../longslit/" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      
-      
-        <span style="margin-left: 15px"><a href="../hints/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

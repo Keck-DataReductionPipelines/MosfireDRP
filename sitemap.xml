@@ -1,130 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-    
     <url>
-     <loc>/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
-        
     <url>
-     <loc>/manual/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/changes/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/preface/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/installing/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/retrieve/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/handle/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/autodriver/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/driver/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/flats/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/wavelengthYJH/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/wavelengthK/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/background/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/rectify/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/extract/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/long2pos/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/longslit/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/headercomments/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/hints/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
     <url>
-     <loc>/example/</loc>
-     <lastmod>2018-01-04</lastmod>
+     <loc>None</loc>
+     <lastmod>2018-12-17</lastmod>
      <changefreq>daily</changefreq>
     </url>
-        
-    
-
 </urlset>
