@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>installing 2015A - MOSFIRE DRP Documentation</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "installing 2015A";
+    var mkdocs_page_input_path = "installing_2015A.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> MOSFIRE DRP Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">DRP Manual</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../manual/">Contents</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../changes/">Changes</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../preface/">Preface</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../installing/">Installing</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../retrieve/">Retrieve Your Data</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../handle/">Handle</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../autodriver/">Automatic Generation of the Driver File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../driver/">The driver.py File</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../flats/">Flats</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthYJH/">Wavelength Calibration – Y, J, and H Bands</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../wavelengthK/">Wavelength Calibration – K Band</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../background/">Background Subtraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../rectify/">Rectify</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../extract/">Spectral Extraction</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../long2pos/">Long2pos Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../longslit/">Longslit Reductions</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../headercomments/">A Word About Header Comments</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../hints/">Some Hints</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../example/">Examples of Running the Pipeline</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">MOSFIRE DRP Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>installing 2015A</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <p>As of version 2015A, the pipeline can be installed as Ureka package. If you prefer to use this installation procedure, download the pipeline tar file and unpack it. Then execute:</p>
+<pre><code>ur_setup
+</code></pre>
+<p>Go to the mosfire python directory where the setup.py file is located (it is the main directory above the MOSFIRE and apps directories). Run:</p>
+<pre><code>python setup.py install
+</code></pre>
+<p>This will copy the MOSFIRE pipeline as a python package located into your ureka enviornment.</p>
+<p>Alternatively, if you would like to modify the MOSFIRE pipeline files, run the following instead: </p>
+<pre><code>python setup.py develop
+</code></pre>
+<p>This will make symoblic links to the MOSFIRE files instead of copying them. Your changes to the pipeline file will now automatically be used when loading the MOSFIRE package. </p>
+<p>Directories created by you</p>
+<ul>
+<li>DATA – sub directory in which you can store your data. This is not a necessary sub-directory but may help you manage files. Raw data may be stored in other areas on your disk.</li>
+<li>REDUX – sub directory where reductions will be stored. Also not critical, but helpful.</li>
+</ul>
+<p>From now on, if you want to run any pipeline commands, you will always execute “mospy” as seen in our first step in section 5 below. Remember to run ur_setup before running the MOSFIRE pipleine.</p>
+<h2 id="alternate-installation-method">Alternate Installation Method</h2>
+<p>If you prefer the previous installation method, follow these instructions:</p>
+<p><strong>1) Install Ureka</strong></p>
+<p>The pipeline relies on the Ureka Python distribution produced by STScI and Gemini Observatory: <a href="http://ssb.stsci.edu/ureka/">http://ssb.stsci.edu/ureka/</a></p>
+<p>The DRP was developed using UREKA version 1.0. Navigate to the 1.0 distribution using the url listed above. Follow the instructions at the links to install the package. The UREKA instructions indicate that you need to run <code>ur_setup</code> to put ureka in the path. This is automatically completed when you run the drp and it is found in the mospy code. However, if you want to test the ureka package yourself, you will need to run ur_setup manually. The latest version of Ureka that is confirmed to work with the pipeline is 1.5.1</p>
+<p><strong>2) Download the pipeline</strong></p>
+<ol>
+<li>Start an xterm session on your local machine</li>
+<li>Run “cd” to navigate to the home directory </li>
+<li>Download either the .zip file, or the .tar.gz file from the website <a href="https://keck-datareductionpipelines.github.io/MosfireDRP/">https://keck-datareductionpipelines.github.io/MosfireDRP/</a>.  Note that this is the stable and supported version of the pipeline.  Alternatively, if you are a github user, you can just clone the repository using: <code>https://github.com/keck-DataReductionPipelines/MosfireDRP.git</code>.  This is the development version, and it is NOT supported.</li>
+<li>Expand the zip or tar file and rename the resulting directory. For example:</li>
+</ol>
+<pre><code>    mkdir ~/MOSFIRE 
+    mv MosfireDRP-1.1 ~/MOSFIRE/DRP_CODE
+    cd ~/MOSFIRE/DRP_CODE # to navigate to that directory
+</code></pre>
+
+<p><strong>3) Create Data Directories</strong></p>
+<p>Create sub directories for raw data, and reduced data. These sub directories are not specific. You can set up sub directories any way you would like. For the purposes of this manual, we have choosen generic directory names. You may choose to store the raw and reduced data using andy directory structure you would prefer. For our example, we created a raw data directory in the code repository: </p>
+<p>mkdir ~/MOSFIRE/DRP_CODE/DATA</p>
+<p>and a reduction directory in the code repository that will store reduced data:</p>
+<p>mkdir ~/MOSFIRE/DRP_CODE/REDUX</p>
+<p><strong>4) Copy the mospy file into your bin dir</strong></p>
+<p>Navigate to the newly creted bin dir: </p>
+<pre><code>cd ~/MOSFIRE/DRP_CODE/bin
+</code></pre>
+<p>Copy the mospy executeable to the bin dir</p>
+<pre><code>cp ../apps/mospy  .
+</code></pre>
+<p><strong>5) edit mospy in your bin dir and update a few lines of code</strong></p>
+<p>Using your favorite editor (emacs ../bin/mospy), update the path for the <code>ur_setup</code>. Replace <code>/home/npk/.ureka/ur_setup</code> with your <code>/your_full_path_name/.ureka/ur_setup</code> full path.</p>
+<p>Update the path for the <code>ur_forget</code>. Replace <code>/home/npk/.ureka/ur_setup</code> with <code>/your_full_path_name/.ureka/ur_forget</code> </p>
+<p>Update the MOSPATH with the full path to the source code directory. Replace <code>/src2/mosfire/DRP/mosfire</code> with <code>/your_full_path_name/MOSFIRE/DRP_CODE</code></p>
+<p>As an example, the original file might look like the following:</p>
+<pre><code>#Update the full path to the ureka install for the 
+# two aliases below.
+alias ur_setup 'eval `/home/npk/.ureka/ur_setup -csh \!*`'
+alias ur_forget 'eval `/home/npk/.ureka/ur_forget -csh \!*`'
+
+# If pythonpath is not previously defined, define it so that 
+#   the setenv works below..  
+if (! $?PYTHONPATH ) setenv PYTHONPATH
+
+#Update the full path to the mosfire DRP code repository
+# example: /src2/mosfire/DRP/mosfire change to /Users/myname/MOSFIRE/DRP_CODE
+#  in which the sub dirs drivers, apps, badpixel, etc. live  
+setenv MOSPATH /scr2/mosfire/DRP/mosfire
+setenv PYTHONPATH ${PYTHONPATH}:${MOSPATH}
+</code></pre>
+<p>And the modified version for an observers particular setup may look something like this:</p>
+<pre><code>#Update the full path to the ureka install for the 
+# two aliases below.
+alias ur_setup 'eval `/Users/mkassis/.ureka/ur_setup -csh \!*`'
+alias ur_forget 'eval `/Users/mkassis/.ureka/ur_forget -csh \!*`'
+
+# If pythonpath is not previously defined, define it so that 
+#   the setenv works below..
+if (! $?PYTHONPATH ) setenv PYTHONPATH
+
+# Update the full path to the mosfire DRP code repository
+# example: /src2/mosfire/DRP/mosfire
+#  in which the sub dirs drivers, apps, badpixel, etc. live  
+setenv MOSPATH /Users/mkassis/Documents/KeckInstrs/MOSFIRE/DRP_CODE_March2014/
+setenv PYTHONPATH ${PYTHONPATH}:${MOSPATH}
+</code></pre>
+<p><strong>6) Ensure that mospy is executable</strong></p>
+<pre><code>chmod +x mospy
+</code></pre>
+<p><strong>7) Update your .cshrc file</strong></p>
+<p>Update your <code>.cshrc</code> file with the code bin dir in the path. Add the following line to your <code>.cshrc</code> file:</p>
+<pre><code>set path = ( #mosfire_drp_bin_dir# $path )
+</code></pre>
+<p>for example:</p>
+<pre><code>set path = ( ~/MOSFIRE/DRP_CODE/bin $path )
+</code></pre>
+<p>If you do not normally run csh or tcsh, you may not have a <code>.cshrc</code> file. You will need to create one or download an example file like this one: <a href="http://www2.keck.hawaii.edu/inst/mosfire/.cshrc">http://www2.keck.hawaii.edu/inst/mosfire/.cshrc</a>. The <code>.cshrc</code> file must be in your home directory. By default, MacOSX does not show files that start with a <code>.</code> But you can access them via the terminal.</p>
+<p>For a bash shell:</p>
+<pre><code># Adding MOSFIRE pipeline
+PATH="/pathtomosfiredrp/MOSFIRE/DRP_CODE/bin:${PATH}"
+export PATH
+</code></pre>
+<p><strong>8) Now source your .cshrc file</strong></p>
+<pre><code>source ~/.cshrc
+</code></pre>
+<p>This will put your bin dir into your executable path.</p>
+<p>The installation is now complete. Take a moment to inventory your directory structure.</p>
+<p>DRP_CODE – Main Code Directory containing all sub-dirs for executeable code and in our example the raw and reduced sub-directories.</p>
+<ul>
+<li>MOSFIRE – directory containing the reduction code</li>
+<li>apps – directory containing a few additional applications:</li>
+<li>what – useful pretty printer for files</li>
+<li>handle – the entry point for creating driver files (more later)</li>
+<li>badpixels – directory containing badpixel maps.</li>
+<li>Drivers – directory containing example driver files. These files are used to initiate the redution process and you will modify them for your specific data sets. This will be discussed in more detail later.</li>
+<li>Driver.py – used for YJH reductions</li>
+<li>K_driver.py – Contains code specific to K band observations</li>
+<li>Longslit_driver.py – Longslit reductions</li>
+<li>Long2pos_driver.py – long2pos and long2pos_specphot reductions</li>
+<li>Platescale – contains a file that describes the detector plate scale</li>
+</ul>
+<p>Directories created by you</p>
+<ul>
+<li>DATA – sub directory in which you can store your data. This is not a necessary sub-directory but may help you manage files. Raw data may be stored in other areas on your disk.</li>
+<li>REDUX – sub directory where reductions will be stored. Also not critical, but helpful.</li>
+<li>bin – has the modified mospy executable command</li>
+</ul>
+<p>From now on, if you want to run any pipeline commands, you will always execute “mospy” as seen in our first step in section 5 below.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>

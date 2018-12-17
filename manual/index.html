@@ -13,18 +13,19 @@
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
-  <link rel="stylesheet" href="../css/highlight.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
   
   <script>
     // Current page data
     var mkdocs_page_name = "Contents";
     var mkdocs_page_input_path = "manual.md";
-    var mkdocs_page_url = "/manual/";
+    var mkdocs_page_url = null;
   </script>
   
-  <script src="../js/jquery-2.1.1.min.js"></script>
-  <script src="../js/modernizr-2.8.3.min.js"></script>
-  <script type="text/javascript" src="../js/highlight.pack.js"></script> 
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
   
 </head>
 
@@ -38,7 +39,7 @@
         <a href=".." class="icon icon-home"> MOSFIRE DRP Documentation</a>
         <div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
   </form>
 </div>
       </div>
@@ -179,24 +180,24 @@
               
                 <h1 id="table-of-contents">Table of Contents</h1>
 <ol>
-<li><a href="../changes">Latest Changes</a></li>
-<li><a href="../preface">Preface</a></li>
-<li><a href="../installing">Installing the Data Reduction Pipeline</a></li>
-<li><a href="../retrieve">Retrieve Your Data</a></li>
-<li><a href="../handle">DRP First Reduction Step: Handle</a></li>
-<li><a href="../autodriver">Automatic Generation of the Driver File</a></li>
-<li><a href="../driver">The driver.py File</a></li>
-<li><a href="../flats">Flats</a></li>
-<li><a href="../wavelengthYJH">Wavelength Calibration – Y, J, and H Bands</a></li>
-<li><a href="../wavelengthK">Wavelength Calibration – K Band</a></li>
-<li><a href="../background">Background Subtraction</a></li>
-<li><a href="../rectify">Rectify</a></li>
-<li><a href="../extract">Spectral Extraction</a></li>
-<li><a href="../long2pos">Long2pos Reductions</a></li>
-<li><a href="../longslit">Longslit Reductions</a></li>
-<li><a href="../headercomments">A Word About Header Comments</a></li>
-<li><a href="../hints">Some Hints</a></li>
-<li><a href="../example">Examples</a></li>
+<li><a href="changes">Latest Changes</a></li>
+<li><a href="preface">Preface</a></li>
+<li><a href="installing">Installing the Data Reduction Pipeline</a></li>
+<li><a href="retrieve">Retrieve Your Data</a></li>
+<li><a href="handle">DRP First Reduction Step: Handle</a></li>
+<li><a href="autodriver">Automatic Generation of the Driver File</a></li>
+<li><a href="driver">The driver.py File</a></li>
+<li><a href="flats">Flats</a></li>
+<li><a href="wavelengthYJH">Wavelength Calibration – Y, J, and H Bands</a></li>
+<li><a href="wavelengthK">Wavelength Calibration – K Band</a></li>
+<li><a href="background">Background Subtraction</a></li>
+<li><a href="rectify">Rectify</a></li>
+<li><a href="extract">Spectral Extraction</a></li>
+<li><a href="long2pos">Long2pos Reductions</a></li>
+<li><a href="longslit">Longslit Reductions</a></li>
+<li><a href="headercomments">A Word About Header Comments</a></li>
+<li><a href="hints">Some Hints</a></li>
+<li><a href="example">Examples</a></li>
 </ol>
 <p>The manual is also available in pdf form: <a href="../MOSFIRE_DRP_Manual.pdf">MOSFIRE_DRP_Manual.pdf</a></p>
 <p><hr>
@@ -246,9 +247,8 @@ Note: pdf version of the manual is generated from the individual markdown files 
     </span>
 </div>
     <script>var base_url = '..';</script>
-    <script src="../js/theme.js"></script>
-      <script src="../search/require.js"></script>
-      <script src="../search/search.js"></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
 
 </body>
 </html>
