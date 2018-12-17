@@ -13,7 +13,7 @@ The pipeline requires the following python modules:
 
 ### Using Anaconda Cloud and Conda Environments
 
-Install Anaconda as per the instructions on the [Anaconda web site](https://www.continuum.io/downloads).
+Install Anaconda as per the instructions on the [Anaconda web site](https://www.anaconda.com/download).
 
 Now we will create a conda [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) specifically for the MOSFIRE DRP.  Rather than specify everything on the command line, we will get the specification for the environment from the Anaconda Cloud service.  There are two specifications, one for linux (tested on a CentOS 7 system) and one for macOS (tested on macOS 10.12.6).  Get the one appropriate for your system using one of the commands below:
 
