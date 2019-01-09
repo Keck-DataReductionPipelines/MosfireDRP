@@ -1,6 +1,6 @@
 site_name: MOSFIRE DRP Documentation
 theme: readthedocs
-pages:
+nav:
     - 'Home': index.md
     - 'DRP Manual':
         - 'Contents': manual.md
@@ -10,7 +10,6 @@ pages:
         - 'Retrieve Your Data': retrieve.md
         - 'Handle': handle.md
         - 'Automatic Generation of the Driver File': autodriver.md
-        - 'The driver.py File': driver.md
         - 'Flats': flats.md
         - 'Wavelength Calibration – Y, J, and H Bands': wavelengthYJH.md
         - 'Wavelength Calibration – K Band': wavelengthK.md
