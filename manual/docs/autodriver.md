@@ -1,3 +1,9 @@
+# The Driver File
+
+The pipeline is run via a "driver" file which sets the sequence of steps which will be run and defines the inputs, outputs, and options for each.
+
+In the past, users could copy one of several template files included with the DRP or use an auto-generated one (see the AutoDriver section below).  With this latest version, we are removing the template files and only supporting the AutoDriver process to avoid confusion and conflicts.
+
 # AutoDriver
 
 The pipeline is able to produce a driver file automatically for most cases, thus removing the need to copy one of the standard files and manually edit it.
