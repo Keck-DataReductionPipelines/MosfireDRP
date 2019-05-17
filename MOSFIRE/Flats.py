@@ -124,12 +124,12 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     # Imcombine the lamps OFF flats and subtract the off from the On sets
     if lampOffList != None: 
         #Retrieve the list of files to use for flat creation. 
-        info("Attempting to combine Lamps off files in {}".format(lampOffList))
+        info("*********** Attempting to combine Lamps off files in {}".format(lampOffList))
         lampOffList = IO.list_file_to_strings(lampOffList)
         for flat in lampOffList:
             debug(str(flat))
         out = os.path.join("combflat_lamps_off_2d_{:s}.fits".format(band))
-        IO.imcombine(flatlist, out, options, reject="minmax", nlow=1, nhigh=1)
+        IO.imcombine(lampOffList, out, options, reject="minmax", nlow=1, nhigh=1)
         file_on = os.path.join("combflat_2d_{:s}.fits".format(band))
         file_off = os.path.join("combflat_lamps_off_2d_{:s}.fits".format(band))
         file_on_save = os.path.join("combflat_lamps_on_2d_{:s}.fits".format(band))
