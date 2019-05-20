@@ -138,6 +138,9 @@ def handle_flats(flatlist, maskname, band, options, extension=None,edgeThreshold
     debug("Combined '%s' to '%s'" % (flatlist, maskname))
 #     info("Combined flats for '%s'" % (maskname))
     path = "combflat_2d_%s.fits" % band
+    if lampsOffList != None:
+        debug("Using on-off flat for K band")
+        path = os.path.join("combflat_lamps_on_2d_{:s}.fits".format(band))
     (header, data) = IO.readfits(path, use_bpm=True)
     info("Flat written to %s" % path)
 
