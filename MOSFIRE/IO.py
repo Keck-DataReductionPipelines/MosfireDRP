@@ -137,13 +137,13 @@ def load_lambdaslit(fnum, maskname, band, options):
                 "that in the edge file '%s'" % (maskname, ret[0]['maskname']))
         warning("Continuing")
 
-    
+
     return readfits(fn, options)
 
 def writefits(img, maskname, fname, options, header=None, bs=None,
         overwrite=False, lossy_compress=False):
     '''Convenience wrapper to write MOSFIRE drp-friendly FITS files
-    
+
     Args:
         img: Data array to write to disk
         maskname: Name of the science mask
@@ -185,7 +185,7 @@ def writefits(img, maskname, fname, options, header=None, bs=None,
 
     warnings.filterwarnings('always')
     if overwrite:
-        try: 
+        try:
             os.remove(fn)
             debug("Removed old file '{0}'".format(fn))
         except: pass
@@ -199,7 +199,7 @@ def writefits(img, maskname, fname, options, header=None, bs=None,
 
 
 def readfits(path, use_bpm=False):
-    '''Read a fits file from path and return a tuple of (header, data, 
+    '''Read a fits file from path and return a tuple of (header, data,
     Target List, Science Slit List (SSL), Mechanical Slit List (MSL),
     Alignment Slit List (ASL)).'''
 
@@ -286,14 +286,14 @@ def fname_to_date_tuple(fname):
     if len(fname) != 17:
         raise Exception("The file name '%s' is not of correct length. It "
                 "must be of the form mYYmmdd_nnnn.fits" % fname)
-    
+
     try:
         fdate = fname.split("m")[1][0:6]
         yr, mn, dy = "20" + fdate[0:2], fdate[2:4], int(fdate[4:6])
         month = months[mn]
     except:
         warning("Could not parse date out of file name: %s" % (fname))
-    
+
     return yr, month, dy
 
 def fname_to_path(fname, options):
@@ -354,10 +354,13 @@ returns ['file1', 'file2', 'file3']
         inputs = np.genfromtxt(fname,dtype=str)
         path = ""
         start_index = 0
+        if inputs.size == 1:
+            inputs = np.array([inputs])
         if len(inputs):
-            if os.path.isabs(inputs[0][0]):
-                path = inputs[0]
-                start_index = 1
+            if inputs[0][-5:] != ".fits":
+                if os.path.isabs(inputs[0][0]):
+                    path = inputs[0]
+                    start_index = 1
             for i in range(start_index, len(inputs)):
                 output.append(os.path.join(path, inputs[i]))
 
@@ -404,7 +407,7 @@ def fix_long2pos_headers(filelist):
             # assign FRAMEID to wide slits
             if header['YOFFSET']==14 or header['YOFFSET']==-14:
                 header['FRAMEID']="A"
-                
+
             #reverse sign of offsets for narrow slits
             if header['YOFFSET']==-21:
                 header['YOFFSET']=7
@@ -420,10 +423,10 @@ def fix_long2pos_headers(filelist):
 
 
 def readmosfits(fname, options, extension=None):
-    '''Read a fits file written by MOSFIRE from path and return a tuple of 
-    (header, data, Target List, Science Slit List (SSL), Mechanical Slit 
+    '''Read a fits file written by MOSFIRE from path and return a tuple of
+    (header, data, Target List, Science Slit List (SSL), Mechanical Slit
     List (MSL), Alignment Slit List (ASL)).
-    
+
     Note, the extension is typically not used, only used if the detector server
     does not append slit extension.
     '''
@@ -468,7 +471,7 @@ def readmosfits(fname, options, extension=None):
     ssl = ssl[ssl.field("Slit_Number") != ' ']
     msl = msl[msl.field("Slit_Number") != ' ']
     asl = asl[asl.field("Slit_Number") != ' ']
-        
+
 
     # ELIMINATE POSITION B of the long2pos slit
     ssl = ssl[ssl.field("Target_Name") != 'posB']
@@ -501,7 +504,7 @@ def readscitbl(path):
 
 
 def parse_header_for_bars(header):
-    '''Parse {header} and convert to an array of CSU bar positions in mm. If 
+    '''Parse {header} and convert to an array of CSU bar positions in mm. If
     the positon is negative it means the barstat is not OK'''
 
     poss = []
@@ -516,11 +519,11 @@ def parse_header_for_bars(header):
         poss.append(pos)
 
     if len(poss) != CSU.numbars:
-        error("Found %i bars instead of %i" % 
+        error("Found %i bars instead of %i" %
                 (lens(poss), CSU.numbars))
-        raise CSU.MismatchError("Found %i bars instead of %i" % 
+        raise CSU.MismatchError("Found %i bars instead of %i" %
                 (lens(poss), CSU.numbars))
-        
+
 
     return np.array(poss)
 
@@ -597,7 +600,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
         mclip: use median as the function to calculate the baseline values for
                sigclip rejection?
         lsigma, hsigma: low and high sigma rejection thresholds.
-    
+
     Returns:
         None
 
@@ -653,7 +656,7 @@ def imcombine(filelist, out, options, method="average", reject="none",\
             warning('nlow + nhigh >= number of input images.  Combining without rejection')
             nlow = 0
             nhigh = 0
-        
+
         if ccdproc.version.major >= 1 and ccdproc.version.minor >= 1\
            and ccdproc.version.release:
             info('Combining files using ccdproc.combine task')
