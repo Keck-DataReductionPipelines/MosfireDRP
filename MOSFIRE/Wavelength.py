@@ -2257,7 +2257,7 @@ def fit_outwards_refit(data, bs, sol_1d, lines, options, start, bottom, top,
     bottom = int(bottom)
     top = int(top)
 
-    lags = np.arange(-30,30)
+    lags = np.arange(-50,50)
     pix = np.arange(2048.)
     linelist = lines
 
