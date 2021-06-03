@@ -21,9 +21,9 @@ Now we will create a conda [environment](https://conda.io/docs/user-guide/tasks/
 
 Now we will invoke that environment:
 
-    source activate mospy_2018
+    source activate mospy
 
-Now we will install the DRP itself.  From now on, if you want to run the DRP, first invoke the appropriate environment using `source activate mospy_2018`.
+Now we will install the DRP itself.  From now on, if you want to run the DRP, first invoke the appropriate environment using `source activate mospy`.
 
 
 ## Download and Install the DRP
