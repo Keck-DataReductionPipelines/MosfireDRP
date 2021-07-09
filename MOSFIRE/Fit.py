@@ -19,37 +19,36 @@ from MOSFIRE.MosfireDrpLog import debug, info, warning, error
 #from MosfireDrpLog import debug, info, warning, error
 import unittest
 
-def xcor(a,b,lags):
 
-    if len(a) != len(b):
-        error("cross correlation (xcor) requires a and b "
-                "to be of same length")
-        raise Exception(
-                "cross correlation (xcor) requires a and b "
-                "to be of same length")
-    cors = np.zeros(len(lags))
+def find_shift(a, b, guess=0, maxshift=3):
+    '''Find the offset between two 1D arrays based on cross correlation.
+    
+    Intended to replace xcor and xcor_peak.  Works out to be about 2x speed as
+    xcor_peak based on %timeit in ipython.
+    
+    Uses the following conditions for a point to be valid as consideration
+    for the shift result:
+    - second derivative of the correlation is negative (i.e. at local maxima)
+    - shift <= maxshift
+    
+    Given those conditions are met, the highest cross correlation value gives
+    the best value for the shift (or offset) between the two arrays.
+    '''
+    a = a.filled(0)
+    b = b.filled(0)
+    assert len(a) == len(b)
+    shifts = np.arange(len(a)) - len(a)/2
+    corr = np.correlate(a, b, mode='same')
+    first_derivative = np.gradient(corr)
+    second_derivative = np.gradient(first_derivative)
 
-    a_pad = np.zeros(len(a)+len(lags))
-    b_pad = np.zeros(len(b)+len(lags))
+    valid = np.where((second_derivative < 0) & (abs(shifts-guess) < maxshift))[0]
 
-    st = np.argmin(np.abs(lags))
-    a_pad[st:st+len(a)] = a
-    b_pad[st:st+len(b)] = b
+    idx = np.argmax(corr[valid])
+    bestcorrindex = valid[idx]
+    shift = shifts[bestcorrindex]
 
-    for i in range(len(lags)):
-        cors[i] = np.correlate(a_pad, np.roll(b_pad, lags[i]), 'valid')
-
-    return cors
-
-def xcor_peak(a, b, lags):
-    '''Return the peak position in units of lags'''
-
-    N = len(lags)
-    xcs = xcor(a, b, lags)
-
-    return lags[np.argmax(xcs)]
-
-
+    return shift, shifts, corr
 
 
 # TODO: Document mpfit_* functions
